@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Work.net — Acceso</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        /* ============================================
+           PALETA WORK.NET
+           ============================================ */
+        :root {
+            --wn-bg-dark:       #0D1117;
+            --wn-bg-panel:      #161B22;
+            --wn-bg-elevated:   #21262D;
+            --wn-border:        #30363D;
+            --wn-text:          #E6EDF3;
+            --wn-text-muted:    #8B949E;
+            --wn-accent:        #1F6FEB;
+            --wn-accent-hover:  #388BFD;
+            --wn-success:       #238636;
+            --wn-danger:        #DA3633;
+            --wn-warning:       #D29922;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--wn-bg-dark);
+            color: var(--wn-text);
+        }
+
+        body {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overscroll-behavior: none;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        /* ============================================
+           FONDO MODERNO (grid + orbes + viñeta)
+           ============================================ */
+        .wn-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: radial-gradient(
+                ellipse at top left,
+                #0D1117 0%,
+                #0A0D12 50%,
+                #05070A 100%
+            );
+            overflow: hidden;
+        }
+
+        .wn-bg-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(48, 54, 61, 0.35) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(48, 54, 61, 0.35) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(
+                ellipse at center,
+                black 20%,
+                transparent 80%
+            );
+            -webkit-mask-image: radial-gradient(
+                ellipse at center,
+                black 20%,
+                transparent 80%
+            );
+            animation: gridFloat 20s ease-in-out infinite;
+        }
+
+        @keyframes gridFloat {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-20px, -20px); }
+        }
+
+        .wn-bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.4;
+            animation: orbFloat 18s ease-in-out infinite;
+        }
+
+        .wn-bg-orb-1 {
+            width: 500px;
+            height: 500px;
+            background: #1F6FEB;
+            top: -150px;
+            left: -150px;
+            animation-delay: 0s;
+        }
+
+        .wn-bg-orb-2 {
+            width: 450px;
+            height: 450px;
+            background: #6E40C9;
+            bottom: -150px;
+            right: -100px;
+            animation-delay: -6s;
+        }
+
+        .wn-bg-orb-3 {
+            width: 350px;
+            height: 350px;
+            background: #238636;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.15;
+            animation-delay: -12s;
+        }
+
+        @keyframes orbFloat {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(40px, -30px) scale(1.1);
+            }
+            66% {
+                transform: translate(-30px, 40px) scale(0.95);
+            }
+        }
+
+        .wn-bg-vignette {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(
+                ellipse at center,
+                transparent 0%,
+                rgba(0, 0, 0, 0.4) 70%,
+                rgba(0, 0, 0, 0.7) 100%
+            );
+            pointer-events: none;
+        }
+
+        /* ============================================
+           VISTAS (una visible a la vez)
+           ============================================ */
+        .wn-view {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            overflow: hidden;
+        }
+
+        .wn-view.active {
+            display: flex;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================
+           MARCA SUPERIOR IZQUIERDA
+           ============================================ */
+        .wn-brand {
+            position: fixed;
+            top: 28px;
+            left: 32px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .wn-brand-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 16px rgba(31, 111, 235, 0.4);
+            flex-shrink: 0;
+        }
+
+        .wn-brand-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--wn-text);
+        }
+
+        /* ============================================
+           LAYOUT DE AUTENTICACIÓN
+           (texto y card separados a los extremos en escritorio)
+           ============================================ */
+        .wn-auth-layout {
+            display: flex;
+            width: 100%;
+            max-width: 1200px; /* Aumentado para dar más espacio */
+            align-items: center;
+            justify-content: space-between; /* CAMBIO CLAVE: separa los elementos a los extremos */
+            gap: clamp(24px, 4vw, 72px);
+            padding: 0 clamp(16px, 3vw, 40px);
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Panel izquierdo: texto */
+        .wn-auth-left {
+            flex: 1 1 0;
+            min-width: 0;               /* CRÍTICO: permite que el flex se encoja */
+            max-width: 480px;
+            color: var(--wn-text);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .wn-auth-left h1 {
+            font-size: clamp(1.7rem, 3.2vw, 2.75rem);
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            line-height: 1.15;
+            margin: 0 0 16px 0;
+        }
+
+        .wn-auth-left h1 .accent {
+            background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .wn-auth-left p {
+            font-size: clamp(0.85rem, 1.1vw, 1rem);
+            color: var(--wn-text-muted);
+            line-height: 1.6;
+            margin: 0 0 24px 0;
+        }
+
+        .wn-auth-features {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .wn-auth-feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--wn-text-muted);
+            font-size: clamp(0.78rem, 0.95vw, 0.9rem);
+        }
+
+        .wn-auth-feature i {
+            color: var(--wn-accent);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        /* Panel derecho: card */
+        .wn-auth-right {
+            flex: 0 0 auto;
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wn-card {
+            background-color: rgba(22, 27, 34, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--wn-border);
+            border-radius: 20px;
+            padding: clamp(24px, 3vw, 36px) clamp(20px, 2.5vw, 32px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+            width: 100%;
+            max-height: calc(100dvh - 48px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .wn-card::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* ===== TÍTULO GRANDE ===== */
+        .wn-card-title {
+            font-size: clamp(1.5rem, 2vw, 1.85rem);
+            font-weight: 700;
+            letter-spacing: -0.6px;
+            line-height: 1.15;
+            margin: 0 0 8px 0;
+        }
+
+        .wn-card-subtitle {
+            color: var(--wn-text-muted);
+            font-size: clamp(0.82rem, 0.95vw, 0.9rem);
+            margin: 0 0 22px 0;
+        }
+
+        /* ============================================
+           BOTONES DE SELECCIÓN DE ROL
+           ============================================ */
+        .wn-role-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .wn-role-btn {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+            padding: 15px 18px;
+            background-color: var(--wn-bg-dark);
+            border: 2px solid var(--wn-border);
+            border-radius: 14px;
+            color: var(--wn-text);
+            font-size: clamp(0.82rem, 0.95vw, 0.95rem);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            font-family: inherit;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .wn-role-btn:hover {
+            border-color: var(--wn-accent);
+            background-color: rgba(31, 111, 235, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .wn-role-btn:active {
+            transform: translateY(0);
+            background-color: rgba(31, 111, 235, 0.15);
+        }
+
+        .wn-role-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background-color: var(--wn-bg-elevated);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--wn-accent);
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .wn-role-btn:hover .wn-role-icon {
+            background-color: var(--wn-accent);
+            color: white;
+        }
+
+        .wn-role-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .wn-role-name {
+            font-weight: 600;
+            font-size: clamp(0.85rem, 0.95vw, 0.95rem);
+        }
+
+        .wn-role-desc {
+            font-size: clamp(0.68rem, 0.78vw, 0.75rem);
+            color: var(--wn-text-muted);
+        }
+
+        /* ============================================
+           FORMULARIOS
+           ============================================ */
+        .wn-form-group {
+            margin-bottom: 16px;
+        }
+
+        .wn-label {
+            display: block;
+            font-size: clamp(0.72rem, 0.85vw, 0.8rem);
+            font-weight: 500;
+            color: var(--wn-text);
+            margin-bottom: 6px;
+        }
+
+        .wn-label .required {
+            color: var(--wn-danger);
+            margin-left: 2px;
+        }
+
+        .wn-input,
+        .wn-select {
+            width: 100%;
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            color: var(--wn-text);
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-size: clamp(0.8rem, 0.9vw, 0.9rem);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            font-family: inherit;
+        }
+
+        .wn-input:focus,
+        .wn-select:focus {
+            outline: none;
+            border-color: var(--wn-accent);
+            box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15);
+        }
+
+        .wn-input::placeholder {
+            color: var(--wn-text-muted);
+            opacity: 0.6;
+        }
+
+        .wn-input-icon {
+            position: relative;
+        }
+
+        .wn-input-icon i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--wn-text-muted);
+            font-size: 1rem;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .wn-input-icon .wn-input {
+            padding-left: 42px;
+        }
+
+        .wn-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* ============================================
+           BOTONES
+           ============================================ */
+        .btn-wn-primary {
+            width: 100%;
+            background-color: var(--wn-accent);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: clamp(0.82rem, 0.9vw, 0.9rem);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .btn-wn-primary:hover {
+            background-color: var(--wn-accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35);
+        }
+
+        .btn-wn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(31, 111, 235, 0.3);
+        }
+
+        .btn-wn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--wn-border);
+            color: var(--wn-text-muted);
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: clamp(0.78rem, 0.85vw, 0.85rem);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .btn-wn-secondary:hover {
+            background-color: var(--wn-bg-elevated);
+            color: var(--wn-text);
+            border-color: var(--wn-text-muted);
+        }
+
+        .btn-wn-secondary:active {
+            background-color: var(--wn-bg-panel);
+        }
+
+        /* ============================================
+           LINKS Y TEXTOS AUXILIARES
+           ============================================ */
+        .wn-link {
+            color: var(--wn-accent);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            touch-action: manipulation;
+        }
+
+        .wn-link:hover {
+            color: var(--wn-accent-hover);
+            text-decoration: underline;
+        }
+
+        .wn-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 18px 0;
+            color: var(--wn-text-muted);
+            font-size: 0.75rem;
+        }
+
+        .wn-divider::before,
+        .wn-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: var(--wn-border);
+        }
+
+        .wn-text-center {
+            text-align: center;
+            font-size: clamp(0.75rem, 0.85vw, 0.85rem);
+            color: var(--wn-text-muted);
+        }
+
+        .wn-text-center a {
+            color: var(--wn-accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .wn-text-center a:hover {
+            text-decoration: underline;
+        }
+
+        /* ============================================
+           BACK BUTTON
+           ============================================ */
+        .wn-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--wn-text-muted);
+            background: none;
+            border: none;
+            font-size: clamp(0.72rem, 0.8vw, 0.8rem);
+            cursor: pointer;
+            padding: 6px 0;
+            margin-bottom: 16px;
+            transition: color 0.2s ease;
+            font-family: inherit;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .wn-back-btn:hover {
+            color: var(--wn-text);
+        }
+
+        /* ============================================
+           DASHBOARD (destino post-login)
+           ============================================ */
+        .wn-dashboard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .wn-dashboard-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            color: white;
+            margin-bottom: 24px;
+            box-shadow: 0 12px 32px rgba(31, 111, 235, 0.4);
+        }
+
+        .wn-dashboard h2 {
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.5px;
+        }
+
+        .wn-dashboard p {
+            color: var(--wn-text-muted);
+            margin: 0 0 32px 0;
+            font-size: clamp(0.85rem, 1vw, 1rem);
+            line-height: 1.6;
+        }
+
+        /* ============================================
+           RESPONSIVE (TABLET)
+           ============================================ */
+        @media (max-width: 992px) {
+            .wn-auth-layout {
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 0;
+                padding: 0 20px;
+                max-width: 480px;
+            }
+
+            .wn-auth-left {
+                display: none;
+            }
+
+            .wn-auth-right {
+                flex: 0 1 auto;
+                max-width: 420px;
+                width: 100%;
+            }
+
+            .wn-brand {
+                top: 18px;
+                left: 18px;
+            }
+
+            .wn-brand-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1.1rem;
+            }
+
+            .wn-brand-name {
+                font-size: 1.2rem;
+            }
+
+            .wn-card {
+                padding: 24px 20px;
+                max-height: calc(100dvh - 80px);
+            }
+
+            .wn-form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .wn-bg-orb-1,
+            .wn-bg-orb-2 {
+                width: 280px;
+                height: 280px;
+                filter: blur(80px);
+            }
+            .wn-bg-orb-3 {
+                width: 200px;
+                height: 200px;
+            }
+            .wn-bg-grid {
+                background-size: 30px 30px;
+            }
+
+            .wn-view {
+                padding: 16px;
+                align-items: center;
+            }
+
+            .wn-card-title {
+                font-size: clamp(1.5rem, 6vw, 1.85rem);
+            }
+
+            /* Evitar zoom automático en iOS al enfocar inputs */
+            .wn-input,
+            .wn-select {
+                font-size: 16px;
+            }
+
+            .wn-input-icon i {
+                font-size: 1.05rem;
+            }
+        }
+
+        /* ============================================
+           RESPONSIVE (MÓVIL)
+           ============================================ */
+        @media (max-width: 480px) {
+            .wn-view {
+                padding: 12px;
+                padding-top: max(12px, env(safe-area-inset-top));
+                padding-bottom: max(12px, env(safe-area-inset-bottom));
+            }
+
+            .wn-card {
+                padding: 22px 16px;
+                border-radius: 16px;
+                max-height: calc(100dvh - 60px);
+            }
+
+            .wn-brand {
+                top: max(14px, env(safe-area-inset-top));
+                left: 14px;
+            }
+
+            .wn-brand-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 1rem;
+                border-radius: 10px;
+            }
+
+            .wn-brand-name {
+                font-size: 1.05rem;
+            }
+
+            .wn-role-btn {
+                padding: 13px 14px;
+                gap: 12px;
+            }
+
+            .wn-role-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+
+            .wn-back-btn {
+                margin-bottom: 12px;
+            }
+
+            .wn-card-title {
+                font-size: 1.55rem;
+            }
+
+            .wn-dashboard-icon {
+                width: 68px;
+                height: 68px;
+                font-size: 1.9rem;
+                border-radius: 18px;
+            }
+        }
+
+        /* ============================================
+           ALTURAS REDUCIDAS (LANDSCAPE EN MÓVIL)
+           ============================================ */
+        @media (max-height: 600px) {
+            .wn-card {
+                max-height: calc(100dvh - 24px);
+                padding: 18px 16px;
+            }
+
+            .wn-card-title {
+                font-size: 1.4rem;
+            }
+
+            .wn-card-subtitle {
+                margin-bottom: 14px;
+            }
+
+            .wn-form-group {
+                margin-bottom: 10px;
+            }
+
+            .wn-input {
+                padding: 9px 12px;
+            }
+
+            .wn-input-icon .wn-input {
+                padding-left: 40px;
+            }
+
+            .wn-back-btn {
+                margin-bottom: 10px;
+            }
+
+            .wn-divider {
+                margin: 12px 0;
+            }
+
+            .wn-brand {
+                top: max(10px, env(safe-area-inset-top));
+                left: 12px;
+            }
+
+            .wn-brand-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 0.9rem;
+            }
+
+            .wn-brand-name {
+                font-size: 1rem;
+            }
+
+            .wn-dashboard-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.6rem;
+                margin-bottom: 16px;
+            }
+        }
+
+        /* Landscape en móvil: ocultar nombre de marca para no pisar la card */
+        @media (max-height: 600px) and (max-width: 992px) {
+            .wn-brand-name {
+                display: none;
+            }
+
+            .wn-brand {
+                top: max(12px, env(safe-area-inset-top));
+                left: max(12px, env(safe-area-inset-left));
+            }
+        }
+
+        /* ============================================
+           ACCESIBILIDAD: REDUCIR MOVIMIENTO
+           ============================================ */
+        @media (prefers-reduced-motion: reduce) {
+            .wn-bg-grid,
+            .wn-bg-orb {
+                animation: none;
+            }
+
+            .wn-view.active {
+                animation: none;
+            }
+
+            .wn-role-btn,
+            .btn-wn-primary,
+            .btn-wn-secondary,
+            .wn-link {
+                transition: none;
+            }
+
+            .wn-role-btn:hover,
+            .btn-wn-primary:hover {
+                transform: none;
+            }
+        }
+
+        /* ============================================
+           FALLBACK PARA NAVEGADORES SIN dvh
+           ============================================ */
+        @supports not (height: 100dvh) {
+            .wn-card {
+                max-height: calc(100vh - 48px);
+            }
+            @media (max-width: 992px) {
+                .wn-card {
+                    max-height: calc(100vh - 80px);
+                }
+            }
+            @media (max-width: 480px) {
+                .wn-card {
+                    max-height: calc(100vh - 60px);
+                }
+            }
+            @media (max-height: 600px) {
+                .wn-card {
+                    max-height: calc(100vh - 24px);
+                }
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+         FONDO MODERNO
+         ============================================ -->
+    <div class="wn-bg">
+        <div class="wn-bg-grid"></div>
+        <div class="wn-bg-orb wn-bg-orb-1"></div>
+        <div class="wn-bg-orb wn-bg-orb-2"></div>
+        <div class="wn-bg-orb wn-bg-orb-3"></div>
+        <div class="wn-bg-vignette"></div>
+    </div>
+
+    <!-- ============================================
+         MARCA SUPERIOR IZQUIERDA
+         ============================================ -->
+    <div class="wn-brand">
+        <div class="wn-brand-icon">
+            <i class="bi bi-briefcase-fill"></i>
+        </div>
+        <span class="wn-brand-name">Work.net</span>
+    </div>
+
+    <!-- ============================================
+         VISTA 1: SELECCIÓN DE ROL
+         ============================================ -->
+    <div id="view-role" class="wn-view active">
+        <div class="wn-auth-layout">
+            <div class="wn-auth-left">
+                <h1>
+                    Encontrá tu<br>
+                    <span class="accent">próxima oportunidad</span><br>
+                    laboral.
+                </h1>
+                <p>
+                    Work.net centraliza las ofertas de empleo del área informática
+                    en Encarnación y te permite localizarlas en un mapa interactivo.
+                </p>
+                <div class="wn-auth-features">
+                    <div class="wn-auth-feature">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <span>Visualizá ofertas cercanas en el mapa</span>
+                    </div>
+                    <div class="wn-auth-feature">
+                        <i class="bi bi-funnel-fill"></i>
+                        <span>Filtrá por área, modalidad y salario</span>
+                    </div>
+                    <div class="wn-auth-feature">
+                        <i class="bi bi-send-fill"></i>
+                        <span>Postulate en un solo clic</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wn-auth-right">
+                <div class="wn-card">
+                    <h2 class="wn-card-title">¿Cómo querés ingresar?</h2>
+                    <p class="wn-card-subtitle">Seleccioná el tipo de cuenta con la que vas a continuar.</p>
+
+                    <div class="wn-role-options">
+                        <button class="wn-role-btn" onclick="showView('view-login-candidate')">
+                            <div class="wn-role-icon">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <div class="wn-role-info">
+                                <span class="wn-role-name">Soy Empleado</span>
+                                <span class="wn-role-desc">Busco oportunidades laborales</span>
+                            </div>
+                        </button>
+
+                        <button class="wn-role-btn" onclick="showView('view-login-employer')">
+                            <div class="wn-role-icon">
+                                <i class="bi bi-buildings-fill"></i>
+                            </div>
+                            <div class="wn-role-info">
+                                <span class="wn-role-name">Soy Empresa</span>
+                                <span class="wn-role-desc">Quiero publicar ofertas laborales</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         VISTA 2: LOGIN CANDIDATO
+         ============================================ -->
+    <div id="view-login-candidate" class="wn-view">
+        <div class="wn-auth-layout">
+            <div class="wn-auth-left">
+                <h1>
+                    Bienvenido<br>
+                    <span class="accent">de vuelta.</span>
+                </h1>
+                <p>
+                    Iniciá sesión para buscar ofertas, guardar oportunidades
+                    y postularte a los puestos que te interesan.
+                </p>
+                <div class="wn-auth-features">
+                    <div class="wn-auth-feature">
+                        <i class="bi bi-bookmark-fill"></i>
+                        <span>Guardá ofertas para después</span>
+                    </div>
+                    <div class="wn-auth-feature">
+                        <i class="bi bi-bell-fill"></i>
+                        <span>Recibí notificaciones de nuevos puestos</span>
+                    </div>
+                    <div class="wn-auth-feature">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        <span>Seguí el estado de tus postulaciones</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wn-auth-right">
+                <div class="wn-card">
+                    <button class="wn-back-btn" onclick="showView('view-role')">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </button>
+
+                    <h2 class="wn-card-title">Iniciar sesión</h2>
+                    <p class="wn-card-subtitle">Accedé a tu cuenta de Empleado.</p>
+
+                    <form onsubmit="event.preventDefault(); showView('view-dashboard');">
+                        <div class="wn-form-group">
+                            <label class="wn-label">Correo electrónico</label>
+                            <div class="wn-input-icon">
+                                <i class="bi bi-envelope"></i>
+                                <input type="email" class="wn-input" placeholder="tu@email.com" required>
+                            </div>
+                        </div>
+
+                        <div class="wn-form-group">
+                            <label class="wn-label">Contraseña</label>
+                            <div class="wn-input-icon">
+                                <i class="bi bi-lock"></i>
+                                <input type="password" class="wn-input" placeholder="••••••••" required>
+                            </div>
+                        </div>
+
+                        <div style="text-align: right; margin-bottom: 18px;">
+                            <a href="#" class="wn-link" style="font-size: 0.78rem;">¿Olvidaste tu contraseña?</a>
+                        </div>
+
+                        <button type="submit" class="btn-wn-primary">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            Ingresar
+                        </button>
+                    </form>
+
+                    <div class="wn-divider">o</div>
+
+                    <p class="wn-text-center">
+                        ¿No tenés cuenta?
+                        <a href="#" onclick="event.preventDefault(); showView('view-register-candidate');">
+                            Crear cuenta
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         VISTA 3: LOGIN EMPRESA
+         ============================================ -->
+    <div id="view-login-employer" class="wn-view">
+        <div class="wn-auth-layout">
+            <div class="wn-auth-left">
+                <h1>
+                    Encontrá el<br>
+                    <span class="accent">talento ideal.</span>
+                </h1>
+                <p>
+                    Publicá ofertas, gestioná postulaciones y encontrá
+                    los mejores candidatos para tu empresa.
+                </p>
+                <div class="wn-auth-features">
+                    <div class="wn-auth-feature">
+                        <i class="bi bi-plus-circle-fill"></i>
+                        <span>Publicá ofertas ilimitadas</span>
+                    </div>
+                    <div class="wn-auth-feature">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Gestioná postulaciones recibidas</span>
+                    </div>
+                    <div class="wn-auth-feature">
+                        <i class="bi bi-calendar-check-fill"></i>
+                        <span>Convocá entrevistas fácilmente</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wn-auth-right">
+                <div class="wn-card">
+                    <button class="wn-back-btn" onclick="showView('view-role')">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </button>
+
+                    <h2 class="wn-card-title">Iniciar sesión</h2>
+                    <p class="wn-card-subtitle">Accedé a tu cuenta de Empresa.</p>
+
+                    <form onsubmit="event.preventDefault(); showView('view-dashboard');">
+                        <div class="wn-form-group">
+                            <label class="wn-label">Correo corporativo</label>
+                            <div class="wn-input-icon">
+                                <i class="bi bi-envelope"></i>
+                                <input type="email" class="wn-input" placeholder="contacto@empresa.com" required>
+                            </div>
+                        </div>
+
+                        <div class="wn-form-group">
+                            <label class="wn-label">Contraseña</label>
+                            <div class="wn-input-icon">
+                                <i class="bi bi-lock"></i>
+                                <input type="password" class="wn-input" placeholder="••••••••" required>
+                            </div>
+                        </div>
+
+                        <div style="text-align: right; margin-bottom: 18px;">
+                            <a href="#" class="wn-link" style="font-size: 0.78rem;">¿Olvidaste tu contraseña?</a>
+                        </div>
+
+                        <button type="submit" class="btn-wn-primary">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            Ingresar
+                        </button>
+                    </form>
+
+                    <div class="wn-divider">o</div>
+
+                    <p class="wn-text-center">
+                        ¿No tenés cuenta?
+                        <a href="#" onclick="event.preventDefault(); showView('view-register-employer');">
+                            Registrar empresa
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         VISTA 4: REGISTRO CANDIDATO
+         ============================================ -->
+    <div id="view-register-candidate" class="wn-view">
+        <div class="wn-auth-layout">
+            <div class="wn-auth-left">
+                <h1>
+                    Creá tu<br>
+                    <span class="accent">cuenta gratis.</span>
+                </h1>
+                <p>
+                    En pocos pasos vas a poder buscar ofertas, guardar
+                    oportunidades y postularte a los puestos que te interesan.
+                </p>
+                <div class="wn-auth-features">
+                    <div class="wn-auth-feature">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Tu información está protegida</span>
+                    </div>
+                    <div class="wn-auth-feature">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                        <span>Registro en menos de 2 minutos</span>
+                    </div>
+                    <div class="wn-auth-feature">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Sin costos ocultos</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wn-auth-right">
+                <div class="wn-card">
+                    <button class="wn-back-btn" onclick="showView('view-login-candidate')">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </button>
+
+                    <h2 class="wn-card-title">Crear cuenta</h2>
+                    <p class="wn-card-subtitle">Completá tus datos para registrarte como Empleado.</p>
+
+                    <form onsubmit="event.preventDefault(); showView('view-dashboard');">
+                        <div class="wn-form-group">
+                            <label class="wn-label">Nombre completo <span class="required">*</span></label>
+                            <div class="wn-input-icon">
+                                <i class="bi bi-person"></i>
+                                <input type="text" class="wn-input" placeholder="Juan Pérez" required>
+                            </div>
+                        </div>
+
+                        <div class="wn-form-group">
+                            <label class="wn-label">Correo electrónico <span class="required">*</span></label>
+                            <div class="wn-input-icon">
+                                <i class="bi bi-envelope"></i>
+                                <input type="email" class="wn-input" placeholder="tu@email.com" required>
+                            </div>
+                        </div>
+
+                        <div class="wn-form-row">
+                            <div class="wn-form-group">
+                                <label class="wn-label">Contraseña <span class="required">*</span></label>
+                                <div class="wn-input-icon">
+                                    <i class="bi bi-lock"></i>
+                                    <input type="password" class="wn-input" placeholder="••••••••" required>
+                                </div>
+                            </div>
+
+                            <div class="wn-form-group">
+                                <label class="wn-label">Confirmar <span class="required">*</span></label>
+                                <div class="wn-input-icon">
+                                    <i class="bi bi-lock-fill"></i>
+                                    <input type="password" class="wn-input" placeholder="••••••••" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="wn-form-group">
+                            <label class="wn-label">Teléfono <span style="color: var(--wn-text-muted); font-weight: 400;">(opcional)</span></label>
+                            <div class="wn-input-icon">
+                                <i class="bi bi-telephone"></i>
+                                <input type="tel" class="wn-input" placeholder="+595 9XX XXX XXX">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-wn-primary" style="margin-top: 6px;">
+                            <i class="bi bi-person-plus"></i>
+                            Crear cuenta
+                        </button>
+
+                        <p style="font-size: 0.7rem; color: var(--wn-text-muted); text-align: center; margin: 14px 0 0 0; line-height: 1.5;">
+                            Al registrarte aceptás los <a href="#" class="wn-link">Términos de uso</a>
+                            y la <a href="#" class="wn-link">Política de privacidad</a>.
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         VISTA 5: REGISTRO EMPRESA
+         ============================================ -->
+    <div id="view-register-employer" class="wn-view">
+        <div class="wn-auth-layout">
+            <div class="wn-auth-left">
+                <h1>
+                    Sumá tu<br>
+                    <span class="accent">empresa.</span>
+                </h1>
+                <p>
+                    Publicá ofertas, recibí postulaciones y gestioná
+                    todo el proceso de selección desde un solo lugar.
+                </p>
+                <div class="wn-auth-features">
+                    <div class="wn-auth-feature">
+                        <i class="bi bi-building-check"></i>
+                        <span>Perfil público de tu empresa</span>
+                    </div>
+                    <div class="wn-auth-feature">
+                        <i class="bi bi-bar-chart-fill"></i>
+                        <span>Estadísticas de tus ofertas</span>
+                    </div>
+                    <div class="wn-auth-feature">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Base de candidatos disponibles</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wn-auth-right">
+                <div class="wn-card">
+                    <button class="wn-back-btn" onclick="showView('view-login-employer')">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </button>
+
+                    <h2 class="wn-card-title">Registrar empresa</h2>
+                    <p class="wn-card-subtitle">Completá los datos de tu organización.</p>
+
+                    <form onsubmit="event.preventDefault(); showView('view-dashboard');">
+                        <div class="wn-form-group">
+                            <label class="wn-label">Nombre de la empresa <span class="required">*</span></label>
+                            <div class="wn-input-icon">
+                                <i class="bi bi-building"></i>
+                                <input type="text" class="wn-input" placeholder="Tech Solutions S.A." required>
+                            </div>
+                        </div>
+
+                        <div class="wn-form-group">
+                            <label class="wn-label">RUC <span class="required">*</span></label>
+                            <div class="wn-input-icon">
+                                <i class="bi bi-card-text"></i>
+                                <input type="text" class="wn-input" placeholder="80012345-6" required>
+                            </div>
+                        </div>
+
+                        <div class="wn-form-group">
+                            <label class="wn-label">Correo corporativo <span class="required">*</span></label>
+                            <div class="wn-input-icon">
+                                <i class="bi bi-envelope"></i>
+                                <input type="email" class="wn-input" placeholder="contacto@empresa.com" required>
+                            </div>
+                        </div>
+
+                        <div class="wn-form-row">
+                            <div class="wn-form-group">
+                                <label class="wn-label">Contraseña <span class="required">*</span></label>
+                                <div class="wn-input-icon">
+                                    <i class="bi bi-lock"></i>
+                                    <input type="password" class="wn-input" placeholder="••••••••" required>
+                                </div>
+                            </div>
+
+                            <div class="wn-form-group">
+                                <label class="wn-label">Confirmar <span class="required">*</span></label>
+                                <div class="wn-input-icon">
+                                    <i class="bi bi-lock-fill"></i>
+                                    <input type="password" class="wn-input" placeholder="••••••••" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="wn-form-group">
+                            <label class="wn-label">Ubicación <span class="required">*</span></label>
+                            <div class="wn-input-icon">
+                                <i class="bi bi-geo-alt"></i>
+                                <input type="text" class="wn-input" placeholder="Encarnación, Paraguay" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-wn-primary" style="margin-top: 6px;">
+                            <i class="bi bi-building-add"></i>
+                            Registrar empresa
+                        </button>
+
+                        <p style="font-size: 0.7rem; color: var(--wn-text-muted); text-align: center; margin: 14px 0 0 0; line-height: 1.5;">
+                            Al registrar tu empresa aceptás los <a href="#" class="wn-link">Términos de uso</a>
+                            y la <a href="#" class="wn-link">Política de privacidad</a>.
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         VISTA 6: DASHBOARD (destino post-login)
+         ============================================ -->
+    <div id="view-dashboard" class="wn-view">
+        <div class="wn-dashboard">
+            <div class="wn-dashboard-icon">
+                <i class="bi bi-check-lg"></i>
+            </div>
+            <h2>¡Bienvenido a Work.net!</h2>
+            <p>
+                Esta es una vista de prueba. En la versión final,
+                acá se mostraría el dashboard correspondiente al rol del usuario.
+            </p>
+            <button class="btn-wn-secondary" onclick="showView('view-role')">
+                <i class="bi bi-arrow-left"></i> Volver al inicio
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================
+         SCRIPTS
+         ============================================ -->
+    <script>
+        // ===== Navegación entre vistas =====
+        function showView(viewId) {
+            document.querySelectorAll('.wn-view').forEach(v => v.classList.remove('active'));
+            const target = document.getElementById(viewId);
+            if (target) {
+                target.classList.add('active');
+                // Reset scroll de la card al cambiar de vista
+                const card = target.querySelector('.wn-card');
+                if (card) card.scrollTop = 0;
+            }
+        }
+
+        // ===== ESC para volver al inicio =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                showView('view-role');
+            }
+        });
+
+        // ===== Prevenir doble-tap zoom en iOS =====
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
+    </script>
+
+</body>
+</html>

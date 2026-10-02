@@ -1,8 +1,8 @@
-// Work.net — scripts de autenticación (solo frontend, sin backend todavía).
+// Work.net — módulo auth (navegación entre vistas del prototipo specs/login.html).
 //
-// Se mantiene `showView()` por compatibilidad con el prototipo
-// `specs/login.html`, aunque la navegación real ahora se hace
-// con rutas Laravel (enlaces y formularios -> route('auth.*')).
+// `showView()` se expone globalmente por compatibilidad con el prototipo.
+// En Laravel cada vista es una ruta propia; los listeners solo se activan
+// si hay marcado de auth en el DOM (guarda #view-role / .wn-view).
 
 // ===== Navegación entre vistas (modo prototipo de una sola página) =====
 function showView(viewId) {
@@ -18,28 +18,31 @@ function showView(viewId) {
 
 window.showView = showView;
 
-// ===== ESC para volver al inicio =====
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        // En Laravel cada vista es una ruta propia: volver a selección de rol.
-        if (window.WN_ROUTES && window.WN_ROUTES.role) {
-            window.location.href = window.WN_ROUTES.role;
-        } else {
-            showView('view-role');
+// Solo ejecutar listeners si existe marcado de auth en el DOM.
+if (document.getElementById('view-role') || document.querySelector('.wn-view')) {
+    // ===== ESC para volver al inicio =====
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            // En Laravel cada vista es una ruta propia: volver a selección de rol.
+            if (window.WN_ROUTES && window.WN_ROUTES.role) {
+                window.location.href = window.WN_ROUTES.role;
+            } else {
+                showView('view-role');
+            }
         }
-    }
-});
+    });
 
-// ===== Prevenir doble-tap zoom en iOS =====
-let lastTouchEnd = 0;
-document.addEventListener(
-    'touchend',
-    (e) => {
-        const now = Date.now();
-        if (now - lastTouchEnd <= 300) {
-            e.preventDefault();
-        }
-        lastTouchEnd = now;
-    },
-    { passive: false },
-);
+    // ===== Prevenir doble-tap zoom en iOS =====
+    let lastTouchEnd = 0;
+    document.addEventListener(
+        'touchend',
+        (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        },
+        { passive: false },
+    );
+}

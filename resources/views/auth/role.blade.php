@@ -3,7 +3,7 @@
 @section('title', 'Acceso')
 
 @section('content')
-<div class="wn-view active">
+<div id="view-role" class="wn-view active">
     <div class="wn-auth-layout">
         <div class="wn-auth-left">
             <h1>

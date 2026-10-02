@@ -1,5 +1,6 @@
 // Work.net — mapa de ofertas (extraído de specs/mapa.html, adaptado).
-// Las ofertas llegan desde Blade vía window.__OFFERS__ (@json($offers)).
+// Las ofertas llegan desde Blade vía data-offers del #map (@json($offers)),
+// con fallback a window.__OFFERS__ por compatibilidad.
 // Solo se ejecuta si existe el elemento #map (no rompe otras vistas).
 
 const mapEl = document.getElementById('map');
@@ -17,6 +18,7 @@ if (mapEl && typeof L !== 'undefined') {
         L.control.zoom({ position: 'topright' }).addTo(map);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            subdomains: ['a', 'b', 'c'],
             attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
             maxZoom: 19
         }).addTo(map);
@@ -103,8 +105,15 @@ if (mapEl && typeof L !== 'undefined') {
 
         // ============================================
         // DATOS DE OFERTAS
+        // Vía atributo data-offers del #map (inyectado por Blade);
+        // fallback a window.__OFFERS__ por compatibilidad.
         // ============================================
-        const offers = window.__OFFERS__ || [];
+        let offers = [];
+        try {
+            offers = mapEl.dataset.offers ? JSON.parse(mapEl.dataset.offers) : (window.__OFFERS__ || []);
+        } catch (e) {
+            offers = window.__OFFERS__ || [];
+        }
 
         // ============================================
         // AGREGAR MARCADORES
@@ -126,12 +135,6 @@ if (mapEl && typeof L !== 'undefined') {
 
             marker.offerId = offer.id;
             markers.push(marker);
-
-            if (offer.isPrimary) {
-                setTimeout(() => {
-                    marker.openPopup();
-                }, 800);
-            }
         });
 
         // ============================================
@@ -196,13 +199,23 @@ if (mapEl && typeof L !== 'undefined') {
         window.closeModal = closeModal;
 
         // ============================================
-        // FILTROS
+        // TOGGLE DEL PANEL DE FILTROS
+        // (por defecto cerrado)
         // ============================================
+        const filtersPanel = document.getElementById('filtersPanel');
+        const filtersHeader = document.getElementById('filtersHeader');
+
         function toggleFilters() {
-            const panel = document.getElementById('filtersPanel');
-            panel.classList.toggle('collapsed');
+            if (!filtersPanel) return;
+            filtersPanel.classList.toggle('open');
+            document.body.classList.toggle('filters-open');
+            setTimeout(updateResultsBadgePosition, 350);
         }
         window.toggleFilters = toggleFilters;
+
+        if (filtersHeader && filtersPanel) {
+            filtersHeader.addEventListener('click', toggleFilters);
+        }
 
         const distanceRange = document.getElementById('distanceRange');
         const distanceValue = document.getElementById('distanceValue');
@@ -238,6 +251,74 @@ if (mapEl && typeof L !== 'undefined') {
 
         window.addEventListener('resize', adjustMapView);
         adjustMapView();
+
+        // ============================================
+        // TOGGLE DEL NAVBAR
+        // Flecha: colapsa cuando está abierto
+        // Logo iluminado: expande cuando está colapsado
+        // ============================================
+        const navbar = document.getElementById('navbar');
+        const navbarToggle = document.getElementById('navbarToggle');
+        const navbarBrandTrigger = document.getElementById('navbarBrandTrigger');
+
+        // Colapsar desde la flecha
+        if (navbarToggle) {
+            navbarToggle.addEventListener('click', () => {
+                navbar.classList.add('collapsed');
+                document.body.classList.add('navbar-collapsed');
+                setTimeout(updateResultsBadgePosition, 350);
+            });
+        }
+
+        // Expandir desde el logo (solo cuando está colapsado)
+        if (navbarBrandTrigger) {
+            navbarBrandTrigger.addEventListener('click', () => {
+                if (navbar.classList.contains('collapsed')) {
+                    navbar.classList.remove('collapsed');
+                    document.body.classList.remove('navbar-collapsed');
+                    setTimeout(updateResultsBadgePosition, 350);
+                }
+            });
+        }
+
+        // ============================================
+        // CONTADOR DE RESULTADOS CON DETECCIÓN DE COLISIÓN
+        // Solo se mueve si colisiona con el panel de filtros abierto.
+        // ============================================
+        const resultsBadge = document.getElementById('resultsBadge');
+
+        function updateResultsBadgePosition() {
+            if (!resultsBadge) return;
+
+            // Solo actuar en pantallas grandes
+            if (window.innerWidth <= 992) {
+                resultsBadge.style.left = '';
+                return;
+            }
+
+            const filtersOpen = filtersPanel && filtersPanel.classList.contains('open');
+            const navbarCollapsed = navbar && navbar.classList.contains('collapsed');
+
+            const navbarWidth = navbarCollapsed ? 72 : 240;
+            const filtersLeft = navbarWidth + 32;
+            const filtersRight = filtersOpen ? (filtersLeft + 320) : filtersLeft;
+
+            const badgeWidth = resultsBadge.offsetWidth || 200;
+            const defaultLeft = filtersRight + 16;
+
+            const viewportWidth = window.innerWidth;
+            const availableSpace = viewportWidth - filtersRight;
+
+            // Si el badge no cabe entre el panel y el borde derecho, moverlo
+            if (badgeWidth + 32 > availableSpace) {
+                resultsBadge.style.left = (filtersLeft + 16) + 'px';
+            } else {
+                resultsBadge.style.left = defaultLeft + 'px';
+            }
+        }
+
+        window.addEventListener('resize', updateResultsBadgePosition);
+        setTimeout(updateResultsBadgePosition, 100);
 
         // ============================================
         // PREVENIR DOBLE-TAP ZOOM EN iOS

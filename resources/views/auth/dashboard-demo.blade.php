@@ -3,7 +3,7 @@
 @section('title', 'Bienvenido')
 
 @section('content')
-<div class="wn-view active">
+<div id="view-dashboard" class="wn-view active">
     <div class="wn-dashboard">
         <div class="wn-dashboard-icon">
             <i class="bi bi-check-lg"></i>

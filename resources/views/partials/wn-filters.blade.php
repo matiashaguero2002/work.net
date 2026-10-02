@@ -1,11 +1,11 @@
 <aside class="wn-filters" id="filtersPanel">
-    <div class="wn-filters-header" onclick="toggleFilters()">
+    <div class="wn-filters-header" id="filtersHeader">
         <div class="wn-filters-title">
             <i class="bi bi-funnel-fill"></i>
             <span>Filtros</span>
         </div>
-        <button class="wn-filters-toggle" type="button" aria-label="Minimizar filtros">
-            <i class="bi bi-chevron-up"></i>
+        <button class="wn-filters-toggle" type="button" aria-label="Abrir filtros">
+            <i class="bi bi-chevron-down"></i>
         </button>
     </div>
 

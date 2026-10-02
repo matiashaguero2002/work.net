@@ -3,7 +3,7 @@
 @section('title', 'Iniciar sesión — Empresa')
 
 @section('content')
-<div class="wn-view active">
+<div id="view-login-employer" class="wn-view active">
     <div class="wn-auth-layout">
         <div class="wn-auth-left">
             <h1>
@@ -44,7 +44,7 @@
                         <label class="wn-label">Correo corporativo</label>
                         <div class="wn-input-icon">
                             <i class="bi bi-envelope"></i>
-                            <input type="email" class="wn-input" placeholder="contacto@empresa.com" required>
+                            <input type="email" class="wn-input" placeholder="contacto@empresa.com" autocomplete="email" required>
                         </div>
                     </div>
 
@@ -52,7 +52,7 @@
                         <label class="wn-label">Contraseña</label>
                         <div class="wn-input-icon">
                             <i class="bi bi-lock"></i>
-                            <input type="password" class="wn-input" placeholder="••••••••" required>
+                            <input type="password" class="wn-input" placeholder="••••••••" autocomplete="current-password" required>
                         </div>
                     </div>
 

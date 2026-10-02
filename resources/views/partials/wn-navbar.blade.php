@@ -1,68 +1,54 @@
-{{-- Navbar lateral reutilizable. Recibe $role opcional: 'candidato' (defecto), 'empleador', 'admin'. --}}
-@php
-    $role = $role ?? 'candidato';
-
-    $menus = [
-        'candidato' => [
-            ['label' => 'Inicio', 'icon' => 'bi-house-door', 'url' => '#', 'active' => false],
-            ['label' => 'Buscar', 'icon' => 'bi-map', 'url' => route('map.index'), 'active' => request()->routeIs('map.index')],
-            ['label' => 'Guardadas', 'icon' => 'bi-bookmark', 'url' => '#', 'active' => false],
-            ['label' => 'Mis postulaciones', 'icon' => 'bi-file-earmark-text', 'url' => '#', 'active' => false],
-            ['label' => 'Perfil', 'icon' => 'bi-person', 'url' => '#', 'active' => false],
-            ['label' => 'Notificaciones', 'icon' => 'bi-bell', 'url' => '#', 'active' => false, 'badge' => 3],
-        ],
-        'empleador' => [
-            ['label' => 'Inicio', 'icon' => 'bi-house-door', 'url' => '#', 'active' => false],
-            ['label' => 'Mis ofertas', 'icon' => 'bi-briefcase', 'url' => '#', 'active' => false],
-            ['label' => 'Publicar oferta', 'icon' => 'bi-plus-circle', 'url' => '#', 'active' => false],
-            ['label' => 'Postulaciones recibidas', 'icon' => 'bi-people', 'url' => '#', 'active' => false],
-            ['label' => 'Perfil', 'icon' => 'bi-person', 'url' => '#', 'active' => false],
-            ['label' => 'Notificaciones', 'icon' => 'bi-bell', 'url' => '#', 'active' => false, 'badge' => 3],
-        ],
-        'admin' => [
-            ['label' => 'Dashboard', 'icon' => 'bi-speedometer2', 'url' => '#', 'active' => false],
-            ['label' => 'Usuarios', 'icon' => 'bi-people', 'url' => '#', 'active' => false],
-            ['label' => 'Ofertas', 'icon' => 'bi-briefcase', 'url' => '#', 'active' => false],
-            ['label' => 'Perfil', 'icon' => 'bi-person', 'url' => '#', 'active' => false],
-        ],
-    ];
-
-    $menu = $menus[$role] ?? $menus['candidato'];
-
-    // Mock temporal (sin auth real). Más adelante: auth()->user().
-    $mockUsers = [
-        'candidato' => ['name' => 'Juan Pérez', 'role' => 'Candidato', 'initials' => 'JP'],
-        'empleador' => ['name' => 'Tech Solutions S.A.', 'role' => 'Empresa', 'initials' => 'TS'],
-        'admin' => ['name' => 'Admin', 'role' => 'Administrador', 'initials' => 'AD'],
-    ];
-    $mockUser = $mockUsers[$role] ?? $mockUsers['candidato'];
-@endphp
-
-<nav class="wn-navbar">
+<nav class="wn-navbar" id="navbar">
     <div class="wn-navbar-brand">
-        <i class="bi bi-briefcase-fill"></i>
-        <span>Work.net</span>
+        <div class="wn-navbar-brand-left" id="navbarBrandTrigger">
+            <i class="bi bi-briefcase-fill"></i>
+            <span>Work.net</span>
+        </div>
+        <button class="wn-navbar-toggle" id="navbarToggle" aria-label="Minimizar menú" type="button">
+            <i class="bi bi-chevron-left"></i>
+        </button>
     </div>
 
     <ul class="wn-navbar-menu">
-        @foreach ($menu as $item)
-            <li>
-                <a href="{{ $item['url'] }}" @class(['active' => $item['active']])>
-                    <i class="bi {{ $item['icon'] }}"></i> <span>{{ $item['label'] }}</span>
-                    @isset($item['badge'])
-                        <span class="badge bg-danger ms-auto" style="font-size:0.65rem;">{{ $item['badge'] }}</span>
-                    @endisset
-                </a>
-            </li>
-        @endforeach
+        <li>
+            <a href="#" title="Inicio">
+                <i class="bi bi-house-door"></i> <span>Inicio</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="active" title="Buscar">
+                <i class="bi bi-map"></i> <span>Buscar</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" title="Guardadas">
+                <i class="bi bi-bookmark"></i> <span>Guardadas</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" title="Mis postulaciones">
+                <i class="bi bi-file-earmark-text"></i> <span>Mis postulaciones</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" title="Perfil">
+                <i class="bi bi-person"></i> <span>Perfil</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" title="Notificaciones">
+                <i class="bi bi-bell"></i> <span>Notificaciones</span>
+                <span class="badge bg-danger ms-auto" style="font-size:0.65rem;">3</span>
+            </a>
+        </li>
     </ul>
 
     <div class="wn-navbar-footer">
         <div class="wn-user-info">
-            <div class="wn-avatar">{{ $mockUser['initials'] }}</div>
+            <div class="wn-avatar">JP</div>
             <div>
-                <div class="wn-user-name">{{ $mockUser['name'] }}</div>
-                <div class="wn-user-role">{{ $mockUser['role'] }}</div>
+                <div class="wn-user-name">Juan Pérez</div>
+                <div class="wn-user-role">Candidato</div>
             </div>
         </div>
     </div>

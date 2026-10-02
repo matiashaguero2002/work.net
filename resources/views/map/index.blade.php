@@ -3,15 +3,10 @@
 @section('title', 'Work.net - Buscar ofertas')
 
 @section('content')
-<script>
-    window.__OFFERS__ = @json($offers);
-</script>
+    <div id="map" data-offers='@json($offers)'></div>
 
-<div id="map"></div>
-
-@include('partials.wn-filters')
-
-@include('partials.wn-results-badge')
-
-@include('partials.wn-offer-modal')
+    @include('partials.wn-navbar')
+    @include('partials.wn-filters')
+    @include('partials.wn-results-badge')
+    @include('partials.wn-offer-modal')
 @endsection

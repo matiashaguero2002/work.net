@@ -3,7 +3,7 @@
 @section('title', 'Registrar empresa')
 
 @section('content')
-<div class="wn-view active">
+<div id="view-register-employer" class="wn-view active">
     <div class="wn-auth-layout">
         <div class="wn-auth-left">
             <h1>
@@ -44,7 +44,7 @@
                         <label class="wn-label">Nombre de la empresa <span class="required">*</span></label>
                         <div class="wn-input-icon">
                             <i class="bi bi-building"></i>
-                            <input type="text" class="wn-input" placeholder="Tech Solutions S.A." required>
+                            <input type="text" class="wn-input" placeholder="Tech Solutions S.A." autocomplete="organization" required>
                         </div>
                     </div>
 
@@ -52,7 +52,7 @@
                         <label class="wn-label">RUC <span class="required">*</span></label>
                         <div class="wn-input-icon">
                             <i class="bi bi-card-text"></i>
-                            <input type="text" class="wn-input" placeholder="80012345-6" required>
+                            <input type="text" class="wn-input" placeholder="80012345-6" autocomplete="off" required>
                         </div>
                     </div>
 
@@ -60,7 +60,7 @@
                         <label class="wn-label">Correo corporativo <span class="required">*</span></label>
                         <div class="wn-input-icon">
                             <i class="bi bi-envelope"></i>
-                            <input type="email" class="wn-input" placeholder="contacto@empresa.com" required>
+                            <input type="email" class="wn-input" placeholder="contacto@empresa.com" autocomplete="email" required>
                         </div>
                     </div>
 
@@ -69,7 +69,7 @@
                             <label class="wn-label">Contraseña <span class="required">*</span></label>
                             <div class="wn-input-icon">
                                 <i class="bi bi-lock"></i>
-                                <input type="password" class="wn-input" placeholder="••••••••" required>
+                                <input type="password" class="wn-input" placeholder="••••••••" autocomplete="new-password" required>
                             </div>
                         </div>
 
@@ -77,7 +77,7 @@
                             <label class="wn-label">Confirmar <span class="required">*</span></label>
                             <div class="wn-input-icon">
                                 <i class="bi bi-lock-fill"></i>
-                                <input type="password" class="wn-input" placeholder="••••••••" required>
+                                <input type="password" class="wn-input" placeholder="••••••••" autocomplete="new-password" required>
                             </div>
                         </div>
                     </div>
@@ -86,7 +86,7 @@
                         <label class="wn-label">Ubicación <span class="required">*</span></label>
                         <div class="wn-input-icon">
                             <i class="bi bi-geo-alt"></i>
-                            <input type="text" class="wn-input" placeholder="Encarnación, Paraguay" required>
+                            <input type="text" class="wn-input" placeholder="Encarnación, Paraguay" autocomplete="address-level2" required>
                         </div>
                     </div>
 

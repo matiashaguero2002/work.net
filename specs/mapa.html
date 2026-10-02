@@ -1,20 +1,47 @@
-/* ============================================
-   WORK.NET — módulo mapa (extraído VERBATIM de specs/mapa.html)
-   Se excluyen :root y reset global (viven en worknet.css).
-   ============================================ */
-/* Coexistencia: el módulo auth fija el body en flex centrado;
-   en páginas con mapa se restaura el layout (el UI del mapa es fixed). */
-body:has(#map) {
-    display: block;
-    position: static;
-}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Work.net - Buscar ofertas</title>
 
-/* ============================================
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============================================
            PALETA WORK.NET
            ============================================ */
-        
+        :root {
+            --wn-bg-dark:       #0D1117;
+            --wn-bg-panel:      #161B22;
+            --wn-bg-elevated:   #21262D;
+            --wn-border:        #30363D;
+            --wn-text:          #E6EDF3;
+            --wn-text-muted:    #8B949E;
+            --wn-accent:        #1F6FEB;
+            --wn-accent-hover:  #388BFD;
+            --wn-success:       #238636;
+            --wn-danger:        #DA3633;
+            --wn-warning:       #D29922;
 
-        
+            --wn-navbar-width:          240px;
+            --wn-navbar-width-mini:     72px;
+            --wn-filters-width:         320px;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
         html, body {
             margin: 0;
@@ -1213,7 +1240,9 @@ body:has(#map) {
            RESPONSIVE
            ============================================ */
         @media (max-width: 992px) {
-            
+            :root {
+                --wn-navbar-width: 72px;
+            }
 
             .wn-navbar {
                 width: var(--wn-navbar-width);
@@ -1241,7 +1270,9 @@ body:has(#map) {
         }
 
         @media (max-width: 768px) {
-            
+            :root {
+                --wn-navbar-width: 60px;
+            }
 
             .wn-navbar {
                 top: 12px;
@@ -1333,7 +1364,9 @@ body:has(#map) {
         }
 
         @media (max-width: 480px) {
-            
+            :root {
+                --wn-navbar-width: 52px;
+            }
 
             .wn-navbar {
                 top: 8px;
@@ -1400,4 +1433,723 @@ body:has(#map) {
                 animation: none;
             }
         }
-    
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+         MAPA
+         ============================================ -->
+    <div id="map"></div>
+
+    <!-- ============================================
+         NAVBAR LATERAL
+         ============================================ -->
+    <nav class="wn-navbar" id="navbar">
+        <div class="wn-navbar-brand">
+            <div class="wn-navbar-brand-left" id="navbarBrandTrigger">
+                <i class="bi bi-briefcase-fill"></i>
+                <span>Work.net</span>
+            </div>
+            <button class="wn-navbar-toggle" id="navbarToggle" aria-label="Minimizar menú" type="button">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+
+        <ul class="wn-navbar-menu">
+            <li>
+                <a href="#" title="Inicio">
+                    <i class="bi bi-house-door"></i> <span>Inicio</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="active" title="Buscar">
+                    <i class="bi bi-map"></i> <span>Buscar</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" title="Guardadas">
+                    <i class="bi bi-bookmark"></i> <span>Guardadas</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" title="Mis postulaciones">
+                    <i class="bi bi-file-earmark-text"></i> <span>Mis postulaciones</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" title="Perfil">
+                    <i class="bi bi-person"></i> <span>Perfil</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" title="Notificaciones">
+                    <i class="bi bi-bell"></i> <span>Notificaciones</span>
+                    <span class="badge bg-danger ms-auto" style="font-size:0.65rem;">3</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="wn-navbar-footer">
+            <div class="wn-user-info">
+                <div class="wn-avatar">JP</div>
+                <div>
+                    <div class="wn-user-name">Juan Pérez</div>
+                    <div class="wn-user-role">Candidato</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============================================
+         PANEL DE FILTROS
+         (por defecto cerrado)
+         ============================================ -->
+    <aside class="wn-filters" id="filtersPanel">
+        <div class="wn-filters-header" id="filtersHeader">
+            <div class="wn-filters-title">
+                <i class="bi bi-funnel-fill"></i>
+                <span>Filtros</span>
+            </div>
+            <button class="wn-filters-toggle" type="button" aria-label="Abrir filtros">
+                <i class="bi bi-chevron-down"></i>
+            </button>
+        </div>
+
+        <div class="wn-filters-body">
+            <div class="wn-filter-group">
+                <label class="wn-filter-label">Buscar</label>
+                <div class="wn-filter-search">
+                    <i class="bi bi-search"></i>
+                    <input type="text" class="wn-filter-input" placeholder="Cargo, empresa...">
+                </div>
+            </div>
+
+            <div class="wn-filter-group">
+                <label class="wn-filter-label">Área laboral</label>
+                <select class="wn-filter-select">
+                    <option value="">Todas las áreas</option>
+                    <option value="informatica" selected>Informática / TI</option>
+                    <option value="diseno">Diseño</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="admin">Administración</option>
+                </select>
+            </div>
+
+            <div class="wn-filter-group">
+                <label class="wn-filter-label">Modalidad</label>
+                <div class="wn-filter-chips">
+                    <label class="wn-filter-chip">
+                        <input type="checkbox" value="presencial">
+                        <i class="bi bi-building"></i> Presencial
+                    </label>
+                    <label class="wn-filter-chip">
+                        <input type="checkbox" value="remoto" checked>
+                        <i class="bi bi-house"></i> Remoto
+                    </label>
+                    <label class="wn-filter-chip">
+                        <input type="checkbox" value="hibrido">
+                        <i class="bi bi-arrow-left-right"></i> Híbrido
+                    </label>
+                </div>
+            </div>
+
+            <div class="wn-filter-group">
+                <label class="wn-filter-label">Tipo de contrato</label>
+                <select class="wn-filter-select">
+                    <option value="">Todos</option>
+                    <option value="tiempo-completo">Tiempo completo</option>
+                    <option value="medio-tiempo">Medio tiempo</option>
+                    <option value="pasantia">Pasantía</option>
+                    <option value="contrato">Por contrato</option>
+                    <option value="freelance">Freelance</option>
+                </select>
+            </div>
+
+            <div class="wn-filter-group">
+                <label class="wn-filter-label">Remuneración mínima (Gs.)</label>
+                <input type="text" class="wn-filter-input" placeholder="Ej: 5.000.000">
+            </div>
+
+            <div class="wn-filter-group">
+                <label class="wn-filter-label">Distancia máxima</label>
+                <input type="range" class="wn-filter-range" min="1" max="50" value="10" id="distanceRange">
+                <div class="wn-distance-display">
+                    <span>1 km</span>
+                    <span id="distanceValue">10 km</span>
+                    <span>50 km</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="wn-filters-actions">
+            <button class="btn-wn-secondary" type="button">
+                <i class="bi bi-x-lg"></i> Limpiar
+            </button>
+            <button class="btn-wn-primary" type="button">
+                <i class="bi bi-search"></i> Aplicar
+            </button>
+        </div>
+    </aside>
+
+    <!-- ============================================
+         CONTADOR DE RESULTADOS
+         ============================================ -->
+    <div class="wn-results-badge" id="resultsBadge">
+        <i class="bi bi-geo-alt-fill"></i>
+        <span><strong id="resultsCount">7</strong> ofertas encontradas</span>
+    </div>
+
+    <!-- ============================================
+         MODAL DE DETALLE COMPLETO
+         ============================================ -->
+    <div class="wn-modal-overlay" id="offerModal" onclick="closeModal(event)">
+        <div class="wn-modal" onclick="event.stopPropagation()">
+            <div class="wn-modal-image-wrapper">
+                <img src="" alt="" class="wn-modal-image" id="modalImage">
+                <button class="wn-modal-close" onclick="closeModal(event)" aria-label="Cerrar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <div class="wn-modal-logo-badge" id="modalLogo">SM</div>
+            </div>
+
+            <div class="wn-modal-body">
+                <h2 class="wn-modal-title" id="modalTitle">Título del puesto</h2>
+                <p class="wn-modal-company" id="modalCompany">
+                    <i class="bi bi-building"></i>
+                    <span>Nombre de la empresa</span>
+                </p>
+
+                <div class="wn-modal-badges" id="modalBadges"></div>
+
+                <div class="wn-modal-section">
+                    <div class="wn-modal-section-title">
+                        <i class="bi bi-file-text"></i>
+                        <span>Descripción del puesto</span>
+                    </div>
+                    <div class="wn-modal-section-content" id="modalDescription"></div>
+                </div>
+
+                <div class="wn-modal-section">
+                    <div class="wn-modal-section-title">
+                        <i class="bi bi-list-check"></i>
+                        <span>Requisitos</span>
+                    </div>
+                    <div class="wn-modal-tags" id="modalRequirements"></div>
+                </div>
+
+                <div class="wn-modal-section">
+                    <div class="wn-modal-section-title">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Información de la oferta</span>
+                    </div>
+                    <div class="wn-modal-detail-grid">
+                        <div class="wn-modal-detail-item">
+                            <i class="bi bi-cash-coin"></i>
+                            <div>
+                                <div class="wn-modal-detail-label">Remuneración</div>
+                                <div class="wn-modal-detail-value" id="modalSalary">A convenir</div>
+                            </div>
+                        </div>
+                        <div class="wn-modal-detail-item">
+                            <i class="bi bi-clock-history"></i>
+                            <div>
+                                <div class="wn-modal-detail-label">Publicado</div>
+                                <div class="wn-modal-detail-value" id="modalPublished">Hace 2 días</div>
+                            </div>
+                        </div>
+                        <div class="wn-modal-detail-item">
+                            <i class="bi bi-laptop"></i>
+                            <div>
+                                <div class="wn-modal-detail-label">Modalidad</div>
+                                <div class="wn-modal-detail-value" id="modalModality">Presencial</div>
+                            </div>
+                        </div>
+                        <div class="wn-modal-detail-item">
+                            <i class="bi bi-briefcase"></i>
+                            <div>
+                                <div class="wn-modal-detail-label">Contrato</div>
+                                <div class="wn-modal-detail-value" id="modalContract">Tiempo completo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wn-modal-section">
+                    <div class="wn-modal-section-title">
+                        <i class="bi bi-star"></i>
+                        <span>Beneficios</span>
+                    </div>
+                    <div class="wn-modal-section-content" id="modalBenefits"></div>
+                </div>
+
+                <div class="wn-modal-section">
+                    <div class="wn-modal-section-title">
+                        <i class="bi bi-telephone"></i>
+                        <span>Contacto</span>
+                    </div>
+                    <div class="wn-modal-section-content" id="modalContact"></div>
+                </div>
+            </div>
+
+            <div class="wn-modal-footer">
+                <button class="btn-wn-secondary" onclick="closeModal(event)">
+                    <i class="bi bi-x-lg"></i> Cerrar
+                </button>
+                <button class="btn-wn-primary">
+                    <i class="bi bi-send"></i> Postularme a esta oferta
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         SCRIPTS
+         ============================================ -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // ============================================
+        // INICIALIZACIÓN DEL MAPA
+        // ============================================
+        const map = L.map('map', {
+            zoomControl: false,
+            attributionControl: true
+        }).setView([-27.3306, -55.8667], 14);
+
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            subdomains: ['a', 'b', 'c'],
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 19
+        }).addTo(map);
+
+        // ============================================
+        // MARCADOR CON MINIATURA
+        // ============================================
+        function createMarker(offer) {
+            const pulseHTML = offer.isPrimary
+                ? '<div class="wn-marker-pulse"></div>'
+                : '';
+
+            const thumbContent = offer.logoUrl
+                ? `<img src="${offer.logoUrl}" alt="${offer.company}" onerror="this.parentElement.innerHTML='<span class=wn-marker-thumb-text>${offer.companyInitials}</span>'">`
+                : `<span class="wn-marker-thumb-text">${offer.companyInitials}</span>`;
+
+            return L.divIcon({
+                html: `
+                    <div class="wn-marker-wrapper">
+                        ${pulseHTML}
+                        <div class="wn-marker-pin">
+                            <div class="wn-marker-thumb">
+                                ${thumbContent}
+                            </div>
+                        </div>
+                    </div>
+                `,
+                className: '',
+                iconSize: [48, 58],
+                iconAnchor: [24, 58],
+                popupAnchor: [0, -58]
+            });
+        }
+
+        // ============================================
+        // HTML DEL POPUP MINI
+        // ============================================
+        function createPopupHTML(offer) {
+            const logoContent = offer.logoUrl
+                ? `<img src="${offer.logoUrl}" alt="${offer.company}" onerror="this.parentElement.textContent='${offer.companyInitials}'">`
+                : offer.companyInitials;
+
+            return `
+                <div class="wn-popup-mini">
+                    <img src="${offer.image}" alt="${offer.company}" class="wn-popup-image" 
+                         onerror="this.style.display='none'">
+                    
+                    <div class="wn-popup-body">
+                        <div class="wn-popup-header">
+                            <div class="wn-popup-logo">${logoContent}</div>
+                            <div>
+                                <h3 class="wn-popup-title">${offer.title}</h3>
+                                <p class="wn-popup-company">${offer.company}</p>
+                            </div>
+                        </div>
+
+                        <div class="wn-popup-badges">
+                            <span class="wn-popup-badge">
+                                <i class="bi bi-geo-alt-fill"></i> ${offer.location}
+                            </span>
+                            <span class="wn-popup-badge">
+                                <i class="bi bi-laptop"></i> ${offer.modality}
+                            </span>
+                            <span class="wn-popup-badge">
+                                <i class="bi bi-clock"></i> ${offer.contractType}
+                            </span>
+                        </div>
+
+                        <p class="wn-popup-description">${offer.shortDescription}</p>
+
+                        <div class="wn-popup-actions">
+                            <button class="wn-popup-btn wn-popup-btn-secondary" 
+                                    onclick="openModal(${offer.id})">
+                                <i class="bi bi-arrows-angle-expand"></i> Ver más
+                            </button>
+                            <a href="#" class="wn-popup-btn wn-popup-btn-primary">
+                                <i class="bi bi-send"></i> Postularme
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // DATOS DE OFERTAS
+        // ============================================
+        const offers = [
+            {
+                id: 1,
+                title: 'Desarrollador Full Stack Laravel',
+                company: 'Concesionaria San Miguel',
+                companyInitials: 'SM',
+                location: 'Encarnación, Paraguay',
+                modality: 'Presencial',
+                contractType: 'Tiempo completo',
+                shortDescription: 'Buscamos desarrollador con experiencia en PHP 8.3 y Laravel 12 para unirse a nuestro equipo de tecnología.',
+                fullDescription: 'Estamos en búsqueda de un Desarrollador Full Stack con sólida experiencia en PHP 8.3 y Laravel 12 para integrarse a nuestro equipo de tecnología. La persona seleccionada será responsable del desarrollo y mantenimiento de aplicaciones web internas, la integración con APIs de terceros y la optimización del rendimiento de los sistemas existentes.',
+                requirements: ['PHP 8.3+', 'Laravel 12', 'MySQL / PostgreSQL', 'JavaScript', 'Git', 'APIs REST'],
+                salary: 'Gs. 7.000.000 - 9.000.000',
+                benefits: 'Seguro médico, capacitaciones continuas, horario flexible, ambiente laboral agradable, oportunidades de crecimiento.',
+                contact: 'rrhh@sanmiguel.com.py | +595 71 200 300',
+                publishedAt: 'Hace 2 días',
+                coords: [-27.3306, -55.8667],
+                image: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=1200&h=600&fit=crop',
+                logoUrl: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop&crop=center',
+                isPrimary: true
+            },
+            {
+                id: 2,
+                title: 'Analista de Sistemas',
+                company: 'DataCorp S.A.',
+                companyInitials: 'DC',
+                location: 'Encarnación, Paraguay',
+                modality: 'Híbrido',
+                contractType: 'Tiempo completo',
+                shortDescription: 'Analista funcional para proyectos de transformación digital.',
+                fullDescription: 'Buscamos Analista de Sistemas para liderar el relevamiento de requerimientos y la documentación funcional de proyectos de transformación digital.',
+                requirements: ['Análisis funcional', 'UML', 'SQL', 'Metodologías ágiles', 'Documentación'],
+                salary: 'Gs. 6.000.000 - 8.000.000',
+                benefits: 'Seguro médico, bonos por objetivos, capacitación.',
+                contact: 'contacto@datacorp.com.py',
+                publishedAt: 'Hace 5 días',
+                coords: [-27.3256, -55.8600],
+                image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=600&fit=crop',
+                logoUrl: null
+            },
+            {
+                id: 3,
+                title: 'Soporte Técnico IT',
+                company: 'Tech Help Paraguay',
+                companyInitials: 'TH',
+                location: 'Encarnación, Paraguay',
+                modality: 'Presencial',
+                contractType: 'Medio tiempo',
+                shortDescription: 'Soporte técnico a usuarios internos y externos.',
+                fullDescription: 'Estamos buscando un Técnico de Soporte para atender consultas y resolver incidencias técnicas de usuarios internos y externos.',
+                requirements: ['Redes', 'Windows', 'Linux', 'Atención al cliente'],
+                salary: 'Gs. 3.500.000 - 4.500.000',
+                benefits: 'Capacitaciones, transporte, buen clima laboral.',
+                contact: 'soporte@techhelp.com.py',
+                publishedAt: 'Hace 1 semana',
+                coords: [-27.3400, -55.8750],
+                image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&h=600&fit=crop',
+                logoUrl: null
+            },
+            {
+                id: 4,
+                title: 'Diseñador UX/UI',
+                company: 'Creative Studio',
+                companyInitials: 'CS',
+                location: 'Encarnación, Paraguay',
+                modality: 'Remoto',
+                contractType: 'Freelance',
+                shortDescription: 'Diseñador con foco en experiencia de usuario.',
+                fullDescription: 'Buscamos Diseñador UX/UI para crear experiencias digitales memorables.',
+                requirements: ['Figma', 'Adobe XD', 'Portafolio', 'Design Thinking'],
+                salary: 'A convenir',
+                benefits: 'Trabajo 100% remoto, horario flexible, proyectos variados.',
+                contact: 'hola@creativestudio.com',
+                publishedAt: 'Hace 3 días',
+                coords: [-27.3180, -55.8580],
+                image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1200&h=600&fit=crop',
+                logoUrl: null
+            },
+            {
+                id: 5,
+                title: 'Administrador de Base de Datos',
+                company: 'Banco Regional',
+                companyInitials: 'BR',
+                location: 'Encarnación, Paraguay',
+                modality: 'Presencial',
+                contractType: 'Tiempo completo',
+                shortDescription: 'DBA con experiencia en PostgreSQL y alta disponibilidad.',
+                fullDescription: 'El Banco Regional busca un Administrador de Base de Datos con experiencia en PostgreSQL para gestionar la infraestructura de datos crítica.',
+                requirements: ['PostgreSQL', 'Replicación', 'Backups', 'Tuning', 'Alta disponibilidad'],
+                salary: 'Gs. 8.000.000 - 10.000.000',
+                benefits: 'Seguro médico familiar, bonos anuales, estabilidad laboral.',
+                contact: 'talento@bancoregional.com.py',
+                publishedAt: 'Hace 1 día',
+                coords: [-27.3350, -55.8700],
+                image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=600&fit=crop',
+                logoUrl: null
+            },
+            {
+                id: 6,
+                title: 'Desarrollador Mobile Flutter',
+                company: 'App Factory',
+                companyInitials: 'AF',
+                location: 'Encarnación, Paraguay',
+                modality: 'Remoto',
+                contractType: 'Tiempo completo',
+                shortDescription: 'Desarrollo de apps móviles multiplataforma.',
+                fullDescription: 'App Factory busca un Desarrollador Mobile con experiencia en Flutter para crear aplicaciones móviles innovadoras.',
+                requirements: ['Flutter', 'Dart', 'Firebase', 'REST APIs', 'Git'],
+                salary: 'Gs. 6.500.000 - 8.500.000',
+                benefits: '100% remoto, capacitaciones, equipos modernos.',
+                contact: 'jobs@appfactory.com',
+                publishedAt: 'Hace 4 días',
+                coords: [-27.3280, -55.8800],
+                image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1200&h=600&fit=crop',
+                logoUrl: null
+            },
+            {
+                id: 7,
+                title: 'Ingeniero DevOps',
+                company: 'Cloud Solutions',
+                companyInitials: 'CS',
+                location: 'Encarnación, Paraguay',
+                modality: 'Híbrido',
+                contractType: 'Tiempo completo',
+                shortDescription: 'Automatización de pipelines CI/CD y gestión de infraestructura.',
+                fullDescription: 'Buscamos Ingeniero DevOps para automatizar procesos de despliegue, gestionar infraestructura en la nube y garantizar la disponibilidad de los servicios.',
+                requirements: ['Docker', 'Kubernetes', 'AWS', 'Terraform', 'CI/CD'],
+                salary: 'Gs. 9.000.000 - 12.000.000',
+                benefits: 'Seguro médico, home office, bonos por desempeño.',
+                contact: 'rrhh@cloudsolutions.com.py',
+                publishedAt: 'Hace 6 horas',
+                coords: [-27.3220, -55.8650],
+                image: 'https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?w=1200&h=600&fit=crop',
+                logoUrl: null
+            }
+        ];
+
+        // ============================================
+        // AGREGAR MARCADORES
+        // ============================================
+        offers.forEach(offer => {
+            const marker = L.marker(offer.coords, {
+                icon: createMarker(offer)
+            }).addTo(map);
+
+            marker.bindPopup(createPopupHTML(offer), {
+                maxWidth: 320,
+                minWidth: 280,
+                closeButton: true,
+                autoPan: true,
+                autoPanPadding: [80, 80]
+            });
+
+            marker.offerId = offer.id;
+        });
+
+        // ============================================
+        // MODAL
+        // ============================================
+        function openModal(offerId) {
+            const offer = offers.find(o => o.id === offerId);
+            if (!offer) return;
+
+            document.getElementById('modalImage').src = offer.image;
+            document.getElementById('modalImage').alt = offer.company;
+
+            const logoEl = document.getElementById('modalLogo');
+            if (offer.logoUrl) {
+                logoEl.innerHTML = `<img src="${offer.logoUrl}" alt="${offer.company}" onerror="this.parentElement.textContent='${offer.companyInitials}'">`;
+            } else {
+                logoEl.textContent = offer.companyInitials;
+            }
+
+            document.getElementById('modalTitle').textContent = offer.title;
+            document.getElementById('modalCompany').querySelector('span').textContent = offer.company;
+
+            const badgesEl = document.getElementById('modalBadges');
+            badgesEl.innerHTML = `
+                <span class="wn-modal-badge"><i class="bi bi-geo-alt-fill"></i> ${offer.location}</span>
+                <span class="wn-modal-badge"><i class="bi bi-laptop"></i> ${offer.modality}</span>
+                <span class="wn-modal-badge"><i class="bi bi-clock"></i> ${offer.contractType}</span>
+            `;
+
+            document.getElementById('modalDescription').textContent = offer.fullDescription;
+
+            const reqEl = document.getElementById('modalRequirements');
+            reqEl.innerHTML = offer.requirements.map(r => 
+                `<span class="wn-modal-tag"><i class="bi bi-check-circle-fill"></i> ${r}</span>`
+            ).join('');
+
+            document.getElementById('modalSalary').textContent = offer.salary;
+            document.getElementById('modalPublished').textContent = offer.publishedAt;
+            document.getElementById('modalModality').textContent = offer.modality;
+            document.getElementById('modalContract').textContent = offer.contractType;
+
+            document.getElementById('modalBenefits').textContent = offer.benefits;
+            document.getElementById('modalContact').textContent = offer.contact;
+
+            document.getElementById('offerModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(event) {
+            if (event) event.stopPropagation();
+            document.getElementById('offerModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+
+        // ============================================
+        // TOGGLE DEL NAVBAR
+        // Flecha: colapsa cuando está abierto
+        // Logo iluminado: expande cuando está colapsado
+        // ============================================
+        const navbar = document.getElementById('navbar');
+        const navbarToggle = document.getElementById('navbarToggle');
+        const navbarBrandTrigger = document.getElementById('navbarBrandTrigger');
+
+        // Colapsar desde la flecha
+        navbarToggle.addEventListener('click', () => {
+            navbar.classList.add('collapsed');
+            document.body.classList.add('navbar-collapsed');
+            setTimeout(updateResultsBadgePosition, 350);
+        });
+
+        // Expandir desde el logo (solo cuando está colapsado)
+        navbarBrandTrigger.addEventListener('click', () => {
+            if (navbar.classList.contains('collapsed')) {
+                navbar.classList.remove('collapsed');
+                document.body.classList.remove('navbar-collapsed');
+                setTimeout(updateResultsBadgePosition, 350);
+            }
+        });
+
+        // ============================================
+        // TOGGLE DEL PANEL DE FILTROS
+        // (por defecto cerrado)
+        // ============================================
+        const filtersPanel = document.getElementById('filtersPanel');
+        const filtersHeader = document.getElementById('filtersHeader');
+
+        filtersHeader.addEventListener('click', () => {
+            filtersPanel.classList.toggle('open');
+            document.body.classList.toggle('filters-open');
+            setTimeout(updateResultsBadgePosition, 350);
+        });
+
+        // ============================================
+        // RANGO DE DISTANCIA
+        // ============================================
+        const distanceRange = document.getElementById('distanceRange');
+        const distanceValue = document.getElementById('distanceValue');
+        if (distanceRange && distanceValue) {
+            distanceRange.addEventListener('input', (e) => {
+                distanceValue.textContent = e.target.value + ' km';
+            });
+        }
+
+        // ============================================
+        // CHIPS DE FILTROS
+        // ============================================
+        document.querySelectorAll('.wn-filter-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                const input = chip.querySelector('input');
+                if (input) {
+                    input.checked = !input.checked;
+                    chip.classList.toggle('active', input.checked);
+                }
+            });
+
+            const input = chip.querySelector('input');
+            if (input && input.checked) {
+                chip.classList.add('active');
+            }
+        });
+
+        // ============================================
+        // CONTADOR DE RESULTADOS CON DETECCIÓN DE COLISIÓN
+        // ============================================
+        const resultsBadge = document.getElementById('resultsBadge');
+
+        function updateResultsBadgePosition() {
+            if (window.innerWidth <= 992) {
+                resultsBadge.style.left = '';
+                return;
+            }
+
+            const filtersOpen = filtersPanel.classList.contains('open');
+            const navbarCollapsed = navbar.classList.contains('collapsed');
+
+            const navbarWidth = navbarCollapsed ? 72 : 240;
+            const filtersLeft = navbarWidth + 32;
+            const filtersRight = filtersOpen ? (filtersLeft + 320) : filtersLeft;
+
+            const badgeWidth = resultsBadge.offsetWidth || 200;
+            const defaultLeft = filtersRight + 16;
+
+            const viewportWidth = window.innerWidth;
+            const availableSpace = viewportWidth - filtersRight;
+
+            if (badgeWidth + 32 > availableSpace) {
+                resultsBadge.style.left = (filtersLeft + 16) + 'px';
+            } else {
+                resultsBadge.style.left = defaultLeft + 'px';
+            }
+        }
+
+        window.addEventListener('resize', updateResultsBadgePosition);
+        setTimeout(updateResultsBadgePosition, 100);
+
+        // ============================================
+        // RESPONSIVE DEL MAPA
+        // ============================================
+        function adjustMapView() {
+            if (window.innerWidth <= 768) {
+                map.setView([-27.3306, -55.8667], 13);
+            }
+        }
+
+        window.addEventListener('resize', adjustMapView);
+        adjustMapView();
+
+        // ============================================
+        // PREVENIR DOBLE-TAP ZOOM EN iOS
+        // ============================================
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
+
+    </script>
+
+</body>
+</html>

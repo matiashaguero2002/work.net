@@ -1,3 +1,7 @@
 @import './worknet.css';
 @import './worknet-auth.css';
 @import './worknet-map.css';
+@import './worknet-interviews.css';
+@import './worknet-dashboard.css';
+@import './worknet-applications.css';
+@import './worknet-saved.css';

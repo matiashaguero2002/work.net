@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class MapController extends Controller
@@ -12,7 +13,7 @@ class MapController extends Controller
      * SOLO FRONTEND: las ofertas son datos mock hardcodeados.
      * No hay consultas a base de datos.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
         $offers = [
             [
@@ -157,6 +158,35 @@ class MapController extends Controller
             ],
         ];
 
-        return view('map.index', compact('offers'));
+        // Focus opcional por deep-link desde entrevistas
+        // (?lat=&lng=&zoom=&offer=), con validación de rangos.
+        $mapFocus = null;
+        $lat = $request->query('lat');
+        $lng = $request->query('lng');
+        $zoom = $request->query('zoom');
+        $offer = $request->query('offer');
+
+        $validLat = is_numeric($lat) && $lat >= -90 && $lat <= 90;
+        $validLng = is_numeric($lng) && $lng >= -180 && $lng <= 180;
+        $validZoom = is_numeric($zoom) && (int) $zoom >= 1 && (int) $zoom <= 19;
+        $offerId = is_numeric($offer) ? (int) $offer : null;
+
+        if ($validLat && $validLng) {
+            $mapFocus = [
+                'lat' => (float) $lat,
+                'lng' => (float) $lng,
+                'zoom' => $validZoom ? (int) $zoom : 15,
+                'offerId' => $offerId,
+            ];
+        } elseif ($offerId !== null) {
+            $mapFocus = [
+                'lat' => null,
+                'lng' => null,
+                'zoom' => $validZoom ? (int) $zoom : 17,
+                'offerId' => $offerId,
+            ];
+        }
+
+        return view('map.index', compact('offers', 'mapFocus'));
     }
 }

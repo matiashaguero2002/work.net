@@ -138,6 +138,39 @@ if (mapEl && typeof L !== 'undefined') {
         });
 
         // ============================================
+        // FOCUS POR DEEP-LINK (desde entrevistas:
+        // ?lat=&lng=&zoom=&offer=)
+        // Si la oferta existe, se centra en su marcador
+        // y se abre su tarjeta; si no, solo se centra
+        // en las coordenadas recibidas.
+        // ============================================
+        (function applyMapFocus() {
+            let focus = null;
+            try {
+                focus = mapEl.dataset.focus ? JSON.parse(mapEl.dataset.focus) : null;
+            } catch (e) {
+                focus = null;
+            }
+            if (!focus) return;
+
+            let target = null;
+            if (focus.offerId !== null && focus.offerId !== undefined) {
+                const found = markers.find((m) => String(m.offerId) === String(focus.offerId));
+                if (found) target = found;
+            }
+
+            const zoom = Number.isInteger(focus.zoom) ? focus.zoom : null;
+
+            if (target) {
+                const ll = target.getLatLng();
+                map.setView(ll, zoom || 17);
+                setTimeout(() => target.openPopup(), 350);
+            } else if (Number.isFinite(focus.lat) && Number.isFinite(focus.lng)) {
+                map.setView([focus.lat, focus.lng], zoom || 15);
+            }
+        })();
+
+        // ============================================
         // MODAL
         // ============================================
         function openModal(offerId) {

@@ -11,23 +11,28 @@
 
     <ul class="wn-navbar-menu">
         <li>
-            <a href="#" title="Inicio">
+            <a href="{{ route('candidate.dashboard') }}" class="{{ request()->routeIs('candidate.dashboard') ? 'active' : '' }}" title="Inicio">
                 <i class="bi bi-house-door"></i> <span>Inicio</span>
             </a>
         </li>
         <li>
-            <a href="#" class="active" title="Buscar">
+            <a href="{{ route('map.index') }}" class="{{ request()->routeIs('map.*') ? 'active' : '' }}" title="Buscar">
                 <i class="bi bi-map"></i> <span>Buscar</span>
             </a>
         </li>
         <li>
-            <a href="#" title="Guardadas">
+            <a href="{{ route('candidate.saved.index') }}" class="{{ request()->routeIs('candidate.saved.index') ? 'active' : '' }}" title="Guardadas">
                 <i class="bi bi-bookmark"></i> <span>Guardadas</span>
             </a>
         </li>
         <li>
-            <a href="#" title="Mis postulaciones">
+            <a href="{{ route('candidate.applications.index') }}" class="{{ request()->routeIs('candidate.applications.index') ? 'active' : '' }}" title="Mis postulaciones">
                 <i class="bi bi-file-earmark-text"></i> <span>Mis postulaciones</span>
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('interviews.index') }}" class="{{ request()->routeIs('interviews.*') ? 'active' : '' }}" title="Entrevistas">
+                <i class="bi bi-calendar-event"></i> <span>Entrevistas</span>
             </a>
         </li>
         <li>
@@ -36,7 +41,7 @@
             </a>
         </li>
         <li>
-            <a href="#" title="Notificaciones">
+            <a href="{{ route('notifications.index') }}" class="{{ request()->routeIs('notifications.*') ? 'active' : '' }}" title="Notificaciones">
                 <i class="bi bi-bell"></i> <span>Notificaciones</span>
                 <span class="badge bg-danger ms-auto" style="font-size:0.65rem;">3</span>
             </a>

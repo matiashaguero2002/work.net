@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Work.net - Ofertas guardadas</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --wn-bg-dark:       #0D1117;
+            --wn-bg-panel:      #161B22;
+            --wn-bg-elevated:   #21262D;
+            --wn-border:        #30363D;
+            --wn-text:          #E6EDF3;
+            --wn-text-muted:    #8B949E;
+            --wn-accent:        #1F6FEB;
+            --wn-accent-hover:  #388BFD;
+            --wn-success:       #238636;
+            --wn-danger:        #DA3633;
+            --wn-warning:       #D29922;
+            --wn-purple:        #6E40C9;
+
+            --wn-navbar-width: 240px;
+            --wn-navbar-width-mini: 72px;
+        }
+
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--wn-bg-dark);
+            color: var(--wn-text);
+            overflow-x: hidden;
+        }
+
+        .wn-bg {
+            position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%);
+            pointer-events: none;
+        }
+        .wn-bg-grid {
+            position: absolute; inset: 0;
+            background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+            -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+        }
+
+        /* NAVBAR */
+        .wn-navbar {
+            position: fixed; top: 16px; left: 16px; bottom: 16px;
+            width: var(--wn-navbar-width);
+            background-color: var(--wn-bg-panel);
+            border: 1px solid var(--wn-border);
+            border-radius: 16px;
+            padding: 20px 16px;
+            display: flex; flex-direction: column;
+            z-index: 100;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                        padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .wn-navbar.collapsed { width: var(--wn-navbar-width-mini); padding: 20px 8px; }
+        .wn-navbar-brand {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 10px; padding-bottom: 16px;
+            border-bottom: 1px solid var(--wn-border); margin-bottom: 16px;
+        }
+        .wn-navbar-brand-left {
+            display: flex; align-items: center; gap: 10px;
+            min-width: 0; flex: 1; padding: 6px 8px;
+            border-radius: 10px;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            user-select: none;
+        }
+        .wn-navbar.collapsed .wn-navbar-brand-left {
+            cursor: pointer;
+            background-color: rgba(31, 111, 235, 0.15);
+            box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35);
+            animation: glowPulse 2s ease-in-out infinite;
+        }
+        .wn-navbar.collapsed .wn-navbar-brand-left i {
+            color: var(--wn-accent-hover);
+            filter: drop-shadow(0 0 8px rgba(31, 111, 235, 0.8));
+        }
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); }
+            50% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.6), 0 0 28px rgba(31, 111, 235, 0.55); }
+        }
+        .wn-navbar-brand i {
+            color: var(--wn-accent); font-size: 1.5rem; flex-shrink: 0;
+            transition: color 0.2s ease, filter 0.2s ease;
+        }
+        .wn-navbar-brand span {
+            font-weight: 700; font-size: 1.1rem;
+            letter-spacing: -0.5px; white-space: nowrap; overflow: hidden;
+        }
+        .wn-navbar-toggle {
+            background: none; border: none;
+            color: var(--wn-text-muted);
+            cursor: pointer; padding: 6px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; transition: all 0.2s ease; flex-shrink: 0;
+        }
+        .wn-navbar-toggle:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar.collapsed .wn-navbar-brand { justify-content: center; padding-bottom: 12px; margin-bottom: 12px; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { justify-content: center; flex: none; }
+        .wn-navbar.collapsed .wn-navbar-brand span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-toggle { display: none; }
+
+        .wn-navbar-menu { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .wn-navbar-menu li { margin-bottom: 4px; }
+        .wn-navbar-menu a {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px;
+            color: var(--wn-text-muted);
+            text-decoration: none; border-radius: 8px;
+            font-size: 0.9rem; transition: all 0.2s ease;
+            position: relative; white-space: nowrap;
+        }
+        .wn-navbar-menu a:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar-menu a.active { background-color: var(--wn-accent); color: white; font-weight: 500; }
+        .wn-navbar-menu a i { font-size: 1.1rem; flex-shrink: 0; width: 20px; text-align: center; }
+        .wn-navbar.collapsed .wn-navbar-menu a { justify-content: center; padding: 12px 8px; }
+        .wn-navbar.collapsed .wn-navbar-menu a span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-menu a .badge {
+            position: absolute; top: 4px; right: 4px;
+            font-size: 0.6rem; padding: 2px 5px;
+        }
+
+        .wn-navbar-footer { padding-top: 16px; border-top: 1px solid var(--wn-border); }
+        .wn-user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .wn-navbar.collapsed .wn-user-info { justify-content: center; margin-bottom: 0; }
+        .wn-navbar.collapsed .wn-user-info > div:not(.wn-avatar) { display: none; }
+        .wn-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple));
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+        }
+        .wn-user-name { font-size: 0.85rem; font-weight: 600; line-height: 1.2; }
+        .wn-user-role { font-size: 0.7rem; color: var(--wn-text-muted); text-transform: capitalize; }
+
+        /* MAIN */
+        .wn-main {
+            margin-left: calc(var(--wn-navbar-width) + 32px);
+            margin-right: 16px; margin-top: 16px; margin-bottom: 16px;
+            padding: 32px 40px;
+            min-height: calc(100vh - 32px);
+            background-color: var(--wn-bg-panel);
+            border: 1px solid var(--wn-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            position: relative; z-index: 1;
+            transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        body.navbar-collapsed .wn-main {
+            margin-left: calc(var(--wn-navbar-width-mini) + 32px);
+        }
+
+        /* HEADER */
+        .wn-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            gap: 16px; margin-bottom: 28px; padding-bottom: 20px;
+            border-bottom: 1px solid var(--wn-border); flex-wrap: wrap;
+        }
+        .wn-header-left h1 {
+            font-size: 1.75rem; font-weight: 700;
+            margin: 0 0 4px 0; letter-spacing: -0.5px;
+        }
+        .wn-header-left p { color: var(--wn-text-muted); margin: 0; font-size: 0.9rem; }
+        .wn-header-left p strong { color: var(--wn-text); font-weight: 600; }
+
+        /* BARRA DE BÚSQUEDA Y FILTROS */
+        .wn-toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .wn-search-input {
+            flex: 1;
+            min-width: 240px;
+            position: relative;
+        }
+        .wn-search-input i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--wn-text-muted);
+            font-size: 0.95rem;
+            pointer-events: none;
+        }
+        .wn-search-input input {
+            width: 100%;
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            color: var(--wn-text);
+            border-radius: 10px;
+            padding: 10px 14px 10px 42px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .wn-search-input input:focus {
+            outline: none;
+            border-color: var(--wn-accent);
+            box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15);
+        }
+        .wn-search-input input::placeholder {
+            color: var(--wn-text-muted);
+            opacity: 0.6;
+        }
+        .wn-sort-select {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            color: var(--wn-text);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            cursor: pointer;
+            min-width: 180px;
+        }
+        .wn-sort-select:focus {
+            outline: none;
+            border-color: var(--wn-accent);
+            box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15);
+        }
+
+        /* GRID DE OFERTAS */
+        .wn-offers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+        }
+
+        .wn-offer-card {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 14px;
+            padding: 18px;
+            display: flex; flex-direction: column; gap: 14px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .wn-offer-card:hover {
+            border-color: var(--wn-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(31, 111, 235, 0.15);
+        }
+
+        /* Botón quitar */
+        .wn-offer-remove {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background-color: rgba(218, 54, 51, 0.1);
+            border: 1px solid rgba(218, 54, 51, 0.3);
+            color: var(--wn-danger);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            z-index: 2;
+        }
+        .wn-offer-remove:hover {
+            background-color: var(--wn-danger);
+            border-color: var(--wn-danger);
+            color: white;
+        }
+
+        .wn-offer-card-header { display: flex; align-items: flex-start; gap: 12px; padding-right: 36px; }
+        .wn-offer-logo {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple));
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: 1rem;
+            flex-shrink: 0; overflow: hidden;
+        }
+        .wn-offer-logo img { width: 100%; height: 100%; object-fit: cover; }
+        .wn-offer-info { min-width: 0; flex: 1; }
+        .wn-offer-title {
+            font-size: 0.95rem; font-weight: 700;
+            margin: 0 0 2px 0; line-height: 1.3;
+            letter-spacing: -0.2px;
+        }
+        .wn-offer-company { font-size: 0.78rem; color: var(--wn-text-muted); margin: 0; }
+
+        .wn-offer-saved-date {
+            font-size: 0.7rem;
+            color: var(--wn-text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+            opacity: 0.75;
+        }
+
+        .wn-offer-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+        .wn-offer-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 10px;
+            background-color: var(--wn-bg-elevated);
+            border-radius: 20px;
+            font-size: 0.7rem; color: var(--wn-text-muted);
+            font-weight: 500;
+        }
+        .wn-offer-badge i { font-size: 0.7rem; color: var(--wn-accent); }
+
+        .wn-offer-description {
+            font-size: 0.8rem; color: var(--wn-text-muted);
+            line-height: 1.55; margin: 0;
+        }
+
+        .wn-offer-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 10px; margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid var(--wn-border);
+        }
+        .wn-offer-salary {
+            font-size: 0.82rem; font-weight: 600;
+            color: var(--wn-success);
+            display: flex; align-items: center; gap: 5px;
+        }
+
+        .wn-offer-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .wn-offer-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 7px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-decoration: none !important;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .wn-offer-action.primary {
+            background-color: var(--wn-accent);
+            color: #ffffff !important;
+        }
+        .wn-offer-action.primary:hover {
+            background-color: var(--wn-accent-hover);
+            color: #ffffff !important;
+        }
+        .wn-offer-action.map {
+            background-color: rgba(31, 111, 235, 0.12);
+            border: 1px solid rgba(31, 111, 235, 0.3);
+            color: var(--wn-accent-hover) !important;
+        }
+        .wn-offer-action.map:hover {
+            background-color: var(--wn-accent);
+            border-color: var(--wn-accent);
+            color: white !important;
+        }
+
+        /* EMPTY STATE */
+        .wn-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 24px;
+            text-align: center;
+            color: var(--wn-text-muted);
+        }
+        .wn-empty i {
+            font-size: 4rem;
+            opacity: 0.3;
+            margin-bottom: 20px;
+            color: var(--wn-accent);
+        }
+        .wn-empty h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--wn-text);
+            margin: 0 0 8px 0;
+        }
+        .wn-empty p {
+            font-size: 0.88rem;
+            margin: 0 0 24px 0;
+            max-width: 420px;
+            line-height: 1.6;
+        }
+
+        .btn-wn-primary {
+            background-color: var(--wn-accent);
+            border: none;
+            color: #ffffff !important;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none !important;
+        }
+        .btn-wn-primary:hover {
+            background-color: var(--wn-accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35);
+            color: #ffffff !important;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 992px) {
+            :root { --wn-navbar-width: 72px; }
+            .wn-navbar { width: var(--wn-navbar-width); padding: 16px 8px; }
+            .wn-navbar-brand span,
+            .wn-navbar-menu a span,
+            .wn-user-info > div:not(.wn-avatar) { display: none; }
+            .wn-navbar-menu a { justify-content: center; }
+            .wn-navbar-toggle { display: none; }
+            .wn-main {
+                margin-left: calc(var(--wn-navbar-width) + 32px);
+                padding: 24px 20px;
+            }
+        }
+        @media (max-width: 768px) {
+            :root { --wn-navbar-width: 60px; }
+            .wn-navbar {
+                top: 12px; left: 12px; bottom: 12px;
+                padding: 12px 6px; border-radius: 14px;
+            }
+            .wn-main {
+                margin-left: calc(var(--wn-navbar-width) + 24px);
+                margin-right: 12px; margin-top: 12px;
+                padding: 20px 16px;
+            }
+            .wn-header { flex-direction: column; align-items: stretch; }
+            .wn-offers-grid { grid-template-columns: 1fr; }
+            .wn-toolbar { flex-direction: column; }
+            .wn-sort-select { width: 100%; }
+        }
+        @media (max-width: 480px) {
+            :root { --wn-navbar-width: 52px; }
+            .wn-main {
+                margin-left: calc(var(--wn-navbar-width) + 16px);
+                margin-right: 8px; margin-top: 8px;
+                padding: 16px 12px; border-radius: 14px;
+            }
+            .wn-header-left h1 { font-size: 1.4rem; }
+            .wn-offer-actions { flex-direction: column; width: 100%; }
+            .wn-offer-action { width: 100%; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .wn-navbar.collapsed .wn-navbar-brand-left { animation: none; }
+            .wn-navbar, .wn-main, .wn-offer-card { transition: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wn-bg"><div class="wn-bg-grid"></div></div>
+
+    <!-- NAVBAR -->
+    <nav class="wn-navbar" id="navbar">
+        <div class="wn-navbar-brand">
+            <div class="wn-navbar-brand-left" id="navbarBrandTrigger">
+                <i class="bi bi-briefcase-fill"></i>
+                <span>Work.net</span>
+            </div>
+            <button class="wn-navbar-toggle" id="navbarToggle" aria-label="Minimizar menú" type="button">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+
+        <ul class="wn-navbar-menu">
+            <li><a href="dashboard-candidato.html" title="Inicio"><i class="bi bi-house-door"></i> <span>Inicio</span></a></li>
+            <li><a href="mapa.html" title="Buscar"><i class="bi bi-map"></i> <span>Buscar</span></a></li>
+            <li><a href="#" class="active" title="Guardadas"><i class="bi bi-bookmark"></i> <span>Guardadas</span></a></li>
+            <li><a href="mis-postulaciones.html" title="Mis postulaciones"><i class="bi bi-file-earmark-text"></i> <span>Mis postulaciones</span></a></li>
+            <li><a href="entrevistas.html" title="Entrevistas"><i class="bi bi-calendar-event"></i> <span>Entrevistas</span></a></li>
+            <li><a href="#" title="Perfil"><i class="bi bi-person"></i> <span>Perfil</span></a></li>
+            <li>
+                <a href="notificaciones.html" title="Notificaciones">
+                    <i class="bi bi-bell"></i> <span>Notificaciones</span>
+                    <span class="badge bg-danger ms-auto" style="font-size:0.65rem;">3</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="wn-navbar-footer">
+            <div class="wn-user-info">
+                <div class="wn-avatar">JP</div>
+                <div>
+                    <div class="wn-user-name">Juan Pérez</div>
+                    <div class="wn-user-role">Candidato</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="wn-main">
+
+        <header class="wn-header">
+            <div class="wn-header-left">
+                <h1>Ofertas guardadas</h1>
+                <p>Tenés <strong>4 ofertas guardadas</strong>. Podés postularte cuando quieras.</p>
+            </div>
+        </header>
+
+        <!-- Toolbar -->
+        <div class="wn-toolbar">
+            <div class="wn-search-input">
+                <i class="bi bi-search"></i>
+                <input type="text" placeholder="Buscar en tus ofertas guardadas...">
+            </div>
+            <select class="wn-sort-select">
+                <option>Más recientes</option>
+                <option>Más antiguas</option>
+                <option>Mayor salario</option>
+                <option>Menor salario</option>
+                <option>Empresa (A-Z)</option>
+            </select>
+        </div>
+
+        <!-- Grid -->
+        <div class="wn-offers-grid">
+
+            <!-- Card 1 -->
+            <article class="wn-offer-card">
+                <button class="wn-offer-remove" title="Quitar de guardadas">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <div class="wn-offer-card-header">
+                    <div class="wn-offer-logo">SM</div>
+                    <div class="wn-offer-info">
+                        <h3 class="wn-offer-title">Desarrollador Full Stack Laravel</h3>
+                        <p class="wn-offer-company">Concesionaria San Miguel</p>
+                        <p class="wn-offer-saved-date">
+                            <i class="bi bi-bookmark-fill"></i> Guardada hace 2 días
+                        </p>
+                    </div>
+                </div>
+                <div class="wn-offer-badges">
+                    <span class="wn-offer-badge"><i class="bi bi-geo-alt-fill"></i> Encarnación</span>
+                    <span class="wn-offer-badge"><i class="bi bi-laptop"></i> Presencial</span>
+                    <span class="wn-offer-badge"><i class="bi bi-clock"></i> Tiempo completo</span>
+                </div>
+                <p class="wn-offer-description">Buscamos desarrollador con experiencia en PHP 8.3 y Laravel 12 para unirse a nuestro equipo de tecnología.</p>
+                <div class="wn-offer-footer">
+                    <span class="wn-offer-salary">
+                        <i class="bi bi-cash-coin"></i> Gs. 7 - 9M
+                    </span>
+                    <div class="wn-offer-actions">
+                        <a href="mapa.html" class="wn-offer-action map">
+                            <i class="bi bi-geo-alt"></i> Mapa
+                        </a>
+                        <a href="#" class="wn-offer-action primary">
+                            <i class="bi bi-send"></i> Postularme
+                        </a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Card 2 -->
+            <article class="wn-offer-card">
+                <button class="wn-offer-remove" title="Quitar de guardadas">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <div class="wn-offer-card-header">
+                    <div class="wn-offer-logo">CS</div>
+                    <div class="wn-offer-info">
+                        <h3 class="wn-offer-title">Ingeniero DevOps</h3>
+                        <p class="wn-offer-company">Cloud Solutions</p>
+                        <p class="wn-offer-saved-date">
+                            <i class="bi bi-bookmark-fill"></i> Guardada hace 4 días
+                        </p>
+                    </div>
+                </div>
+                <div class="wn-offer-badges">
+                    <span class="wn-offer-badge"><i class="bi bi-geo-alt-fill"></i> Encarnación</span>
+                    <span class="wn-offer-badge"><i class="bi bi-laptop"></i> Híbrido</span>
+                    <span class="wn-offer-badge"><i class="bi bi-clock"></i> Tiempo completo</span>
+                </div>
+                <p class="wn-offer-description">Automatización de pipelines CI/CD y gestión de infraestructura en la nube con Docker, Kubernetes y AWS.</p>
+                <div class="wn-offer-footer">
+                    <span class="wn-offer-salary">
+                        <i class="bi bi-cash-coin"></i> Gs. 9 - 12M
+                    </span>
+                    <div class="wn-offer-actions">
+                        <a href="mapa.html" class="wn-offer-action map">
+                            <i class="bi bi-geo-alt"></i> Mapa
+                        </a>
+                        <a href="#" class="wn-offer-action primary">
+                            <i class="bi bi-send"></i> Postularme
+                        </a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Card 3 -->
+            <article class="wn-offer-card">
+                <button class="wn-offer-remove" title="Quitar de guardadas">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <div class="wn-offer-card-header">
+                    <div class="wn-offer-logo">BR</div>
+                    <div class="wn-offer-info">
+                        <h3 class="wn-offer-title">Administrador de Base de Datos</h3>
+                        <p class="wn-offer-company">Banco Regional</p>
+                        <p class="wn-offer-saved-date">
+                            <i class="bi bi-bookmark-fill"></i> Guardada hace 1 semana
+                        </p>
+                    </div>
+                </div>
+                <div class="wn-offer-badges">
+                    <span class="wn-offer-badge"><i class="bi bi-geo-alt-fill"></i> Encarnación</span>
+                    <span class="wn-offer-badge"><i class="bi bi-laptop"></i> Presencial</span>
+                    <span class="wn-offer-badge"><i class="bi bi-clock"></i> Tiempo completo</span>
+                </div>
+                <p class="wn-offer-description">DBA con experiencia en PostgreSQL, replicación, backups y tuning para infraestructura crítica.</p>
+                <div class="wn-offer-footer">
+                    <span class="wn-offer-salary">
+                        <i class="bi bi-cash-coin"></i> Gs. 8 - 10M
+                    </span>
+                    <div class="wn-offer-actions">
+                        <a href="mapa.html" class="wn-offer-action map">
+                            <i class="bi bi-geo-alt"></i> Mapa
+                        </a>
+                        <a href="#" class="wn-offer-action primary">
+                            <i class="bi bi-send"></i> Postularme
+                        </a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Card 4 -->
+            <article class="wn-offer-card">
+                <button class="wn-offer-remove" title="Quitar de guardadas">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <div class="wn-offer-card-header">
+                    <div class="wn-offer-logo">AF</div>
+                    <div class="wn-offer-info">
+                        <h3 class="wn-offer-title">Desarrollador Mobile Flutter</h3>
+                        <p class="wn-offer-company">App Factory</p>
+                        <p class="wn-offer-saved-date">
+                            <i class="bi bi-bookmark-fill"></i> Guardada hace 2 semanas
+                        </p>
+                    </div>
+                </div>
+                <div class="wn-offer-badges">
+                    <span class="wn-offer-badge"><i class="bi bi-geo-alt-fill"></i> Encarnación</span>
+                    <span class="wn-offer-badge"><i class="bi bi-laptop"></i> Remoto</span>
+                    <span class="wn-offer-badge"><i class="bi bi-clock"></i> Tiempo completo</span>
+                </div>
+                <p class="wn-offer-description">Desarrollo de apps móviles multiplataforma con Flutter, Dart, Firebase y APIs REST.</p>
+                <div class="wn-offer-footer">
+                    <span class="wn-offer-salary">
+                        <i class="bi bi-cash-coin"></i> Gs. 6.5 - 8.5M
+                    </span>
+                    <div class="wn-offer-actions">
+                        <a href="mapa.html" class="wn-offer-action map">
+                            <i class="bi bi-geo-alt"></i> Mapa
+                        </a>
+                        <a href="#" class="wn-offer-action primary">
+                            <i class="bi bi-send"></i> Postularme
+                        </a>
+                    </div>
+                </div>
+            </article>
+
+        </div>
+
+    </main>
+
+    <script>
+        const navbar = document.getElementById('navbar');
+        const navbarToggle = document.getElementById('navbarToggle');
+        const navbarBrandTrigger = document.getElementById('navbarBrandTrigger');
+
+        navbarToggle.addEventListener('click', () => {
+            navbar.classList.add('collapsed');
+            document.body.classList.add('navbar-collapsed');
+        });
+
+        navbarBrandTrigger.addEventListener('click', () => {
+            if (navbar.classList.contains('collapsed')) {
+                navbar.classList.remove('collapsed');
+                document.body.classList.remove('navbar-collapsed');
+            }
+        });
+
+        // Botón "Quitar de guardadas" (demo)
+        document.querySelectorAll('.wn-offer-remove').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const card = btn.closest('.wn-offer-card');
+                if (confirm('¿Querés quitar esta oferta de tus guardadas?')) {
+                    card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        card.remove();
+                    }, 300);
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

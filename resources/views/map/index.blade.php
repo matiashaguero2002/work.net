@@ -3,7 +3,7 @@
 @section('title', 'Work.net - Buscar ofertas')
 
 @section('content')
-    <div id="map" data-offers='@json($offers)'></div>
+    <div id="map" data-offers='@json($offers)' data-focus='@json($mapFocus)'></div>
 
     @include('partials.wn-navbar')
     @include('partials.wn-filters')

@@ -1,0 +1,261 @@
+/* ============================================
+   WORK.NET — módulo ofertas guardadas del candidato
+   (extraído de specs/guardadas.html)
+   Se excluyen :root, reset global, estilos base de
+   html/body y estilos del navbar (viven en worknet.css
+   y worknet-map.css, que se reutilizan).
+   NO se duplican reglas ya existentes en
+   worknet-dashboard.css (.wn-offers-grid, .wn-offer-card,
+   .wn-offer-logo/info/title/company, .wn-offer-badges/badge,
+   .wn-offer-description, .wn-offer-footer/salary) ni en
+   worknet-interviews.css (.wn-main, .wn-header, .wn-tabs).
+   ============================================ */
+
+/* Coexistencia: auth y mapa fijan el body (flex centrado /
+   overflow hidden); en esta página se restaura el layout
+   con scroll normal. Se usa :has() + clase de respaldo
+   (la agrega el script de la página) por si :has() no aplica. */
+body:has(.wn-page-saved),
+body.wn-page-saved {
+    position: static;
+    display: block;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    overflow-x: hidden;
+    overscroll-behavior: auto;
+}
+
+html:has(.wn-page-saved),
+html.wn-page-saved {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* La barra de scroll vertical de la página se oculta;
+       se sigue pudiendo desplazar con rueda, táctil y teclado. */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+html:has(.wn-page-saved)::-webkit-scrollbar,
+html.wn-page-saved::-webkit-scrollbar,
+body:has(.wn-page-saved)::-webkit-scrollbar,
+body.wn-page-saved::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+.wn-bg {
+    position: fixed; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%);
+    pointer-events: none;
+}
+.wn-bg-grid {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+    -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+}
+
+/* BARRA DE BÚSQUEDA Y FILTROS */
+.wn-toolbar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+.wn-search-input {
+    flex: 1;
+    min-width: 240px;
+    position: relative;
+}
+.wn-search-input i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--wn-text-muted);
+    font-size: 0.95rem;
+    pointer-events: none;
+}
+.wn-search-input input {
+    width: 100%;
+    background-color: var(--wn-bg-dark);
+    border: 1px solid var(--wn-border);
+    color: var(--wn-text);
+    border-radius: 10px;
+    padding: 10px 14px 10px 42px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+.wn-search-input input:focus {
+    outline: none;
+    border-color: var(--wn-accent);
+    box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15);
+}
+.wn-search-input input::placeholder {
+    color: var(--wn-text-muted);
+    opacity: 0.6;
+}
+.wn-sort-select {
+    background-color: var(--wn-bg-dark);
+    border: 1px solid var(--wn-border);
+    color: var(--wn-text);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    cursor: pointer;
+    min-width: 180px;
+}
+.wn-sort-select:focus {
+    outline: none;
+    border-color: var(--wn-accent);
+    box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15);
+}
+
+/* Botón quitar (los estilos base de .wn-offer-card se
+   reutilizan de worknet-dashboard.css) */
+.wn-offer-remove {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background-color: rgba(218, 54, 51, 0.1);
+    border: 1px solid rgba(218, 54, 51, 0.3);
+    color: var(--wn-danger);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    z-index: 2;
+}
+.wn-offer-remove:hover {
+    background-color: var(--wn-danger);
+    border-color: var(--wn-danger);
+    color: white;
+}
+
+/* En esta vista el header de la card deja lugar al botón quitar */
+.wn-page-saved .wn-offer-card-header { padding-right: 36px; }
+
+.wn-offer-saved-date {
+    font-size: 0.7rem;
+    color: var(--wn-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    opacity: 0.75;
+}
+
+.wn-offer-actions {
+    display: flex;
+    gap: 6px;
+}
+.wn-offer-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    white-space: nowrap;
+}
+.wn-offer-action.primary {
+    background-color: var(--wn-accent);
+    color: #ffffff !important;
+}
+.wn-offer-action.primary:hover {
+    background-color: var(--wn-accent-hover);
+    color: #ffffff !important;
+}
+.wn-offer-action.map {
+    background-color: rgba(31, 111, 235, 0.12);
+    border: 1px solid rgba(31, 111, 235, 0.3);
+    color: var(--wn-accent-hover) !important;
+}
+.wn-offer-action.map:hover {
+    background-color: var(--wn-accent);
+    border-color: var(--wn-accent);
+    color: white !important;
+}
+
+/* EMPTY STATE (con marcador: difiere del de entrevistas) */
+.wn-page-saved .wn-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 24px;
+    text-align: center;
+    color: var(--wn-text-muted);
+}
+.wn-page-saved .wn-empty i {
+    font-size: 4rem;
+    opacity: 0.3;
+    margin-bottom: 20px;
+    color: var(--wn-accent);
+}
+.wn-page-saved .wn-empty h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--wn-text);
+    margin: 0 0 8px 0;
+}
+.wn-page-saved .wn-empty p {
+    font-size: 0.88rem;
+    margin: 0 0 24px 0;
+    max-width: 420px;
+    line-height: 1.6;
+}
+
+/* Botón primario (con marcador: difiere del mapa y del dashboard) */
+.wn-page-saved .btn-wn-primary {
+    background-color: var(--wn-accent);
+    border: none;
+    color: #ffffff !important;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none !important;
+}
+.wn-page-saved .btn-wn-primary:hover {
+    background-color: var(--wn-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35);
+    color: #ffffff !important;
+}
+
+/* RESPONSIVE (las reglas de .wn-main se reutilizan de
+   worknet-interviews.css; aquí solo lo específico) */
+@media (max-width: 768px) {
+    .wn-toolbar { flex-direction: column; }
+    .wn-sort-select { width: 100%; }
+}
+@media (max-width: 480px) {
+    .wn-offer-actions { flex-direction: column; width: 100%; }
+    .wn-offer-action { width: 100%; }
+}
+/* (prefers-reduced-motion se reutiliza de los CSS previos) */

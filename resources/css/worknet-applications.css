@@ -1,0 +1,374 @@
+/* ============================================
+   WORK.NET — módulo mis postulaciones del candidato
+   (extraído de specs/postulaciones.html)
+   Se excluyen :root, reset global, estilos base de
+   html/body y estilos del navbar (viven en worknet.css
+   y worknet-map.css, que se reutilizan).
+   NOTA: .wn-tabs ya existe (interviews/dashboard);
+   aquí solo se ajusta su margin-bottom con marcador.
+   .btn-wn-primary va con marcador porque difiere del mapa.
+   ============================================ */
+
+/* Coexistencia: auth y mapa fijan el body (flex centrado /
+   overflow hidden); en esta página se restaura el layout
+   con scroll normal. Se usa :has() + clase de respaldo
+   (la agrega el script de la página) por si :has() no aplica. */
+body:has(.wn-page-applications),
+body.wn-page-applications {
+    position: static;
+    display: block;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    overflow-x: hidden;
+    overscroll-behavior: auto;
+}
+
+html:has(.wn-page-applications),
+html.wn-page-applications {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* La barra de scroll vertical de la página se oculta;
+       se sigue pudiendo desplazar con rueda, táctil y teclado. */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+html:has(.wn-page-applications)::-webkit-scrollbar,
+html.wn-page-applications::-webkit-scrollbar,
+body:has(.wn-page-applications)::-webkit-scrollbar,
+body.wn-page-applications::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+.wn-bg {
+    position: fixed; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%);
+    pointer-events: none;
+}
+.wn-bg-grid {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+    -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+}
+
+/* MAIN, HEADER y TABS base: idénticos a worknet-interviews.css,
+   se reutilizan de ahí (no se duplican). En esta vista los
+   tabs llevan margin-bottom 24px. */
+.wn-page-applications .wn-tabs { margin-bottom: 24px; }
+
+/* LISTA DE POSTULACIONES */
+.wn-applications-list {
+    display: flex; flex-direction: column; gap: 14px;
+}
+
+.wn-application-card {
+    background-color: var(--wn-bg-dark);
+    border: 1px solid var(--wn-border);
+    border-radius: 16px;
+    padding: 22px;
+    transition: all 0.2s ease;
+    display: grid;
+    grid-template-columns: 1fr 240px;
+    gap: 24px;
+    align-items: flex-start;
+}
+.wn-application-card:hover {
+    border-color: var(--wn-accent);
+    box-shadow: 0 8px 24px rgba(31, 111, 235, 0.1);
+}
+.wn-application-card.rejected { opacity: 0.7; }
+
+/* Columna izquierda */
+.wn-app-main { min-width: 0; }
+
+.wn-app-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+.wn-app-logo {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 1.1rem;
+    flex-shrink: 0; overflow: hidden;
+}
+.wn-app-logo img { width: 100%; height: 100%; object-fit: cover; }
+.wn-app-info { flex: 1; min-width: 0; }
+.wn-app-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    line-height: 1.3;
+    letter-spacing: -0.2px;
+}
+.wn-app-company {
+    font-size: 0.82rem;
+    color: var(--wn-text-muted);
+    margin: 0 0 4px 0;
+}
+.wn-app-date {
+    font-size: 0.75rem;
+    color: var(--wn-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    opacity: 0.85;
+}
+.wn-app-date i { font-size: 0.75rem; }
+
+/* Timeline de progreso */
+.wn-app-timeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 18px 0 16px;
+    padding: 16px 12px;
+    background-color: var(--wn-bg-elevated);
+    border-radius: 12px;
+    overflow-x: auto;
+}
+.wn-timeline-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.wn-timeline-dot {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background-color: var(--wn-bg-dark);
+    border: 2px solid var(--wn-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    color: var(--wn-text-muted);
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+.wn-timeline-step.done .wn-timeline-dot {
+    background-color: var(--wn-accent);
+    border-color: var(--wn-accent);
+    color: white;
+}
+.wn-timeline-step.current .wn-timeline-dot {
+    background-color: var(--wn-accent);
+    border-color: var(--wn-accent);
+    color: white;
+    box-shadow: 0 0 0 4px rgba(31, 111, 235, 0.2);
+}
+.wn-timeline-step.rejected .wn-timeline-dot {
+    background-color: var(--wn-danger);
+    border-color: var(--wn-danger);
+    color: white;
+}
+.wn-timeline-label {
+    font-size: 0.72rem;
+    color: var(--wn-text-muted);
+    font-weight: 500;
+    white-space: nowrap;
+}
+.wn-timeline-step.done .wn-timeline-label,
+.wn-timeline-step.current .wn-timeline-label {
+    color: var(--wn-text);
+    font-weight: 600;
+}
+.wn-timeline-line {
+    flex: 1;
+    min-width: 24px;
+    height: 2px;
+    background-color: var(--wn-border);
+    margin: 0 8px;
+}
+.wn-timeline-step.done + .wn-timeline-line,
+.wn-timeline-step.current + .wn-timeline-line {
+    background-color: var(--wn-accent);
+}
+
+/* Acciones */
+.wn-app-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.wn-app-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    white-space: nowrap;
+}
+.wn-app-action.primary {
+    background-color: var(--wn-accent);
+    color: #ffffff !important;
+}
+.wn-app-action.primary:hover {
+    background-color: var(--wn-accent-hover);
+    color: #ffffff !important;
+}
+.wn-app-action.secondary {
+    background-color: transparent;
+    color: var(--wn-text-muted) !important;
+    border: 1px solid var(--wn-border);
+}
+.wn-app-action.secondary:hover {
+    background-color: var(--wn-bg-elevated);
+    color: var(--wn-text) !important;
+}
+.wn-app-action.danger {
+    background-color: transparent;
+    color: var(--wn-danger) !important;
+    border: 1px solid rgba(218, 54, 51, 0.4);
+}
+.wn-app-action.danger:hover {
+    background-color: rgba(218, 54, 51, 0.15);
+    border-color: var(--wn-danger);
+}
+
+/* Columna derecha: estado */
+.wn-app-status-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+}
+.wn-app-status-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px 16px;
+    border-radius: 14px;
+    text-align: center;
+    border: 1px solid;
+}
+.wn-app-status-badge i {
+    font-size: 1.8rem;
+}
+.wn-app-status-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    opacity: 0.8;
+}
+.wn-app-status-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.wn-app-status-badge.registered {
+    background-color: rgba(139, 148, 158, 0.08);
+    border-color: rgba(139, 148, 158, 0.3);
+    color: var(--wn-text-muted);
+}
+.wn-app-status-badge.review {
+    background-color: rgba(210, 153, 34, 0.08);
+    border-color: rgba(210, 153, 34, 0.3);
+    color: var(--wn-warning);
+}
+.wn-app-status-badge.accepted {
+    background-color: rgba(35, 134, 54, 0.08);
+    border-color: rgba(35, 134, 54, 0.3);
+    color: var(--wn-success);
+}
+.wn-app-status-badge.rejected {
+    background-color: rgba(218, 54, 51, 0.08);
+    border-color: rgba(218, 54, 51, 0.3);
+    color: var(--wn-danger);
+}
+
+.wn-app-status-note {
+    font-size: 0.75rem;
+    color: var(--wn-text-muted);
+    text-align: center;
+    line-height: 1.5;
+    padding: 0 4px;
+}
+
+/* EMPTY STATE (idéntico al de entrevistas; se reutilizan sus reglas) */
+
+/* Botón primario (con marcador: difiere del mapa) */
+.wn-page-applications .btn-wn-primary {
+    background-color: var(--wn-accent);
+    border: none;
+    color: #ffffff !important;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none !important;
+}
+.wn-page-applications .btn-wn-primary:hover {
+    background-color: var(--wn-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35);
+    color: #ffffff !important;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1100px) {
+    .wn-application-card {
+        grid-template-columns: 1fr;
+    }
+    .wn-app-status-col {
+        flex-direction: row;
+        align-items: center;
+    }
+    .wn-app-status-badge {
+        flex: 0 0 auto;
+        flex-direction: row;
+        padding: 12px 16px;
+        gap: 10px;
+    }
+    .wn-app-status-badge i { font-size: 1.3rem; }
+    .wn-app-status-badge .status-text {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+    .wn-app-status-note {
+        flex: 1;
+        text-align: left;
+        padding: 0;
+    }
+}
+/* 992px: .wn-main se reutiliza de worknet-interviews.css */
+@media (max-width: 768px) {
+    .wn-app-timeline { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .wn-timeline-line { width: 2px; height: 16px; margin: 0 0 0 11px; }
+    .wn-app-status-col { flex-direction: column; }
+    .wn-app-status-badge { width: 100%; justify-content: center; }
+}
+@media (max-width: 480px) {
+    .wn-app-actions { flex-direction: column; }
+    .wn-app-action { width: 100%; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .wn-application-card { transition: none; }
+}

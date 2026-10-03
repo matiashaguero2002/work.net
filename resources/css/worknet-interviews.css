@@ -1,0 +1,459 @@
+/* ============================================
+   WORK.NET — módulo entrevistas del candidato
+   (extraído de specs/entrevistas.html)
+   Se excluyen :root, reset global y estilos del
+   navbar (viven en worknet.css y worknet-map.css).
+   ============================================ */
+
+/* Coexistencia: auth y mapa fijan el body (flex centrado /
+   overflow hidden); en la página de entrevistas se restaura
+   el layout con scroll normal.
+   Se usa :has() + clase de respaldo (la agrega interviews.js)
+   por si el navegador no soporta :has(). */
+body:has(.wn-interviews),
+body.wn-page-interviews {
+    position: static;
+    display: block;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    overflow-x: hidden;
+    overscroll-behavior: auto;
+}
+
+html:has(.wn-interviews),
+html.wn-page-interviews {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* La barra de scroll vertical de la página se oculta;
+       se sigue pudiendo desplazar con rueda, táctil y teclado. */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+html:has(.wn-interviews)::-webkit-scrollbar,
+html.wn-page-interviews::-webkit-scrollbar,
+body:has(.wn-interviews)::-webkit-scrollbar,
+body.wn-page-interviews::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+.wn-bg {
+    position: fixed; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%);
+    pointer-events: none;
+}
+.wn-bg-grid {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+    -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+}
+
+/* MAIN */
+.wn-main {
+    margin-left: calc(var(--wn-navbar-width) + 32px);
+    margin-right: 16px; margin-top: 16px; margin-bottom: 16px;
+    padding: 32px 40px;
+    min-height: calc(100vh - 32px);
+    background-color: var(--wn-bg-panel);
+    border: 1px solid var(--wn-border);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    position: relative; z-index: 1;
+    transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+body.navbar-collapsed .wn-main {
+    margin-left: calc(var(--wn-navbar-width-mini) + 32px);
+}
+
+/* HEADER */
+.wn-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 16px; margin-bottom: 28px; padding-bottom: 20px;
+    border-bottom: 1px solid var(--wn-border); flex-wrap: wrap;
+}
+.wn-header-left h1 {
+    font-size: 1.75rem; font-weight: 700;
+    margin: 0 0 4px 0; letter-spacing: -0.5px;
+}
+.wn-header-left p { color: var(--wn-text-muted); margin: 0; font-size: 0.9rem; }
+.wn-header-left p strong { color: var(--wn-text); font-weight: 600; }
+
+/* TABS */
+.wn-tabs {
+    display: flex; gap: 4px; margin-bottom: 20px;
+    border-bottom: 1px solid var(--wn-border);
+    overflow-x: auto;
+}
+.wn-tab {
+    background: none; border: none;
+    color: var(--wn-text-muted);
+    font-family: inherit; font-size: 0.85rem;
+    font-weight: 500; padding: 10px 16px;
+    cursor: pointer; border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    display: inline-flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+}
+.wn-tab:hover { color: var(--wn-text); }
+.wn-tab.active {
+    color: var(--wn-accent);
+    border-bottom-color: var(--wn-accent);
+    font-weight: 600;
+}
+.wn-tab .count {
+    background-color: var(--wn-bg-elevated);
+    color: var(--wn-text-muted);
+    font-size: 0.7rem; font-weight: 700;
+    padding: 1px 7px; border-radius: 10px;
+}
+.wn-tab.active .count { background-color: var(--wn-accent); color: white; }
+
+/* ENTREVISTAS */
+.wn-interviews {
+    display: flex; flex-direction: column; gap: 18px;
+}
+
+.wn-interview-card {
+    background-color: var(--wn-bg-dark);
+    border: 1px solid var(--wn-border);
+    border-radius: 16px;
+    padding: 22px;
+    display: grid;
+    grid-template-columns: 80px 1fr 280px;
+    gap: 22px;
+    transition: all 0.2s ease;
+    align-items: flex-start;
+}
+.wn-interview-card:hover {
+    border-color: var(--wn-accent);
+    box-shadow: 0 8px 24px rgba(31, 111, 235, 0.12);
+}
+.wn-interview-card.past { opacity: 0.65; }
+.wn-interview-card.cancelled { opacity: 0.5; }
+
+/* Columna fecha */
+.wn-date-block {
+    background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+    color: white;
+    border-radius: 14px;
+    padding: 14px 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+    flex-shrink: 0;
+}
+.wn-date-block .day {
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+.wn-date-block .month {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-top: 3px;
+    opacity: 0.9;
+}
+.wn-date-block .year {
+    font-size: 0.65rem;
+    opacity: 0.7;
+    margin-top: 1px;
+}
+.wn-date-block.past { background: var(--wn-bg-elevated); color: var(--wn-text-muted); }
+.wn-date-block.cancelled { background: rgba(218, 54, 51, 0.2); color: var(--wn-danger); }
+
+/* Columna info */
+.wn-interview-content { min-width: 0; }
+.wn-interview-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+.wn-interview-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.3px;
+}
+.wn-interview-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.wn-status-scheduled { background-color: rgba(35, 134, 54, 0.15); color: var(--wn-success); }
+.wn-status-past { background-color: rgba(139, 148, 158, 0.15); color: var(--wn-text-muted); }
+.wn-status-cancelled { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+
+.wn-interview-company {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.wn-company-logo {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 0.75rem;
+    flex-shrink: 0;
+}
+.wn-company-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--wn-text);
+    margin: 0;
+}
+.wn-company-position {
+    font-size: 0.75rem;
+    color: var(--wn-text-muted);
+    margin: 0;
+}
+
+.wn-interview-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.wn-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--wn-text-muted);
+}
+.wn-meta-item i {
+    color: var(--wn-accent);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    width: 16px;
+    text-align: center;
+}
+.wn-meta-item strong {
+    color: var(--wn-text);
+    font-weight: 500;
+}
+
+.wn-interview-notes {
+    background-color: var(--wn-bg-elevated);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.78rem;
+    color: var(--wn-text-muted);
+    line-height: 1.5;
+    border-left: 3px solid var(--wn-accent);
+}
+.wn-interview-notes strong {
+    color: var(--wn-text);
+    display: block;
+    margin-bottom: 2px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Columna mapa */
+.wn-interview-map-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.wn-mini-map {
+    width: 100%;
+    height: 180px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--wn-border);
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: var(--wn-bg-elevated);
+}
+.wn-mini-map:hover {
+    border-color: var(--wn-accent);
+    box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15);
+}
+.wn-mini-map .map-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 50%, rgba(13, 17, 23, 0.85) 100%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 12px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 500;
+    pointer-events: none;
+}
+.wn-mini-map:hover .map-overlay { opacity: 1; }
+.wn-mini-map .map-overlay-text {
+    background-color: var(--wn-accent);
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.wn-mini-map .leaflet-control-attribution {
+    font-size: 0.55rem !important;
+    padding: 1px 4px !important;
+}
+.wn-mini-map .leaflet-control-zoom { display: none; }
+
+.wn-interview-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.wn-action-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 14px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    text-decoration: none !important;
+    white-space: nowrap;
+}
+.wn-action-btn-primary {
+    background-color: var(--wn-accent);
+    color: #ffffff !important;
+}
+.wn-action-btn-primary:hover {
+    background-color: var(--wn-accent-hover);
+    color: #ffffff !important;
+}
+.wn-action-btn-secondary {
+    background-color: transparent;
+    color: var(--wn-text-muted) !important;
+    border: 1px solid var(--wn-border);
+}
+.wn-action-btn-secondary:hover {
+    background-color: var(--wn-bg-elevated);
+    color: var(--wn-text) !important;
+}
+.wn-action-btn-danger {
+    background-color: transparent;
+    color: var(--wn-danger) !important;
+    border: 1px solid rgba(218, 54, 51, 0.4);
+}
+.wn-action-btn-danger:hover {
+    background-color: rgba(218, 54, 51, 0.15);
+    border-color: var(--wn-danger);
+    color: var(--wn-danger) !important;
+}
+
+/* EMPTY STATE */
+.wn-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    text-align: center;
+    color: var(--wn-text-muted);
+}
+.wn-empty i {
+    font-size: 3.5rem;
+    opacity: 0.3;
+    margin-bottom: 16px;
+    color: var(--wn-accent);
+}
+.wn-empty h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--wn-text);
+    margin: 0 0 6px 0;
+}
+.wn-empty p {
+    font-size: 0.85rem;
+    margin: 0 0 20px 0;
+    max-width: 380px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1100px) {
+    .wn-interview-card {
+        grid-template-columns: 70px 1fr;
+        gap: 16px;
+    }
+    .wn-interview-map-col {
+        grid-column: 1 / -1;
+    }
+    .wn-mini-map { height: 200px; }
+}
+@media (max-width: 992px) {
+    .wn-main {
+        padding: 24px 20px;
+    }
+}
+@media (max-width: 768px) {
+    .wn-main {
+        margin-left: calc(var(--wn-navbar-width-mini) + 24px);
+        margin-right: 12px; margin-top: 12px;
+        padding: 20px 16px;
+    }
+    .wn-header { flex-direction: column; align-items: stretch; }
+    .wn-interview-card {
+        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+    .wn-date-block {
+        min-height: auto;
+        flex-direction: row;
+        gap: 8px;
+        padding: 10px 16px;
+        justify-content: flex-start;
+        border-radius: 10px;
+    }
+    .wn-date-block .day { font-size: 1.4rem; }
+    .wn-date-block .month { margin-top: 0; }
+    .wn-interview-meta-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+    .wn-main {
+        margin-left: calc(var(--wn-navbar-width-mini) + 16px);
+        margin-right: 8px; margin-top: 8px;
+        padding: 16px 12px; border-radius: 14px;
+    }
+    .wn-header-left h1 { font-size: 1.4rem; }
+    .wn-tabs { gap: 0; }
+    .wn-tab { padding: 10px 12px; font-size: 0.8rem; }
+    .wn-interview-actions { flex-direction: column; }
+    .wn-action-btn { width: 100%; flex: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .wn-main, .wn-interview-card { transition: none; }
+}

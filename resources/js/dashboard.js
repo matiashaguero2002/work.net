@@ -7,7 +7,10 @@
 (function () {
     const dashMain = document.querySelector('.wn-page-dashboard');
     const notifMain = document.querySelector('.wn-page-notifications');
-    if (!dashMain && !notifMain) return;
+    // La página de perfil no usa .wn-page-* pero necesita el toggle
+    // del navbar (no tiene #map, así que map.js no lo registra ahí).
+    const profileMain = document.querySelector('.wn-profile-header');
+    if (!dashMain && !notifMain && !profileMain) return;
 
     // Clases de respaldo para el CSS de la página (por si :has() no aplica).
     if (dashMain) {
@@ -119,3 +122,35 @@
         }
     }
 })();
+
+// ============================================
+// DROPDOWN DE USUARIO EN EL NAVBAR
+// (extraído de specs/perfil.html; global: funciona en
+// todas las vistas porque dashboard.js se carga vía app.js)
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+    const userInfoTrigger = document.getElementById('userInfoTrigger');
+    const userDropdown = document.getElementById('userDropdown');
+
+    if (!userInfoTrigger || !userDropdown) return;
+
+    userInfoTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        userInfoTrigger.classList.toggle('open');
+        userDropdown.classList.toggle('show');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!userInfoTrigger.contains(e.target) && !userDropdown.contains(e.target)) {
+            userInfoTrigger.classList.remove('open');
+            userDropdown.classList.remove('show');
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            userInfoTrigger.classList.remove('open');
+            userDropdown.classList.remove('show');
+        }
+    });
+});

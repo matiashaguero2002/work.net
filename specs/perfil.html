@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Work.net - Mi perfil</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --wn-bg-dark:       #0D1117;
+            --wn-bg-panel:      #161B22;
+            --wn-bg-elevated:   #21262D;
+            --wn-border:        #30363D;
+            --wn-text:          #E6EDF3;
+            --wn-text-muted:    #8B949E;
+            --wn-accent:        #1F6FEB;
+            --wn-accent-hover:  #388BFD;
+            --wn-success:       #238636;
+            --wn-danger:        #DA3633;
+            --wn-warning:       #D29922;
+            --wn-purple:        #6E40C9;
+
+            --wn-navbar-width: 240px;
+            --wn-navbar-width-mini: 72px;
+        }
+
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--wn-bg-dark);
+            color: var(--wn-text);
+            overflow-x: hidden;
+        }
+
+        .wn-bg {
+            position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%);
+            pointer-events: none;
+        }
+        .wn-bg-grid {
+            position: absolute; inset: 0;
+            background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+            -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+        }
+
+        /* NAVBAR */
+        .wn-navbar {
+            position: fixed; top: 16px; left: 16px; bottom: 16px;
+            width: var(--wn-navbar-width);
+            background-color: var(--wn-bg-panel);
+            border: 1px solid var(--wn-border);
+            border-radius: 16px;
+            padding: 20px 16px;
+            display: flex; flex-direction: column;
+            z-index: 100;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                        padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .wn-navbar.collapsed { width: var(--wn-navbar-width-mini); padding: 20px 8px; }
+
+        .wn-navbar-brand {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 10px; padding-bottom: 16px;
+            border-bottom: 1px solid var(--wn-border); margin-bottom: 16px;
+        }
+        .wn-navbar-brand-left {
+            display: flex; align-items: center; gap: 10px;
+            min-width: 0; flex: 1; padding: 6px 8px;
+            border-radius: 10px;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            user-select: none;
+        }
+        .wn-navbar.collapsed .wn-navbar-brand-left {
+            cursor: pointer;
+            background-color: rgba(31, 111, 235, 0.15);
+            box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35);
+            animation: glowPulse 2s ease-in-out infinite;
+        }
+        .wn-navbar.collapsed .wn-navbar-brand-left i {
+            color: var(--wn-accent-hover);
+            filter: drop-shadow(0 0 8px rgba(31, 111, 235, 0.8));
+        }
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); }
+            50% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.6), 0 0 28px rgba(31, 111, 235, 0.55); }
+        }
+        .wn-navbar-brand i {
+            color: var(--wn-accent); font-size: 1.5rem; flex-shrink: 0;
+            transition: color 0.2s ease, filter 0.2s ease;
+        }
+        .wn-navbar-brand span {
+            font-weight: 700; font-size: 1.1rem;
+            letter-spacing: -0.5px; white-space: nowrap; overflow: hidden;
+        }
+        .wn-navbar-toggle {
+            background: none; border: none;
+            color: var(--wn-text-muted);
+            cursor: pointer; padding: 6px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; transition: all 0.2s ease; flex-shrink: 0;
+        }
+        .wn-navbar-toggle:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar.collapsed .wn-navbar-brand { justify-content: center; padding-bottom: 12px; margin-bottom: 12px; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { justify-content: center; flex: none; }
+        .wn-navbar.collapsed .wn-navbar-brand span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-toggle { display: none; }
+
+        .wn-navbar-menu { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .wn-navbar-menu li { margin-bottom: 4px; }
+        .wn-navbar-menu a {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px;
+            color: var(--wn-text-muted);
+            text-decoration: none; border-radius: 8px;
+            font-size: 0.9rem; transition: all 0.2s ease;
+            position: relative; white-space: nowrap;
+        }
+        .wn-navbar-menu a:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar-menu a.active { background-color: var(--wn-accent); color: white; font-weight: 500; }
+        .wn-navbar-menu a i { font-size: 1.1rem; flex-shrink: 0; width: 20px; text-align: center; }
+        .wn-navbar.collapsed .wn-navbar-menu a { justify-content: center; padding: 12px 8px; }
+        .wn-navbar.collapsed .wn-navbar-menu a span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-menu a .badge {
+            position: absolute; top: 4px; right: 4px;
+            font-size: 0.6rem; padding: 2px 5px;
+        }
+
+        /* Footer del navbar con dropdown */
+        .wn-navbar-footer {
+            padding-top: 16px;
+            border-top: 1px solid var(--wn-border);
+            position: relative;
+        }
+        .wn-user-info {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            user-select: none;
+        }
+        .wn-user-info:hover { background-color: var(--wn-bg-elevated); }
+        .wn-navbar.collapsed .wn-user-info { justify-content: center; padding: 8px 4px; }
+        .wn-navbar.collapsed .wn-user-info > div:not(.wn-avatar) { display: none; }
+        .wn-navbar.collapsed .wn-user-chevron { display: none; }
+
+        .wn-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple));
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+        }
+        .wn-user-text { flex: 1; min-width: 0; }
+        .wn-user-name {
+            font-size: 0.85rem; font-weight: 600;
+            line-height: 1.2;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .wn-user-role {
+            font-size: 0.7rem; color: var(--wn-text-muted);
+            text-transform: capitalize;
+        }
+        .wn-user-chevron {
+            color: var(--wn-text-muted);
+            font-size: 0.75rem;
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+        .wn-user-info.open .wn-user-chevron { transform: rotate(180deg); }
+
+        /* Dropdown de usuario */
+        .wn-user-dropdown {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background-color: var(--wn-bg-elevated);
+            border: 1px solid var(--wn-border);
+            border-radius: 12px;
+            padding: 6px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(8px);
+            transition: all 0.2s ease;
+            z-index: 200;
+        }
+        .wn-navbar.collapsed .wn-user-dropdown {
+            left: 100%;
+            bottom: 0;
+            width: 220px;
+            margin-left: 8px;
+        }
+        .wn-user-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .wn-user-dropdown-header {
+            padding: 10px 12px 8px;
+            border-bottom: 1px solid var(--wn-border);
+            margin-bottom: 6px;
+        }
+        .wn-user-dropdown-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 0 0 2px 0;
+        }
+        .wn-user-dropdown-email {
+            font-size: 0.7rem;
+            color: var(--wn-text-muted);
+            margin: 0;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .wn-user-dropdown-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 12px;
+            color: var(--wn-text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+        }
+        .wn-user-dropdown-item:hover {
+            background-color: var(--wn-bg-panel);
+            color: var(--wn-text);
+        }
+        .wn-user-dropdown-item.danger:hover {
+            background-color: rgba(218, 54, 51, 0.15);
+            color: var(--wn-danger);
+        }
+        .wn-user-dropdown-item i { font-size: 0.95rem; flex-shrink: 0; }
+        .wn-user-dropdown-divider {
+            height: 1px;
+            background-color: var(--wn-border);
+            margin: 6px 0;
+        }
+
+        /* MAIN */
+        .wn-main {
+            margin-left: calc(var(--wn-navbar-width) + 32px);
+            margin-right: 16px; margin-top: 16px; margin-bottom: 16px;
+            padding: 32px 40px;
+            min-height: calc(100vh - 32px);
+            background-color: var(--wn-bg-panel);
+            border: 1px solid var(--wn-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            position: relative; z-index: 1;
+            transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        body.navbar-collapsed .wn-main {
+            margin-left: calc(var(--wn-navbar-width-mini) + 32px);
+        }
+
+        /* HEADER DEL PERFIL */
+        .wn-profile-header {
+            display: flex; align-items: flex-start;
+            gap: 24px; margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--wn-border);
+            flex-wrap: wrap;
+        }
+        .wn-profile-photo-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+        .wn-profile-photo {
+            width: 120px; height: 120px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple));
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: 2.5rem;
+            border: 4px solid var(--wn-bg-panel);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+        .wn-profile-photo img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .wn-profile-photo-edit {
+            position: absolute;
+            bottom: -8px; right: -8px;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background-color: var(--wn-accent);
+            border: 3px solid var(--wn-bg-panel);
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        .wn-profile-photo-edit:hover { background-color: var(--wn-accent-hover); transform: scale(1.05); }
+
+        .wn-profile-header-info { flex: 1; min-width: 240px; }
+        .wn-profile-name {
+            font-size: 1.75rem; font-weight: 700;
+            margin: 0 0 4px 0;
+            letter-spacing: -0.5px;
+        }
+        .wn-profile-headline {
+            font-size: 0.95rem;
+            color: var(--wn-text-muted);
+            margin: 0 0 12px 0;
+        }
+        .wn-profile-meta {
+            display: flex; flex-wrap: wrap; gap: 16px;
+            margin-bottom: 16px;
+        }
+        .wn-profile-meta-item {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 0.82rem;
+            color: var(--wn-text-muted);
+        }
+        .wn-profile-meta-item i { color: var(--wn-accent); font-size: 0.9rem; }
+        .wn-profile-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .btn-wn-primary {
+            background-color: var(--wn-accent);
+            border: none; color: #ffffff !important;
+            font-weight: 600; padding: 10px 20px;
+            border-radius: 10px; font-size: 0.85rem;
+            transition: all 0.2s ease;
+            cursor: pointer; font-family: inherit;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px; text-decoration: none !important;
+            white-space: nowrap;
+        }
+        .btn-wn-primary:hover {
+            background-color: var(--wn-accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35);
+            color: #ffffff !important;
+        }
+        .btn-wn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--wn-border);
+            color: var(--wn-text-muted) !important;
+            font-weight: 500; padding: 10px 20px;
+            border-radius: 10px; font-size: 0.85rem;
+            transition: all 0.2s ease;
+            cursor: pointer; font-family: inherit;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px; text-decoration: none !important;
+            white-space: nowrap;
+        }
+        .btn-wn-secondary:hover {
+            background-color: var(--wn-bg-elevated);
+            color: var(--wn-text) !important;
+            border-color: var(--wn-text-muted);
+        }
+        .btn-wn-danger {
+            background-color: transparent;
+            border: 1px solid rgba(218, 54, 51, 0.4);
+            color: var(--wn-danger) !important;
+            font-weight: 500; padding: 8px 14px;
+            border-radius: 8px; font-size: 0.78rem;
+            transition: all 0.2s ease;
+            cursor: pointer; font-family: inherit;
+            display: inline-flex; align-items: center; gap: 6px;
+            text-decoration: none !important;
+        }
+        .btn-wn-danger:hover {
+            background-color: rgba(218, 54, 51, 0.15);
+            border-color: var(--wn-danger);
+        }
+
+        /* Barra de progreso del perfil */
+        .wn-profile-progress-card {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 32px;
+        }
+        .wn-profile-progress-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 12px;
+            flex-wrap: wrap; gap: 8px;
+        }
+        .wn-profile-progress-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.95rem; font-weight: 600;
+        }
+        .wn-profile-progress-title i { color: var(--wn-accent); font-size: 1.1rem; }
+        .wn-profile-progress-value {
+            font-size: 1.3rem; font-weight: 700;
+            color: var(--wn-accent);
+            letter-spacing: -0.5px;
+        }
+        .wn-progress-bar {
+            width: 100%; height: 10px;
+            background-color: var(--wn-bg-elevated);
+            border-radius: 5px; overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .wn-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--wn-accent), var(--wn-purple));
+            border-radius: 5px;
+            transition: width 0.6s ease;
+        }
+        .wn-profile-progress-hint {
+            font-size: 0.8rem;
+            color: var(--wn-text-muted);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .wn-profile-progress-hint i { color: var(--wn-warning); }
+
+        /* Secciones del perfil */
+        .wn-section {
+            margin-bottom: 32px;
+        }
+        .wn-section:last-child { margin-bottom: 0; }
+
+        .wn-section-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 18px; gap: 12px; flex-wrap: wrap;
+        }
+        .wn-section-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 1.05rem; font-weight: 600; margin: 0;
+        }
+        .wn-section-title i { color: var(--wn-accent); font-size: 1.15rem; }
+        .wn-section-actions { display: flex; gap: 8px; }
+
+        .wn-add-btn {
+            background-color: transparent;
+            border: 1px solid var(--wn-border);
+            color: var(--wn-accent) !important;
+            font-weight: 500; padding: 7px 14px;
+            border-radius: 8px; font-size: 0.78rem;
+            transition: all 0.2s ease;
+            cursor: pointer; font-family: inherit;
+            display: inline-flex; align-items: center; gap: 6px;
+            text-decoration: none !important;
+        }
+        .wn-add-btn:hover {
+            background-color: rgba(31, 111, 235, 0.1);
+            border-color: var(--wn-accent);
+        }
+
+        /* Cards de cada sección */
+        .wn-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+        .wn-info-card {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        .wn-info-card:hover {
+            border-color: var(--wn-accent);
+        }
+        .wn-info-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .wn-info-card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.2px;
+        }
+        .wn-info-card-subtitle {
+            font-size: 0.82rem;
+            color: var(--wn-accent);
+            margin: 0;
+            font-weight: 500;
+        }
+        .wn-info-card-date {
+            font-size: 0.72rem;
+            color: var(--wn-text-muted);
+            display: flex; align-items: center; gap: 5px;
+        }
+        .wn-info-card-description {
+            font-size: 0.8rem;
+            color: var(--wn-text-muted);
+            line-height: 1.5;
+            margin: 0;
+        }
+        .wn-info-card-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+        .wn-icon-btn {
+            width: 30px; height: 30px;
+            border-radius: 7px;
+            border: 1px solid var(--wn-border);
+            background-color: transparent;
+            color: var(--wn-text-muted);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+        }
+        .wn-icon-btn:hover {
+            background-color: var(--wn-bg-elevated);
+            color: var(--wn-text);
+        }
+        .wn-icon-btn.danger:hover {
+            background-color: rgba(218, 54, 51, 0.15);
+            color: var(--wn-danger);
+            border-color: var(--wn-danger);
+        }
+
+        /* Grid de datos personales */
+        .wn-personal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px;
+        }
+        .wn-personal-item {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+        .wn-personal-label {
+            font-size: 0.7rem;
+            color: var(--wn-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .wn-personal-label i { color: var(--wn-accent); font-size: 0.75rem; }
+        .wn-personal-value {
+            font-size: 0.88rem;
+            color: var(--wn-text);
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        /* Chips de habilidades */
+        .wn-chips {
+            display: flex; flex-wrap: wrap; gap: 8px;
+        }
+        .wn-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 14px;
+            background-color: rgba(31, 111, 235, 0.1);
+            border: 1px solid rgba(31, 111, 235, 0.3);
+            color: var(--wn-accent-hover);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .wn-chip:hover {
+            background-color: rgba(31, 111, 235, 0.2);
+            border-color: var(--wn-accent);
+        }
+        .wn-chip-remove {
+            background: none; border: none;
+            color: inherit; cursor: pointer;
+            padding: 0; margin-left: 2px;
+            display: flex; align-items: center;
+            opacity: 0.7;
+            font-size: 0.75rem;
+        }
+        .wn-chip-remove:hover { opacity: 1; }
+
+        /* CV Card */
+        .wn-cv-card {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.2s ease;
+            flex-wrap: wrap;
+        }
+        .wn-cv-card:hover { border-color: var(--wn-accent); }
+        .wn-cv-icon {
+            width: 56px; height: 56px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(35, 134, 54, 0.15), rgba(35, 134, 54, 0.05));
+            border: 1px solid rgba(35, 134, 54, 0.3);
+            color: var(--wn-success);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+        .wn-cv-info { flex: 1; min-width: 200px; }
+        .wn-cv-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+            display: flex; align-items: center; gap: 8px;
+            flex-wrap: wrap;
+        }
+        .wn-cv-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 10px;
+            background-color: rgba(35, 134, 54, 0.15);
+            color: var(--wn-success);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .wn-cv-meta {
+            font-size: 0.78rem;
+            color: var(--wn-text-muted);
+            margin: 0;
+        }
+        .wn-cv-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        /* Empty state */
+        .wn-empty {
+            background-color: var(--wn-bg-dark);
+            border: 1px dashed var(--wn-border);
+            border-radius: 12px;
+            padding: 32px 24px;
+            text-align: center;
+            color: var(--wn-text-muted);
+        }
+        .wn-empty i {
+            font-size: 2.5rem;
+            opacity: 0.3;
+            color: var(--wn-accent);
+            margin-bottom: 12px;
+            display: block;
+        }
+        .wn-empty p {
+            margin: 0 0 16px 0;
+            font-size: 0.85rem;
+        }
+
+        /* Preferencias laborales */
+        .wn-preferences {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .wn-preference-card {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .wn-preference-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            background-color: rgba(31, 111, 235, 0.1);
+            color: var(--wn-accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .wn-preference-info { min-width: 0; }
+        .wn-preference-label {
+            font-size: 0.7rem;
+            color: var(--wn-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .wn-preference-value {
+            font-size: 0.85rem;
+            color: var(--wn-text);
+            font-weight: 500;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 992px) {
+            :root { --wn-navbar-width: 72px; }
+            .wn-navbar { width: var(--wn-navbar-width); padding: 16px 8px; }
+            .wn-navbar-brand span,
+            .wn-navbar-menu a span,
+            .wn-user-info > div:not(.wn-avatar) { display: none; }
+            .wn-navbar-menu a { justify-content: center; }
+            .wn-navbar-toggle { display: none; }
+            .wn-main {
+                margin-left: calc(var(--wn-navbar-width) + 32px);
+                padding: 24px 20px;
+            }
+            .wn-user-chevron { display: none; }
+            .wn-user-info { justify-content: center; }
+        }
+        @media (max-width: 768px) {
+            :root { --wn-navbar-width: 60px; }
+            .wn-navbar {
+                top: 12px; left: 12px; bottom: 12px;
+                padding: 12px 6px; border-radius: 14px;
+            }
+            .wn-main {
+                margin-left: calc(var(--wn-navbar-width) + 24px);
+                margin-right: 12px; margin-top: 12px;
+                padding: 20px 16px;
+            }
+            .wn-profile-header { flex-direction: column; align-items: center; text-align: center; }
+            .wn-profile-header-info { align-items: center; display: flex; flex-direction: column; }
+            .wn-profile-meta { justify-content: center; }
+            .wn-profile-actions { justify-content: center; width: 100%; }
+            .wn-profile-photo { width: 100px; height: 100px; font-size: 2rem; }
+            .wn-profile-name { font-size: 1.4rem; }
+            .wn-info-grid, .wn-personal-grid, .wn-preferences { grid-template-columns: 1fr; }
+            .wn-cv-card { flex-direction: column; text-align: center; }
+            .wn-cv-actions { width: 100%; justify-content: center; }
+        }
+        @media (max-width: 480px) {
+            :root { --wn-navbar-width: 52px; }
+            .wn-main {
+                margin-left: calc(var(--wn-navbar-width) + 16px);
+                margin-right: 8px; margin-top: 8px;
+                padding: 16px 12px; border-radius: 14px;
+            }
+            .wn-profile-actions { flex-direction: column; width: 100%; }
+            .wn-profile-actions .btn-wn-primary,
+            .wn-profile-actions .btn-wn-secondary {
+                width: 100%;
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .wn-navbar.collapsed .wn-navbar-brand-left { animation: none; }
+            .wn-navbar, .wn-main, .wn-info-card, .wn-user-dropdown { transition: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wn-bg"><div class="wn-bg-grid"></div></div>
+
+    <!-- NAVBAR -->
+    <nav class="wn-navbar" id="navbar">
+        <div class="wn-navbar-brand">
+            <div class="wn-navbar-brand-left" id="navbarBrandTrigger">
+                <i class="bi bi-briefcase-fill"></i>
+                <span>Work.net</span>
+            </div>
+            <button class="wn-navbar-toggle" id="navbarToggle" aria-label="Minimizar menú" type="button">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+
+        <ul class="wn-navbar-menu">
+            <li><a href="dashboard-candidato.html" title="Inicio"><i class="bi bi-house-door"></i> <span>Inicio</span></a></li>
+            <li><a href="mapa.html" title="Buscar"><i class="bi bi-map"></i> <span>Buscar</span></a></li>
+            <li><a href="guardadas.html" title="Guardadas"><i class="bi bi-bookmark"></i> <span>Guardadas</span></a></li>
+            <li><a href="mis-postulaciones.html" title="Mis postulaciones"><i class="bi bi-file-earmark-text"></i> <span>Mis postulaciones</span></a></li>
+            <li><a href="entrevistas.html" title="Entrevistas"><i class="bi bi-calendar-event"></i> <span>Entrevistas</span></a></li>
+            <li><a href="#" class="active" title="Perfil"><i class="bi bi-person"></i> <span>Perfil</span></a></li>
+            <li>
+                <a href="notificaciones.html" title="Notificaciones">
+                    <i class="bi bi-bell"></i> <span>Notificaciones</span>
+                    <span class="badge bg-danger ms-auto" style="font-size:0.65rem;">3</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- Footer con avatar clickeable + dropdown -->
+        <div class="wn-navbar-footer">
+            <div class="wn-user-info" id="userInfoTrigger">
+                <div class="wn-avatar">JP</div>
+                <div class="wn-user-text">
+                    <div class="wn-user-name">Juan Pérez</div>
+                    <div class="wn-user-role">Candidato</div>
+                </div>
+                <i class="bi bi-chevron-up wn-user-chevron"></i>
+            </div>
+
+            <!-- Dropdown -->
+            <div class="wn-user-dropdown" id="userDropdown">
+                <div class="wn-user-dropdown-header">
+                    <p class="wn-user-dropdown-name">Juan Pérez</p>
+                    <p class="wn-user-dropdown-email">juan.perez@email.com</p>
+                </div>
+                <a href="perfil.html" class="wn-user-dropdown-item">
+                    <i class="bi bi-person"></i> Mi perfil
+                </a>
+                <a href="#" class="wn-user-dropdown-item">
+                    <i class="bi bi-gear"></i> Configuración
+                </a>
+                <a href="#" class="wn-user-dropdown-item">
+                    <i class="bi bi-question-circle"></i> Ayuda
+                </a>
+                <div class="wn-user-dropdown-divider"></div>
+                <a href="login.html" class="wn-user-dropdown-item danger">
+                    <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="wn-main">
+
+        <!-- HEADER DEL PERFIL -->
+        <header class="wn-profile-header">
+            <div class="wn-profile-photo-wrapper">
+                <div class="wn-profile-photo">
+                    JP
+                </div>
+                <button class="wn-profile-photo-edit" title="Cambiar foto">
+                    <i class="bi bi-camera-fill"></i>
+                </button>
+            </div>
+
+            <div class="wn-profile-header-info">
+                <h1 class="wn-profile-name">Juan Pérez</h1>
+                <p class="wn-profile-headline">Desarrollador Full Stack Laravel</p>
+
+                <div class="wn-profile-meta">
+                    <div class="wn-profile-meta-item">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <span>Encarnación, Paraguay</span>
+                    </div>
+                    <div class="wn-profile-meta-item">
+                        <i class="bi bi-envelope-fill"></i>
+                        <span>juan.perez@email.com</span>
+                    </div>
+                    <div class="wn-profile-meta-item">
+                        <i class="bi bi-telephone-fill"></i>
+                        <span>+595 985 123 456</span>
+                    </div>
+                </div>
+
+                <div class="wn-profile-actions">
+                    <button class="btn-wn-primary" onclick="openModal('editPersonalModal')">
+                        <i class="bi bi-pencil"></i> Editar perfil
+                    </button>
+                    <button class="btn-wn-secondary">
+                        <i class="bi bi-download"></i> Descargar CV
+                    </button>
+                    <button class="btn-wn-secondary">
+                        <i class="bi bi-share"></i> Compartir
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- BARRA DE PROGRESO DEL PERFIL -->
+        <section class="wn-profile-progress-card">
+            <div class="wn-profile-progress-header">
+                <div class="wn-profile-progress-title">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Completitud del perfil</span>
+                </div>
+                <div class="wn-profile-progress-value">70%</div>
+            </div>
+            <div class="wn-progress-bar">
+                <div class="wn-progress-fill" style="width: 70%;"></div>
+            </div>
+            <p class="wn-profile-progress-hint">
+                <i class="bi bi-lightbulb-fill"></i>
+                Te falta agregar <strong>1 experiencia laboral</strong> y <strong>cargar tu CV en PDF</strong> para completar tu perfil.
+            </p>
+        </section>
+
+        <!-- DATOS PERSONALES -->
+        <section class="wn-section">
+            <div class="wn-section-header">
+                <h2 class="wn-section-title">
+                    <i class="bi bi-person-vcard"></i>
+                    Datos personales
+                </h2>
+                <div class="wn-section-actions">
+                    <button class="wn-add-btn" onclick="openModal('editPersonalModal')">
+                        <i class="bi bi-pencil"></i> Editar
+                    </button>
+                </div>
+            </div>
+
+            <div class="wn-personal-grid">
+                <div class="wn-personal-item">
+                    <div class="wn-personal-label"><i class="bi bi-person"></i> Nombre completo</div>
+                    <div class="wn-personal-value">Juan Pérez</div>
+                </div>
+                <div class="wn-personal-item">
+                    <div class="wn-personal-label"><i class="bi bi-card-text"></i> Documento</div>
+                    <div class="wn-personal-value">4.123.456</div>
+                </div>
+                <div class="wn-personal-item">
+                    <div class="wn-personal-label"><i class="bi bi-calendar3"></i> Fecha de nacimiento</div>
+                    <div class="wn-personal-value">15/03/1998</div>
+                </div>
+                <div class="wn-personal-item">
+                    <div class="wn-personal-label"><i class="bi bi-envelope"></i> Email</div>
+                    <div class="wn-personal-value">juan.perez@email.com</div>
+                </div>
+                <div class="wn-personal-item">
+                    <div class="wn-personal-label"><i class="bi bi-telephone"></i> Teléfono</div>
+                    <div class="wn-personal-value">+595 985 123 456</div>
+                </div>
+                <div class="wn-personal-item">
+                    <div class="wn-personal-label"><i class="bi bi-geo-alt"></i> Ubicación</div>
+                    <div class="wn-personal-value">Encarnación, Paraguay</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPERIENCIA LABORAL -->
+        <section class="wn-section">
+            <div class="wn-section-header">
+                <h2 class="wn-section-title">
+                    <i class="bi bi-briefcase"></i>
+                    Experiencia laboral
+                </h2>
+                <div class="wn-section-actions">
+                    <button class="wn-add-btn" onclick="openModal('addExperienceModal')">
+                        <i class="bi bi-plus-lg"></i> Agregar
+                    </button>
+                </div>
+            </div>
+
+            <div class="wn-info-grid">
+                <article class="wn-info-card">
+                    <div class="wn-info-card-header">
+                        <div>
+                            <h3 class="wn-info-card-title">Desarrollador Full Stack</h3>
+                            <p class="wn-info-card-subtitle">Tech Solutions S.A.</p>
+                        </div>
+                        <div class="wn-info-card-actions">
+                            <button class="wn-icon-btn" title="Editar"><i class="bi bi-pencil"></i></button>
+                            <button class="wn-icon-btn danger" title="Eliminar"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="wn-info-card-date">
+                        <i class="bi bi-calendar-range"></i> Marzo 2023 - Presente
+                    </div>
+                    <p class="wn-info-card-description">
+                        Desarrollo de aplicaciones web con Laravel y Vue.js. Mantenimiento de APIs REST y optimización de base de datos.
+                    </p>
+                </article>
+
+                <article class="wn-info-card">
+                    <div class="wn-info-card-header">
+                        <div>
+                            <h3 class="wn-info-card-title">Desarrollador Backend Junior</h3>
+                            <p class="wn-info-card-subtitle">DataCorp S.A.</p>
+                        </div>
+                        <div class="wn-info-card-actions">
+                            <button class="wn-icon-btn" title="Editar"><i class="bi bi-pencil"></i></button>
+                            <button class="wn-icon-btn danger" title="Eliminar"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="wn-info-card-date">
+                        <i class="bi bi-calendar-range"></i> Enero 2021 - Febrero 2023
+                    </div>
+                    <p class="wn-info-card-description">
+                        Desarrollo de APIs con Laravel, integración con servicios externos y testing con PHPUnit.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <!-- FORMACIÓN ACADÉMICA -->
+        <section class="wn-section">
+            <div class="wn-section-header">
+                <h2 class="wn-section-title">
+                    <i class="bi bi-mortarboard"></i>
+                    Formación académica
+                </h2>
+                <div class="wn-section-actions">
+                    <button class="wn-add-btn" onclick="openModal('addEducationModal')">
+                        <i class="bi bi-plus-lg"></i> Agregar
+                    </button>
+                </div>
+            </div>
+
+            <div class="wn-info-grid">
+                <article class="wn-info-card">
+                    <div class="wn-info-card-header">
+                        <div>
+                            <h3 class="wn-info-card-title">Licenciatura en Análisis de Sistemas</h3>
+                            <p class="wn-info-card-subtitle">Universidad Autónoma de Encarnación</p>
+                        </div>
+                        <div class="wn-info-card-actions">
+                            <button class="wn-icon-btn" title="Editar"><i class="bi bi-pencil"></i></button>
+                            <button class="wn-icon-btn danger" title="Eliminar"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="wn-info-card-date">
+                        <i class="bi bi-calendar-range"></i> 2018 - 2024
+                    </div>
+                    <p class="wn-info-card-description">
+                        Formación en ingeniería de software, bases de datos, redes y análisis de sistemas.
+                    </p>
+                </article>
+
+                <article class="wn-info-card">
+                    <div class="wn-info-card-header">
+                        <div>
+                            <h3 class="wn-info-card-title">Técnico en Informática</h3>
+                            <p class="wn-info-card-subtitle">Colegio Técnico Nacional</p>
+                        </div>
+                        <div class="wn-info-card-actions">
+                            <button class="wn-icon-btn" title="Editar"><i class="bi bi-pencil"></i></button>
+                            <button class="wn-icon-btn danger" title="Eliminar"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="wn-info-card-date">
+                        <i class="bi bi-calendar-range"></i> 2015 - 2017
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- HABILIDADES -->
+        <section class="wn-section">
+            <div class="wn-section-header">
+                <h2 class="wn-section-title">
+                    <i class="bi bi-lightning-charge"></i>
+                    Habilidades
+                </h2>
+                <div class="wn-section-actions">
+                    <button class="wn-add-btn" onclick="openModal('addSkillModal')">
+                        <i class="bi bi-plus-lg"></i> Agregar
+                    </button>
+                </div>
+            </div>
+
+            <div class="wn-chips">
+                <span class="wn-chip">
+                    PHP
+                    <button class="wn-chip-remove" title="Eliminar"><i class="bi bi-x"></i></button>
+                </span>
+                <span class="wn-chip">
+                    Laravel
+                    <button class="wn-chip-remove" title="Eliminar"><i class="bi bi-x"></i></button>
+                </span>
+                <span class="wn-chip">
+                    MySQL
+                    <button class="wn-chip-remove" title="Eliminar"><i class="bi bi-x"></i></button>
+                </span>
+                <span class="wn-chip">
+                    PostgreSQL
+                    <button class="wn-chip-remove" title="Eliminar"><i class="bi bi-x"></i></button>
+                </span>
+                <span class="wn-chip">
+                    JavaScript
+                    <button class="wn-chip-remove" title="Eliminar"><i class="bi bi-x"></i></button>
+                </span>
+                <span class="wn-chip">
+                    Vue.js
+                    <button class="wn-chip-remove" title="Eliminar"><i class="bi bi-x"></i></button>
+                </span>
+                <span class="wn-chip">
+                    Git
+                    <button class="wn-chip-remove" title="Eliminar"><i class="bi bi-x"></i></button>
+                </span>
+                <span class="wn-chip">
+                    Docker
+                    <button class="wn-chip-remove" title="Eliminar"><i class="bi bi-x"></i></button>
+                </span>
+            </div>
+        </section>
+
+        <!-- IDIOMAS -->
+        <section class="wn-section">
+            <div class="wn-section-header">
+                <h2 class="wn-section-title">
+                    <i class="bi bi-translate"></i>
+                    Idiomas
+                </h2>
+                <div class="wn-section-actions">
+                    <button class="wn-add-btn" onclick="openModal('addLanguageModal')">
+                        <i class="bi bi-plus-lg"></i> Agregar
+                    </button>
+                </div>
+            </div>
+
+            <div class="wn-chips">
+                <span class="wn-chip">
+                    Español (Nativo)
+                    <button class="wn-chip-remove" title="Eliminar"><i class="bi bi-x"></i></button>
+                </span>
+                <span class="wn-chip">
+                    Inglés (Avanzado)
+                    <button class="wn-chip-remove" title="Eliminar"><i class="bi bi-x"></i></button>
+                </span>
+                <span class="wn-chip">
+                    Guaraní (Intermedio)
+                    <button class="wn-chip-remove" title="Eliminar"><i class="bi bi-x"></i></button>
+                </span>
+            </div>
+        </section>
+
+        <!-- CV -->
+        <section class="wn-section">
+            <div class="wn-section-header">
+                <h2 class="wn-section-title">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    Currículum Vitae
+                </h2>
+            </div>
+
+            <div class="wn-cv-card">
+                <div class="wn-cv-icon">
+                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                </div>
+                <div class="wn-cv-info">
+                    <h3 class="wn-cv-title">
+                        juan_perez_cv.pdf
+                        <span class="wn-cv-badge">Cargado</span>
+                    </h3>
+                    <p class="wn-cv-meta">
+                        Última actualización: 15 de septiembre de 2026 · 245 KB
+                    </p>
+                </div>
+                <div class="wn-cv-actions">
+                    <button class="btn-wn-secondary">
+                        <i class="bi bi-eye"></i> Ver
+                    </button>
+                    <button class="btn-wn-secondary">
+                        <i class="bi bi-arrow-repeat"></i> Reemplazar
+                    </button>
+                    <button class="btn-wn-danger">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PREFERENCIAS LABORALES -->
+        <section class="wn-section">
+            <div class="wn-section-header">
+                <h2 class="wn-section-title">
+                    <i class="bi bi-sliders"></i>
+                    Preferencias laborales
+                </h2>
+                <div class="wn-section-actions">
+                    <button class="wn-add-btn" onclick="openModal('editPreferencesModal')">
+                        <i class="bi bi-pencil"></i> Editar
+                    </button>
+                </div>
+            </div>
+
+            <div class="wn-preferences">
+                <div class="wn-preference-card">
+                    <div class="wn-preference-icon"><i class="bi bi-geo-alt-fill"></i></div>
+                    <div class="wn-preference-info">
+                        <div class="wn-preference-label">Ubicación preferida</div>
+                        <div class="wn-preference-value">Encarnación, Paraguay</div>
+                    </div>
+                </div>
+
+                <div class="wn-preference-card">
+                    <div class="wn-preference-icon"><i class="bi bi-laptop"></i></div>
+                    <div class="wn-preference-info">
+                        <div class="wn-preference-label">Modalidad</div>
+                        <div class="wn-preference-value">Híbrido / Remoto</div>
+                    </div>
+                </div>
+
+                <div class="wn-preference-card">
+                    <div class="wn-preference-icon"><i class="bi bi-clock"></i></div>
+                    <div class="wn-preference-info">
+                        <div class="wn-preference-label">Jornada</div>
+                        <div class="wn-preference-value">Tiempo completo</div>
+                    </div>
+                </div>
+
+                <div class="wn-preference-card">
+                    <div class="wn-preference-icon"><i class="bi bi-cash-coin"></i></div>
+                    <div class="wn-preference-info">
+                        <div class="wn-preference-label">Salario esperado</div>
+                        <div class="wn-preference-value">Gs. 7 - 10M</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- SCRIPTS -->
+    <script>
+        // Navbar toggle
+        const navbar = document.getElementById('navbar');
+        const navbarToggle = document.getElementById('navbarToggle');
+        const navbarBrandTrigger = document.getElementById('navbarBrandTrigger');
+
+        navbarToggle.addEventListener('click', () => {
+            navbar.classList.add('collapsed');
+            document.body.classList.add('navbar-collapsed');
+        });
+
+        navbarBrandTrigger.addEventListener('click', () => {
+            if (navbar.classList.contains('collapsed')) {
+                navbar.classList.remove('collapsed');
+                document.body.classList.remove('navbar-collapsed');
+            }
+        });
+
+        // Dropdown de usuario
+        const userInfoTrigger = document.getElementById('userInfoTrigger');
+        const userDropdown = document.getElementById('userDropdown');
+
+        userInfoTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userInfoTrigger.classList.toggle('open');
+            userDropdown.classList.toggle('show');
+        });
+
+        // Cerrar dropdown al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (!userInfoTrigger.contains(e.target) && !userDropdown.contains(e.target)) {
+                userInfoTrigger.classList.remove('open');
+                userDropdown.classList.remove('show');
+            }
+        });
+
+        // Cerrar con ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                userInfoTrigger.classList.remove('open');
+                userDropdown.classList.remove('show');
+            }
+        });
+
+        // Placeholder para modales (a implementar después)
+        function openModal(modalId) {
+            alert('Modal: ' + modalId + '\n\n(Se implementará en el pase a Laravel)');
+        }
+    </script>
+
+</body>
+</html>

@@ -5,6 +5,7 @@ use App\Http\Controllers\Candidate\ApplicationController;
 use App\Http\Controllers\Candidate\DashboardController;
 use App\Http\Controllers\Candidate\InterviewController;
 use App\Http\Controllers\Candidate\NotificationController;
+use App\Http\Controllers\Candidate\ProfileController;
 use App\Http\Controllers\Candidate\SavedOfferController;
 use App\Http\Controllers\MapController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,7 @@ Route::get('/entrevistas', [InterviewController::class, 'index'])->name('intervi
 // Dashboard del candidato (público por ahora, sin middleware auth)
 Route::prefix('candidato')->name('candidate.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/perfil', [ProfileController::class, 'index'])->name('profile');
     Route::get('/postulaciones', [ApplicationController::class, 'index'])->name('applications.index');
     Route::get('/guardadas', [SavedOfferController::class, 'index'])->name('saved.index');
 });

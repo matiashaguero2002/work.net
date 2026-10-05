@@ -36,7 +36,7 @@
             </a>
         </li>
         <li>
-            <a href="#" title="Perfil">
+            <a href="{{ route('candidate.profile') }}" class="{{ request()->routeIs('candidate.profile') ? 'active' : '' }}" title="Perfil">
                 <i class="bi bi-person"></i> <span>Perfil</span>
             </a>
         </li>
@@ -49,12 +49,33 @@
     </ul>
 
     <div class="wn-navbar-footer">
-        <div class="wn-user-info">
-            <div class="wn-avatar">JP</div>
-            <div>
-                <div class="wn-user-name">Juan Pérez</div>
+        <div class="wn-user-info" id="userInfoTrigger">
+            <div class="wn-avatar">{{ auth()->user()->initials ?? 'JP' }}</div>
+            <div class="wn-user-text">
+                <div class="wn-user-name">{{ auth()->user()->name ?? 'Juan Pérez' }}</div>
                 <div class="wn-user-role">Candidato</div>
             </div>
+            <i class="bi bi-chevron-up wn-user-chevron"></i>
+        </div>
+
+        <div class="wn-user-dropdown" id="userDropdown">
+            <div class="wn-user-dropdown-header">
+                <p class="wn-user-dropdown-name">{{ auth()->user()->name ?? 'Juan Pérez' }}</p>
+                <p class="wn-user-dropdown-email">{{ auth()->user()->email ?? 'juan.perez@email.com' }}</p>
+            </div>
+            <a href="{{ route('candidate.profile') }}" class="wn-user-dropdown-item">
+                <i class="bi bi-person"></i> Mi perfil
+            </a>
+            <a href="#" class="wn-user-dropdown-item">
+                <i class="bi bi-gear"></i> Configuración
+            </a>
+            <a href="#" class="wn-user-dropdown-item">
+                <i class="bi bi-question-circle"></i> Ayuda
+            </a>
+            <div class="wn-user-dropdown-divider"></div>
+            <a href="{{ route('auth.role') }}" class="wn-user-dropdown-item danger">
+                <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+            </a>
         </div>
     </div>
 </nav>

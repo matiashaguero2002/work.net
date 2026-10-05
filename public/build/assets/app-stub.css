@@ -1,0 +1,4871 @@
+
+/* ==== resources/css/worknet.css ==== */
+/* ============================================
+   WORK.NET — base compartida (paleta + reset + body)
+   Fuente: specs/login.html + specs/mapa.html (:root unificado)
+   NO incluir estilos específicos de login ni de mapa.
+   ============================================ */
+:root {
+    --wn-bg-dark:       #0D1117;
+    --wn-bg-panel:      #161B22;
+    --wn-bg-elevated:   #21262D;
+    --wn-border:        #30363D;
+    --wn-text:          #E6EDF3;
+    --wn-text-muted:    #8B949E;
+    --wn-accent:        #1F6FEB;
+    --wn-accent-hover:  #388BFD;
+    --wn-success:       #238636;
+    --wn-danger:        #DA3633;
+    --wn-warning:       #D29922;
+    --wn-navbar-width:          240px;
+    --wn-navbar-width-mini:     72px;
+    --wn-filters-width:         320px;
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--wn-bg-dark);
+    color: var(--wn-text);
+}
+
+/* ==== resources/css/worknet-auth.css ==== */
+/* ============================================
+   WORK.NET — módulo auth (extraído VERBATIM de specs/login.html)
+   Se excluyen :root y reset global (viven en worknet.css).
+   ============================================ */
+/* ============================================
+           PALETA WORK.NET
+           ============================================ */
+        
+
+        
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--wn-bg-dark);
+            color: var(--wn-text);
+        }
+
+        body {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overscroll-behavior: none;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        /* ============================================
+           FONDO MODERNO (grid + orbes + viñeta)
+           ============================================ */
+        .wn-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: radial-gradient(
+                ellipse at top left,
+                #0D1117 0%,
+                #0A0D12 50%,
+                #05070A 100%
+            );
+            overflow: hidden;
+        }
+
+        .wn-bg-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(48, 54, 61, 0.35) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(48, 54, 61, 0.35) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(
+                ellipse at center,
+                black 20%,
+                transparent 80%
+            );
+            -webkit-mask-image: radial-gradient(
+                ellipse at center,
+                black 20%,
+                transparent 80%
+            );
+            animation: gridFloat 20s ease-in-out infinite;
+        }
+
+        @keyframes gridFloat {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-20px, -20px); }
+        }
+
+        .wn-bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.4;
+            animation: orbFloat 18s ease-in-out infinite;
+        }
+
+        .wn-bg-orb-1 {
+            width: 500px;
+            height: 500px;
+            background: #1F6FEB;
+            top: -150px;
+            left: -150px;
+            animation-delay: 0s;
+        }
+
+        .wn-bg-orb-2 {
+            width: 450px;
+            height: 450px;
+            background: #6E40C9;
+            bottom: -150px;
+            right: -100px;
+            animation-delay: -6s;
+        }
+
+        .wn-bg-orb-3 {
+            width: 350px;
+            height: 350px;
+            background: #238636;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.15;
+            animation-delay: -12s;
+        }
+
+        @keyframes orbFloat {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(40px, -30px) scale(1.1);
+            }
+            66% {
+                transform: translate(-30px, 40px) scale(0.95);
+            }
+        }
+
+        .wn-bg-vignette {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(
+                ellipse at center,
+                transparent 0%,
+                rgba(0, 0, 0, 0.4) 70%,
+                rgba(0, 0, 0, 0.7) 100%
+            );
+            pointer-events: none;
+        }
+
+        /* ============================================
+           VISTAS (una visible a la vez)
+           ============================================ */
+        .wn-view {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            overflow: hidden;
+        }
+
+        .wn-view.active {
+            display: flex;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================
+           MARCA SUPERIOR IZQUIERDA
+           ============================================ */
+        .wn-brand {
+            position: fixed;
+            top: 28px;
+            left: 32px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .wn-brand-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 16px rgba(31, 111, 235, 0.4);
+            flex-shrink: 0;
+        }
+
+        .wn-brand-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--wn-text);
+        }
+
+        /* ============================================
+           LAYOUT DE AUTENTICACIÓN
+           (texto y card separados a los extremos en escritorio)
+           ============================================ */
+        .wn-auth-layout {
+            display: flex;
+            width: 100%;
+            max-width: 1200px; /* Aumentado para dar más espacio */
+            align-items: center;
+            justify-content: space-between; /* CAMBIO CLAVE: separa los elementos a los extremos */
+            gap: clamp(24px, 4vw, 72px);
+            padding: 0 clamp(16px, 3vw, 40px);
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Panel izquierdo: texto */
+        .wn-auth-left {
+            flex: 1 1 0;
+            min-width: 0;               /* CRÍTICO: permite que el flex se encoja */
+            max-width: 480px;
+            color: var(--wn-text);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .wn-auth-left h1 {
+            font-size: clamp(1.7rem, 3.2vw, 2.75rem);
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            line-height: 1.15;
+            margin: 0 0 16px 0;
+        }
+
+        .wn-auth-left h1 .accent {
+            background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .wn-auth-left p {
+            font-size: clamp(0.85rem, 1.1vw, 1rem);
+            color: var(--wn-text-muted);
+            line-height: 1.6;
+            margin: 0 0 24px 0;
+        }
+
+        .wn-auth-features {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .wn-auth-feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--wn-text-muted);
+            font-size: clamp(0.78rem, 0.95vw, 0.9rem);
+        }
+
+        .wn-auth-feature i {
+            color: var(--wn-accent);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        /* Panel derecho: card */
+        .wn-auth-right {
+            flex: 0 0 auto;
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wn-card {
+            background-color: rgba(22, 27, 34, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--wn-border);
+            border-radius: 20px;
+            padding: clamp(24px, 3vw, 36px) clamp(20px, 2.5vw, 32px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+            width: 100%;
+            max-height: calc(100dvh - 48px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .wn-card::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* ===== TÍTULO GRANDE ===== */
+        .wn-card-title {
+            font-size: clamp(1.5rem, 2vw, 1.85rem);
+            font-weight: 700;
+            letter-spacing: -0.6px;
+            line-height: 1.15;
+            margin: 0 0 8px 0;
+        }
+
+        .wn-card-subtitle {
+            color: var(--wn-text-muted);
+            font-size: clamp(0.82rem, 0.95vw, 0.9rem);
+            margin: 0 0 22px 0;
+        }
+
+        /* ============================================
+           BOTONES DE SELECCIÓN DE ROL
+           ============================================ */
+        .wn-role-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .wn-role-btn {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+            padding: 15px 18px;
+            background-color: var(--wn-bg-dark);
+            border: 2px solid var(--wn-border);
+            border-radius: 14px;
+            color: var(--wn-text);
+            font-size: clamp(0.82rem, 0.95vw, 0.95rem);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            font-family: inherit;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .wn-role-btn:hover {
+            border-color: var(--wn-accent);
+            background-color: rgba(31, 111, 235, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .wn-role-btn:active {
+            transform: translateY(0);
+            background-color: rgba(31, 111, 235, 0.15);
+        }
+
+        .wn-role-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background-color: var(--wn-bg-elevated);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--wn-accent);
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .wn-role-btn:hover .wn-role-icon {
+            background-color: var(--wn-accent);
+            color: white;
+        }
+
+        .wn-role-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .wn-role-name {
+            font-weight: 600;
+            font-size: clamp(0.85rem, 0.95vw, 0.95rem);
+        }
+
+        .wn-role-desc {
+            font-size: clamp(0.68rem, 0.78vw, 0.75rem);
+            color: var(--wn-text-muted);
+        }
+
+        /* ============================================
+           FORMULARIOS
+           ============================================ */
+        .wn-form-group {
+            margin-bottom: 16px;
+        }
+
+        .wn-label {
+            display: block;
+            font-size: clamp(0.72rem, 0.85vw, 0.8rem);
+            font-weight: 500;
+            color: var(--wn-text);
+            margin-bottom: 6px;
+        }
+
+        .wn-label .required {
+            color: var(--wn-danger);
+            margin-left: 2px;
+        }
+
+        .wn-input,
+        .wn-select {
+            width: 100%;
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            color: var(--wn-text);
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-size: clamp(0.8rem, 0.9vw, 0.9rem);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            font-family: inherit;
+        }
+
+        .wn-input:focus,
+        .wn-select:focus {
+            outline: none;
+            border-color: var(--wn-accent);
+            box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15);
+        }
+
+        .wn-input::placeholder {
+            color: var(--wn-text-muted);
+            opacity: 0.6;
+        }
+
+        .wn-input-icon {
+            position: relative;
+        }
+
+        .wn-input-icon i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--wn-text-muted);
+            font-size: 1rem;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .wn-input-icon .wn-input {
+            padding-left: 42px;
+        }
+
+        .wn-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* ============================================
+           BOTONES
+           ============================================ */
+        .btn-wn-primary {
+            width: 100%;
+            background-color: var(--wn-accent);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: clamp(0.82rem, 0.9vw, 0.9rem);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .btn-wn-primary:hover {
+            background-color: var(--wn-accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35);
+        }
+
+        .btn-wn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(31, 111, 235, 0.3);
+        }
+
+        .btn-wn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--wn-border);
+            color: var(--wn-text-muted);
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: clamp(0.78rem, 0.85vw, 0.85rem);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .btn-wn-secondary:hover {
+            background-color: var(--wn-bg-elevated);
+            color: var(--wn-text);
+            border-color: var(--wn-text-muted);
+        }
+
+        .btn-wn-secondary:active {
+            background-color: var(--wn-bg-panel);
+        }
+
+        /* ============================================
+           LINKS Y TEXTOS AUXILIARES
+           ============================================ */
+        .wn-link {
+            color: var(--wn-accent);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            touch-action: manipulation;
+        }
+
+        .wn-link:hover {
+            color: var(--wn-accent-hover);
+            text-decoration: underline;
+        }
+
+        .wn-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 18px 0;
+            color: var(--wn-text-muted);
+            font-size: 0.75rem;
+        }
+
+        .wn-divider::before,
+        .wn-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: var(--wn-border);
+        }
+
+        .wn-text-center {
+            text-align: center;
+            font-size: clamp(0.75rem, 0.85vw, 0.85rem);
+            color: var(--wn-text-muted);
+        }
+
+        .wn-text-center a {
+            color: var(--wn-accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .wn-text-center a:hover {
+            text-decoration: underline;
+        }
+
+        /* ============================================
+           BACK BUTTON
+           ============================================ */
+        .wn-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--wn-text-muted);
+            background: none;
+            border: none;
+            font-size: clamp(0.72rem, 0.8vw, 0.8rem);
+            cursor: pointer;
+            padding: 6px 0;
+            margin-bottom: 16px;
+            transition: color 0.2s ease;
+            font-family: inherit;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .wn-back-btn:hover {
+            color: var(--wn-text);
+        }
+
+        /* ============================================
+           DASHBOARD (destino post-login)
+           ============================================ */
+        .wn-dashboard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .wn-dashboard-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            color: white;
+            margin-bottom: 24px;
+            box-shadow: 0 12px 32px rgba(31, 111, 235, 0.4);
+        }
+
+        .wn-dashboard h2 {
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.5px;
+        }
+
+        .wn-dashboard p {
+            color: var(--wn-text-muted);
+            margin: 0 0 32px 0;
+            font-size: clamp(0.85rem, 1vw, 1rem);
+            line-height: 1.6;
+        }
+
+        /* ============================================
+           RESPONSIVE (TABLET)
+           ============================================ */
+        @media (max-width: 992px) {
+            .wn-auth-layout {
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 0;
+                padding: 0 20px;
+                max-width: 480px;
+            }
+
+            .wn-auth-left {
+                display: none;
+            }
+
+            .wn-auth-right {
+                flex: 0 1 auto;
+                max-width: 420px;
+                width: 100%;
+            }
+
+            .wn-brand {
+                top: 18px;
+                left: 18px;
+            }
+
+            .wn-brand-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1.1rem;
+            }
+
+            .wn-brand-name {
+                font-size: 1.2rem;
+            }
+
+            .wn-card {
+                padding: 24px 20px;
+                max-height: calc(100dvh - 80px);
+            }
+
+            .wn-form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .wn-bg-orb-1,
+            .wn-bg-orb-2 {
+                width: 280px;
+                height: 280px;
+                filter: blur(80px);
+            }
+            .wn-bg-orb-3 {
+                width: 200px;
+                height: 200px;
+            }
+            .wn-bg-grid {
+                background-size: 30px 30px;
+            }
+
+            .wn-view {
+                padding: 16px;
+                align-items: center;
+            }
+
+            .wn-card-title {
+                font-size: clamp(1.5rem, 6vw, 1.85rem);
+            }
+
+            /* Evitar zoom automático en iOS al enfocar inputs */
+            .wn-input,
+            .wn-select {
+                font-size: 16px;
+            }
+
+            .wn-input-icon i {
+                font-size: 1.05rem;
+            }
+        }
+
+        /* ============================================
+           RESPONSIVE (MÓVIL)
+           ============================================ */
+        @media (max-width: 480px) {
+            .wn-view {
+                padding: 12px;
+                padding-top: max(12px, env(safe-area-inset-top));
+                padding-bottom: max(12px, env(safe-area-inset-bottom));
+            }
+
+            .wn-card {
+                padding: 22px 16px;
+                border-radius: 16px;
+                max-height: calc(100dvh - 60px);
+            }
+
+            .wn-brand {
+                top: max(14px, env(safe-area-inset-top));
+                left: 14px;
+            }
+
+            .wn-brand-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 1rem;
+                border-radius: 10px;
+            }
+
+            .wn-brand-name {
+                font-size: 1.05rem;
+            }
+
+            .wn-role-btn {
+                padding: 13px 14px;
+                gap: 12px;
+            }
+
+            .wn-role-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+
+            .wn-back-btn {
+                margin-bottom: 12px;
+            }
+
+            .wn-card-title {
+                font-size: 1.55rem;
+            }
+
+            .wn-dashboard-icon {
+                width: 68px;
+                height: 68px;
+                font-size: 1.9rem;
+                border-radius: 18px;
+            }
+        }
+
+        /* ============================================
+           ALTURAS REDUCIDAS (LANDSCAPE EN MÓVIL)
+           ============================================ */
+        @media (max-height: 600px) {
+            .wn-card {
+                max-height: calc(100dvh - 24px);
+                padding: 18px 16px;
+            }
+
+            .wn-card-title {
+                font-size: 1.4rem;
+            }
+
+            .wn-card-subtitle {
+                margin-bottom: 14px;
+            }
+
+            .wn-form-group {
+                margin-bottom: 10px;
+            }
+
+            .wn-input {
+                padding: 9px 12px;
+            }
+
+            .wn-input-icon .wn-input {
+                padding-left: 40px;
+            }
+
+            .wn-back-btn {
+                margin-bottom: 10px;
+            }
+
+            .wn-divider {
+                margin: 12px 0;
+            }
+
+            .wn-brand {
+                top: max(10px, env(safe-area-inset-top));
+                left: 12px;
+            }
+
+            .wn-brand-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 0.9rem;
+            }
+
+            .wn-brand-name {
+                font-size: 1rem;
+            }
+
+            .wn-dashboard-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.6rem;
+                margin-bottom: 16px;
+            }
+        }
+
+        /* Landscape en móvil: ocultar nombre de marca para no pisar la card */
+        @media (max-height: 600px) and (max-width: 992px) {
+            .wn-brand-name {
+                display: none;
+            }
+
+            .wn-brand {
+                top: max(12px, env(safe-area-inset-top));
+                left: max(12px, env(safe-area-inset-left));
+            }
+        }
+
+        /* ============================================
+           ACCESIBILIDAD: REDUCIR MOVIMIENTO
+           ============================================ */
+        @media (prefers-reduced-motion: reduce) {
+            .wn-bg-grid,
+            .wn-bg-orb {
+                animation: none;
+            }
+
+            .wn-view.active {
+                animation: none;
+            }
+
+            .wn-role-btn,
+            .btn-wn-primary,
+            .btn-wn-secondary,
+            .wn-link {
+                transition: none;
+            }
+
+            .wn-role-btn:hover,
+            .btn-wn-primary:hover {
+                transform: none;
+            }
+        }
+
+        /* ============================================
+           FALLBACK PARA NAVEGADORES SIN dvh
+           ============================================ */
+        @supports not (height: 100dvh) {
+            .wn-card {
+                max-height: calc(100vh - 48px);
+            }
+            @media (max-width: 992px) {
+                .wn-card {
+                    max-height: calc(100vh - 80px);
+                }
+            }
+            @media (max-width: 480px) {
+                .wn-card {
+                    max-height: calc(100vh - 60px);
+                }
+            }
+            @media (max-height: 600px) {
+                .wn-card {
+                    max-height: calc(100vh - 24px);
+                }
+            }
+        }
+
+        /* ============================================
+           FIX AUTOFILL (Chrome / Edge / Firefox) — RNF-08
+           Evita que el autocompletado imponga fondo claro
+           sobre los inputs oscuros de Work.net.
+           ============================================ */
+        .wn-input:-webkit-autofill,
+        .wn-input:-webkit-autofill:hover,
+        .wn-input:-webkit-autofill:focus,
+        .wn-input:-webkit-autofill:active {
+            -webkit-text-fill-color: var(--wn-text);
+            -webkit-box-shadow: 0 0 0 1000px var(--wn-bg-elevated) inset;
+            box-shadow: 0 0 0 1000px var(--wn-bg-elevated) inset;
+            caret-color: var(--wn-text);
+        }
+
+        .wn-input:autofill {
+            color: var(--wn-text);
+            background-color: var(--wn-bg-elevated);
+            box-shadow: 0 0 0 1000px var(--wn-bg-elevated) inset;
+        }
+    
+/* ==== resources/css/worknet-map.css ==== */
+/* ============================================
+   WORK.NET — módulo mapa (extraído VERBATIM de specs/mapa.html)
+   Se excluyen :root y reset global (viven en worknet.css).
+   ============================================ */
+/* Coexistencia: el módulo auth fija el body en flex centrado;
+   en páginas con mapa se restaura el layout (el UI del mapa es fixed). */
+body:has(#map) {
+    display: block;
+    position: static;
+}
+
+/* ============================================
+           PALETA WORK.NET
+           ============================================ */
+        
+
+        
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--wn-bg-dark);
+            color: var(--wn-text);
+            overflow: hidden;
+        }
+
+        /* ============================================
+           MAPA A PANTALLA COMPLETA
+           ============================================ */
+        #map {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            background-color: var(--wn-bg-dark);
+        }
+
+        .leaflet-container {
+            background-color: #0D1117 !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+
+        .leaflet-control-zoom {
+            border: 1px solid var(--wn-border) !important;
+            border-radius: 8px !important;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        .leaflet-control-zoom a {
+            background-color: var(--wn-bg-panel) !important;
+            color: var(--wn-text) !important;
+            border-bottom: 1px solid var(--wn-border) !important;
+            width: 36px !important;
+            height: 36px !important;
+            line-height: 36px !important;
+            font-size: 1.1rem !important;
+        }
+
+        .leaflet-control-zoom a:hover {
+            background-color: var(--wn-bg-elevated) !important;
+        }
+
+        .leaflet-control-zoom a:last-child {
+            border-bottom: none !important;
+        }
+
+        .leaflet-control-attribution {
+            background-color: rgba(22, 27, 34, 0.85) !important;
+            color: var(--wn-text-muted) !important;
+            font-size: 0.65rem !important;
+            padding: 3px 8px !important;
+            border-radius: 6px 0 0 0 !important;
+            backdrop-filter: blur(8px);
+        }
+
+        .leaflet-control-attribution a {
+            color: var(--wn-accent) !important;
+        }
+
+        /* ============================================
+           NAVBAR LATERAL
+           ============================================ */
+        .wn-navbar {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            bottom: 16px;
+            width: var(--wn-navbar-width);
+            background-color: var(--wn-bg-panel);
+            border: 1px solid var(--wn-border);
+            border-radius: 16px;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                        padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .wn-navbar.collapsed {
+            width: var(--wn-navbar-width-mini);
+            padding: 20px 8px;
+        }
+
+        .wn-navbar-brand {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--wn-border);
+            margin-bottom: 16px;
+        }
+
+        .wn-navbar-brand-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            flex: 1;
+            padding: 6px 8px;
+            border-radius: 10px;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* Cuando el navbar está colapsado, el logo es clickeable y se ilumina */
+        .wn-navbar.collapsed .wn-navbar-brand-left {
+            cursor: pointer;
+            background-color: rgba(31, 111, 235, 0.15);
+            box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4),
+                        0 0 20px rgba(31, 111, 235, 0.35);
+            animation: glowPulse 2s ease-in-out infinite;
+        }
+
+        /* El ícono del logo también se ilumina */
+        .wn-navbar.collapsed .wn-navbar-brand-left i {
+            color: var(--wn-accent-hover);
+            filter: drop-shadow(0 0 8px rgba(31, 111, 235, 0.8));
+        }
+
+        .wn-navbar.collapsed .wn-navbar-brand-left:hover {
+            background-color: rgba(31, 111, 235, 0.25);
+            box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.6),
+                        0 0 28px rgba(31, 111, 235, 0.55);
+        }
+
+        @keyframes glowPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4),
+                            0 0 20px rgba(31, 111, 235, 0.35);
+            }
+            50% {
+                box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.6),
+                            0 0 28px rgba(31, 111, 235, 0.55);
+            }
+        }
+
+        .wn-navbar-brand i {
+            color: var(--wn-accent);
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            transition: color 0.2s ease, filter 0.2s ease;
+        }
+
+        .wn-navbar-brand span {
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: -0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: opacity 0.2s ease, width 0.3s ease;
+        }
+
+        .wn-navbar-toggle {
+            background: none;
+            border: none;
+            color: var(--wn-text-muted);
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .wn-navbar-toggle:hover {
+            background-color: var(--wn-bg-elevated);
+            color: var(--wn-text);
+        }
+
+        /* Cuando está colapsado: ocultar textos y centrar logo */
+        .wn-navbar.collapsed .wn-navbar-brand {
+            justify-content: center;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+
+        .wn-navbar.collapsed .wn-navbar-brand-left {
+            justify-content: center;
+            flex: none;
+        }
+
+        .wn-navbar.collapsed .wn-navbar-brand span {
+            display: none;
+        }
+
+        /* Ocultar el botón toggle interno cuando está colapsado */
+        .wn-navbar.collapsed .wn-navbar-toggle {
+            display: none;
+        }
+
+        .wn-navbar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .wn-navbar-menu li { margin-bottom: 4px; }
+
+        .wn-navbar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            color: var(--wn-text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .wn-navbar-menu a:hover {
+            background-color: var(--wn-bg-elevated);
+            color: var(--wn-text);
+        }
+
+        .wn-navbar-menu a.active {
+            background-color: var(--wn-accent);
+            color: white;
+            font-weight: 500;
+        }
+
+        .wn-navbar-menu a i {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            width: 20px;
+            text-align: center;
+        }
+
+        .wn-navbar-menu a span {
+            transition: opacity 0.2s ease;
+        }
+
+        .wn-navbar.collapsed .wn-navbar-menu a {
+            justify-content: center;
+            padding: 12px 8px;
+        }
+
+        .wn-navbar.collapsed .wn-navbar-menu a span {
+            display: none;
+        }
+
+        .wn-navbar.collapsed .wn-navbar-menu a .badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            font-size: 0.6rem;
+            padding: 2px 5px;
+        }
+
+        .wn-navbar-footer {
+            padding-top: 16px;
+            border-top: 1px solid var(--wn-border);
+        }
+
+        .wn-user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .wn-navbar.collapsed .wn-user-info {
+            justify-content: center;
+            margin-bottom: 0;
+        }
+
+        .wn-navbar.collapsed .wn-user-info > div:not(.wn-avatar) {
+            display: none;
+        }
+
+        .wn-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .wn-user-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .wn-user-role {
+            font-size: 0.7rem;
+            color: var(--wn-text-muted);
+            text-transform: capitalize;
+        }
+
+        /* ============================================
+           PANEL DE FILTROS
+           (por defecto cerrado)
+           ============================================ */
+        .wn-filters {
+            position: fixed;
+            top: 16px;
+            left: calc(var(--wn-navbar-width) + 32px);
+            width: var(--wn-filters-width);
+            max-height: calc(100vh - 32px);
+            background-color: var(--wn-bg-panel);
+            border: 1px solid var(--wn-border);
+            border-radius: 16px;
+            z-index: 99;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body.navbar-collapsed .wn-filters {
+            left: calc(var(--wn-navbar-width-mini) + 32px);
+        }
+
+        .wn-filters-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--wn-border);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .wn-filters-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .wn-filters-title i {
+            color: var(--wn-accent);
+            font-size: 1.1rem;
+        }
+
+        .wn-filters-toggle {
+            background: none;
+            border: none;
+            color: var(--wn-text-muted);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+
+        /* Por defecto (cerrado): flecha hacia abajo */
+        .wn-filters .wn-filters-toggle {
+            transform: rotate(0deg);
+        }
+
+        /* Cuando está abierto: flecha hacia arriba */
+        .wn-filters.open .wn-filters-toggle {
+            transform: rotate(-180deg);
+        }
+
+        .wn-filters-body {
+            padding: 0 18px;
+            overflow-y: auto;
+            transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.3s ease;
+            max-height: 0;
+            opacity: 0;
+        }
+
+        .wn-filters.open .wn-filters-body {
+            padding: 18px;
+            max-height: calc(100vh - 180px);
+            opacity: 1;
+        }
+
+        .wn-filters-body::-webkit-scrollbar { width: 6px; }
+        .wn-filters-body::-webkit-scrollbar-track { background: transparent; }
+        .wn-filters-body::-webkit-scrollbar-thumb {
+            background: var(--wn-border);
+            border-radius: 3px;
+        }
+
+        .wn-filter-group {
+            margin-bottom: 20px;
+        }
+
+        .wn-filter-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .wn-filter-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--wn-text);
+            margin-bottom: 8px;
+        }
+
+        .wn-filter-input,
+        .wn-filter-select {
+            width: 100%;
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            color: var(--wn-text);
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .wn-filter-input:focus,
+        .wn-filter-select:focus {
+            outline: none;
+            border-color: var(--wn-accent);
+            box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15);
+        }
+
+        .wn-filter-input::placeholder {
+            color: var(--wn-text-muted);
+            opacity: 0.6;
+        }
+
+        .wn-filter-search {
+            position: relative;
+        }
+
+        .wn-filter-search i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--wn-text-muted);
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+
+        .wn-filter-search .wn-filter-input {
+            padding-left: 34px;
+        }
+
+        .wn-filter-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .wn-filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--wn-text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .wn-filter-chip:hover {
+            border-color: var(--wn-accent);
+            color: var(--wn-text);
+        }
+
+        .wn-filter-chip.active {
+            background-color: var(--wn-accent);
+            border-color: var(--wn-accent);
+            color: white;
+        }
+
+        .wn-filter-chip input {
+            display: none;
+        }
+
+        .wn-distance-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--wn-text-muted);
+            margin-top: 6px;
+        }
+
+        input[type="range"].wn-filter-range {
+            width: 100%;
+            height: 4px;
+            background: var(--wn-border);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: 8px;
+        }
+
+        input[type="range"].wn-filter-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--wn-accent);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid var(--wn-bg-panel);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        input[type="range"].wn-filter-range::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--wn-accent);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid var(--wn-bg-panel);
+        }
+
+        .wn-filters-actions {
+            display: flex;
+            gap: 8px;
+            padding: 0 18px;
+            border-top: 1px solid var(--wn-border);
+            background-color: var(--wn-bg-panel);
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.3s ease;
+        }
+
+        .wn-filters.open .wn-filters-actions {
+            padding: 14px 18px;
+            max-height: 100px;
+            opacity: 1;
+        }
+
+        .btn-wn-primary {
+            flex: 1;
+            background-color: var(--wn-accent);
+            border: none;
+            color: white !important;
+            font-weight: 600;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none !important;
+        }
+
+        .btn-wn-primary:hover {
+            background-color: var(--wn-accent-hover);
+            color: white !important;
+        }
+
+        .btn-wn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--wn-border);
+            color: var(--wn-text-muted) !important;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none !important;
+        }
+
+        .btn-wn-secondary:hover {
+            background-color: var(--wn-bg-elevated);
+            color: var(--wn-text) !important;
+        }
+
+        /* ============================================
+           CONTADOR DE RESULTADOS
+           ============================================ */
+        .wn-results-badge {
+            position: fixed;
+            bottom: 24px;
+            left: calc(var(--wn-navbar-width) + 32px + var(--wn-filters-width) + 16px);
+            z-index: 99;
+            background-color: var(--wn-bg-panel);
+            border: 1px solid var(--wn-border);
+            border-radius: 12px;
+            padding: 10px 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: var(--wn-text);
+            backdrop-filter: blur(12px);
+            transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            white-space: nowrap;
+        }
+
+        .wn-results-badge i {
+            color: var(--wn-accent);
+            font-size: 1rem;
+        }
+
+        .wn-results-badge strong {
+            color: var(--wn-accent);
+            font-weight: 700;
+        }
+
+        /* ============================================
+           MARCADOR CON MINIATURA DE EMPRESA
+           ============================================ */
+        .wn-marker-wrapper {
+            position: relative;
+            width: 48px;
+            height: 58px;
+        }
+
+        .wn-marker-pin {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%) rotate(-45deg);
+            width: 44px;
+            height: 44px;
+            background: var(--wn-accent);
+            border-radius: 50% 50% 50% 0;
+            border: 3px solid #ffffff;
+            box-shadow: 0 6px 20px rgba(31, 111, 235, 0.6);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wn-marker-pin:hover {
+            transform: translateX(-50%) rotate(-45deg) scale(1.1);
+        }
+
+        .wn-marker-thumb {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            overflow: hidden;
+            transform: rotate(45deg);
+            background-color: var(--wn-bg-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .wn-marker-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .wn-marker-thumb-text {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: white;
+            transform: rotate(45deg);
+        }
+
+        .wn-marker-pulse {
+            position: absolute;
+            top: 22px;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--wn-accent);
+            opacity: 0.6;
+            animation: markerPulse 2s ease-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes markerPulse {
+            0% {
+                width: 44px;
+                height: 44px;
+                opacity: 0.7;
+            }
+            100% {
+                width: 110px;
+                height: 110px;
+                opacity: 0;
+            }
+        }
+
+        /* ============================================
+           POPUP MINI
+           ============================================ */
+        .leaflet-popup-content-wrapper {
+            background-color: var(--wn-bg-panel) !important;
+            color: var(--wn-text) !important;
+            border-radius: 16px !important;
+            border: 1px solid var(--wn-border) !important;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6) !important;
+            padding: 0 !important;
+            overflow: hidden;
+        }
+
+        .leaflet-popup-content {
+            margin: 0 !important;
+            width: 300px !important;
+            line-height: 1.5 !important;
+        }
+
+        .leaflet-popup-tip {
+            background-color: var(--wn-bg-panel) !important;
+            border: 1px solid var(--wn-border) !important;
+        }
+
+        .leaflet-popup-close-button {
+            color: var(--wn-text-muted) !important;
+            font-size: 1.4rem !important;
+            padding: 6px 8px !important;
+            z-index: 10;
+            background-color: rgba(13, 17, 23, 0.7) !important;
+            border-radius: 0 16px 0 8px !important;
+            width: 28px !important;
+            height: 28px !important;
+        }
+
+        .leaflet-popup-close-button:hover {
+            color: var(--wn-text) !important;
+        }
+
+        .wn-popup-mini {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wn-popup-image {
+            width: 100%;
+            height: 130px;
+            object-fit: cover;
+            display: block;
+            background-color: var(--wn-bg-elevated);
+        }
+
+        .wn-popup-body {
+            padding: 14px 16px;
+        }
+
+        .wn-popup-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .wn-popup-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .wn-popup-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .wn-popup-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin: 0 0 2px 0;
+            letter-spacing: -0.3px;
+        }
+
+        .wn-popup-company {
+            font-size: 0.78rem;
+            color: var(--wn-text-muted);
+            margin: 0;
+        }
+
+        .wn-popup-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 12px;
+        }
+
+        .wn-popup-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            background-color: var(--wn-bg-elevated);
+            border-radius: 20px;
+            font-size: 0.68rem;
+            color: var(--wn-text-muted);
+            font-weight: 500;
+        }
+
+        .wn-popup-badge i {
+            font-size: 0.68rem;
+            color: var(--wn-accent);
+        }
+
+        .wn-popup-description {
+            font-size: 0.78rem;
+            color: var(--wn-text-muted);
+            margin: 0 0 14px 0;
+            line-height: 1.5;
+        }
+
+        .wn-popup-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .wn-popup-btn {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 14px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            text-decoration: none !important;
+        }
+
+        .wn-popup-btn-primary,
+        .wn-popup-btn-primary:link,
+        .wn-popup-btn-primary:visited,
+        .wn-popup-btn-primary:hover,
+        .wn-popup-btn-primary:active,
+        .wn-popup-btn-primary:focus {
+            background-color: var(--wn-accent);
+            color: #ffffff !important;
+            text-decoration: none !important;
+        }
+
+        .wn-popup-btn-primary:hover {
+            background-color: var(--wn-accent-hover);
+            color: #ffffff !important;
+        }
+
+        .wn-popup-btn-secondary,
+        .wn-popup-btn-secondary:link,
+        .wn-popup-btn-secondary:visited,
+        .wn-popup-btn-secondary:hover,
+        .wn-popup-btn-secondary:active,
+        .wn-popup-btn-secondary:focus {
+            background-color: transparent;
+            color: var(--wn-text-muted) !important;
+            border: 1px solid var(--wn-border);
+            text-decoration: none !important;
+        }
+
+        .wn-popup-btn-secondary:hover {
+            background-color: var(--wn-bg-elevated);
+            color: var(--wn-text) !important;
+        }
+
+        /* ============================================
+           MODAL DE DETALLE COMPLETO
+           ============================================ */
+        .wn-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .wn-modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .wn-modal {
+            background-color: var(--wn-bg-panel);
+            border: 1px solid var(--wn-border);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 640px;
+            max-height: calc(100vh - 48px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7);
+            animation: modalSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(24px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .wn-modal-image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+            background-color: var(--wn-bg-elevated);
+            flex-shrink: 0;
+        }
+
+        .wn-modal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .wn-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background-color: rgba(13, 17, 23, 0.85);
+            border: 1px solid var(--wn-border);
+            color: var(--wn-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(8px);
+            z-index: 2;
+        }
+
+        .wn-modal-close:hover {
+            background-color: var(--wn-danger);
+            border-color: var(--wn-danger);
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .wn-modal-logo-badge {
+            position: absolute;
+            bottom: -28px;
+            left: 28px;
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.6rem;
+            border: 4px solid var(--wn-bg-panel);
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            z-index: 2;
+        }
+
+        .wn-modal-logo-badge img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .wn-modal-body {
+            padding: 44px 28px 24px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .wn-modal-body::-webkit-scrollbar { width: 8px; }
+        .wn-modal-body::-webkit-scrollbar-track { background: transparent; }
+        .wn-modal-body::-webkit-scrollbar-thumb {
+            background: var(--wn-border);
+            border-radius: 4px;
+        }
+
+        .wn-modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .wn-modal-company {
+            font-size: 0.95rem;
+            color: var(--wn-text-muted);
+            margin: 0 0 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .wn-modal-company i {
+            color: var(--wn-accent);
+        }
+
+        .wn-modal-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .wn-modal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background-color: var(--wn-bg-elevated);
+            border: 1px solid var(--wn-border);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--wn-text);
+            font-weight: 500;
+        }
+
+        .wn-modal-badge i {
+            color: var(--wn-accent);
+            font-size: 0.85rem;
+        }
+
+        .wn-modal-section {
+            margin-bottom: 22px;
+        }
+
+        .wn-modal-section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--wn-text);
+            margin-bottom: 10px;
+        }
+
+        .wn-modal-section-title i {
+            color: var(--wn-accent);
+            font-size: 1rem;
+        }
+
+        .wn-modal-section-title::after {
+            content: '';
+            flex-grow: 1;
+            height: 1px;
+            background-color: var(--wn-border);
+            margin-left: 10px;
+        }
+
+        .wn-modal-section-content {
+            font-size: 0.88rem;
+            color: var(--wn-text-muted);
+            line-height: 1.7;
+        }
+
+        .wn-modal-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .wn-modal-detail-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 10px;
+        }
+
+        .wn-modal-detail-item i {
+            color: var(--wn-accent);
+            font-size: 1.05rem;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .wn-modal-detail-label {
+            font-size: 0.7rem;
+            color: var(--wn-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .wn-modal-detail-value {
+            font-size: 0.85rem;
+            color: var(--wn-text);
+            font-weight: 500;
+        }
+
+        .wn-modal-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .wn-modal-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            background-color: rgba(31, 111, 235, 0.12);
+            border: 1px solid rgba(31, 111, 235, 0.3);
+            color: var(--wn-accent-hover);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .wn-modal-footer {
+            display: flex;
+            gap: 12px;
+            padding: 20px 28px;
+            border-top: 1px solid var(--wn-border);
+            background-color: var(--wn-bg-panel);
+            flex-shrink: 0;
+        }
+
+        .wn-modal-footer .btn-wn-primary {
+            flex: 2;
+            padding: 13px 20px;
+            font-size: 0.9rem;
+        }
+
+        .wn-modal-footer .btn-wn-secondary {
+            flex: 1;
+            padding: 13px 20px;
+            font-size: 0.9rem;
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 992px) {
+            
+
+            .wn-navbar {
+                width: var(--wn-navbar-width);
+                padding: 16px 8px;
+            }
+
+            .wn-navbar-brand span,
+            .wn-navbar-menu a span,
+            .wn-user-info > div:not(.wn-avatar) {
+                display: none;
+            }
+
+            .wn-navbar-menu a {
+                justify-content: center;
+            }
+
+            .wn-navbar-toggle {
+                display: none;
+            }
+
+            .wn-filters {
+                left: calc(var(--wn-navbar-width) + 32px);
+                width: 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            
+
+            .wn-navbar {
+                top: 12px;
+                left: 12px;
+                bottom: 12px;
+                width: var(--wn-navbar-width);
+                padding: 12px 6px;
+                border-radius: 14px;
+            }
+
+            .wn-navbar-brand {
+                padding-bottom: 12px;
+                margin-bottom: 12px;
+            }
+
+            .wn-navbar-brand i {
+                font-size: 1.3rem;
+            }
+
+            .wn-navbar-toggle {
+                display: none;
+            }
+
+            .wn-filters {
+                top: auto;
+                left: 12px;
+                right: 12px;
+                bottom: 12px;
+                width: auto;
+                max-height: 70vh;
+                border-radius: 16px;
+            }
+
+            .wn-filters-body {
+                max-height: 50vh;
+            }
+
+            .wn-results-badge {
+                bottom: auto;
+                top: 12px;
+                left: calc(var(--wn-navbar-width) + 24px);
+                right: 12px;
+                justify-content: center;
+                transition: none;
+            }
+
+            .leaflet-popup-content {
+                width: 260px !important;
+            }
+
+            .wn-popup-image {
+                height: 110px;
+            }
+
+            .wn-modal-image-wrapper {
+                height: 160px;
+            }
+
+            .wn-modal-body {
+                padding: 40px 20px 20px;
+            }
+
+            .wn-modal-title {
+                font-size: 1.25rem;
+            }
+
+            .wn-modal-detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .wn-modal-footer {
+                flex-direction: column-reverse;
+                padding: 16px 20px;
+            }
+
+            .wn-modal-footer .btn-wn-primary,
+            .wn-modal-footer .btn-wn-secondary {
+                width: 100%;
+                flex: 1;
+            }
+
+            .wn-modal-logo-badge {
+                width: 60px;
+                height: 60px;
+                font-size: 1.3rem;
+                left: 20px;
+                bottom: -22px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            
+
+            .wn-navbar {
+                top: 8px;
+                left: 8px;
+                bottom: 8px;
+                width: var(--wn-navbar-width);
+                padding: 10px 4px;
+            }
+
+            .wn-navbar-menu a {
+                padding: 10px 0;
+            }
+
+            .wn-filters {
+                left: 8px;
+                right: 8px;
+                bottom: 8px;
+            }
+
+            .wn-results-badge {
+                top: 8px;
+                left: calc(var(--wn-navbar-width) + 16px);
+                right: 8px;
+                font-size: 0.75rem;
+                padding: 8px 12px;
+            }
+
+            .leaflet-popup-content {
+                width: 240px !important;
+            }
+
+            .wn-modal-overlay {
+                padding: 12px;
+            }
+
+            .wn-modal {
+                max-height: calc(100vh - 24px);
+            }
+
+            .wn-modal-image-wrapper {
+                height: 140px;
+            }
+        }
+
+        /* Accesibilidad */
+        @media (prefers-reduced-motion: reduce) {
+            .wn-marker-pulse,
+            .wn-navbar.collapsed .wn-navbar-brand-left {
+                animation: none;
+            }
+
+            .wn-filters,
+            .wn-filters-body,
+            .wn-filters-actions,
+            .wn-marker-pin,
+            .wn-navbar,
+            .wn-results-badge,
+            .wn-navbar-brand-left {
+                transition: none;
+            }
+
+            .wn-modal,
+            .wn-modal-overlay {
+                animation: none;
+            }
+        }
+
+/* ============================================
+   DROPDOWN DE USUARIO EN EL NAVBAR
+   (extraído de specs/perfil.html)
+   ============================================ */
+.wn-navbar-footer {
+    padding-top: 16px;
+    border-top: 1px solid var(--wn-border);
+    position: relative;
+}
+.wn-user-info {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px;
+    margin-bottom: 0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    user-select: none;
+}
+.wn-user-info:hover { background-color: var(--wn-bg-elevated); }
+.wn-user-text { flex: 1; min-width: 0; }
+.wn-user-chevron {
+    color: var(--wn-text-muted);
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+.wn-user-info.open .wn-user-chevron { transform: rotate(180deg); }
+.wn-navbar.collapsed .wn-user-chevron { display: none; }
+
+.wn-user-dropdown {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background-color: var(--wn-bg-elevated);
+    border: 1px solid var(--wn-border);
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: all 0.2s ease;
+    z-index: 200;
+}
+.wn-navbar.collapsed .wn-user-dropdown {
+    left: 100%;
+    bottom: 0;
+    width: 220px;
+    margin-left: 8px;
+}
+.wn-user-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.wn-user-dropdown-header {
+    padding: 10px 12px 8px;
+    border-bottom: 1px solid var(--wn-border);
+    margin-bottom: 6px;
+}
+.wn-user-dropdown-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0 0 2px 0;
+}
+.wn-user-dropdown-email {
+    font-size: 0.7rem;
+    color: var(--wn-text-muted);
+    margin: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.wn-user-dropdown-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px;
+    color: var(--wn-text-muted);
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+}
+.wn-user-dropdown-item:hover {
+    background-color: var(--wn-bg-panel);
+    color: var(--wn-text);
+}
+.wn-user-dropdown-item.danger:hover {
+    background-color: rgba(218, 54, 51, 0.15);
+    color: var(--wn-danger);
+}
+.wn-user-dropdown-item i { font-size: 0.95rem; flex-shrink: 0; }
+.wn-user-dropdown-divider {
+    height: 1px;
+    background-color: var(--wn-border);
+    margin: 6px 0;
+}
+
+@media (max-width: 992px) {
+    .wn-user-chevron { display: none; }
+    .wn-user-info { justify-content: center; }
+}
+    
+/* ==== resources/css/worknet-interviews.css ==== */
+/* ============================================
+   WORK.NET — módulo entrevistas del candidato
+   (extraído de specs/entrevistas.html)
+   Se excluyen :root, reset global y estilos del
+   navbar (viven en worknet.css y worknet-map.css).
+   ============================================ */
+
+/* Coexistencia: auth y mapa fijan el body (flex centrado /
+   overflow hidden); en la página de entrevistas se restaura
+   el layout con scroll normal.
+   Se usa :has() + clase de respaldo (la agrega interviews.js)
+   por si el navegador no soporta :has(). */
+body:has(.wn-interviews),
+body.wn-page-interviews {
+    position: static;
+    display: block;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    overflow-x: hidden;
+    overscroll-behavior: auto;
+}
+
+html:has(.wn-interviews),
+html.wn-page-interviews {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* La barra de scroll vertical de la página se oculta;
+       se sigue pudiendo desplazar con rueda, táctil y teclado. */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+html:has(.wn-interviews)::-webkit-scrollbar,
+html.wn-page-interviews::-webkit-scrollbar,
+body:has(.wn-interviews)::-webkit-scrollbar,
+body.wn-page-interviews::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+.wn-bg {
+    position: fixed; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%);
+    pointer-events: none;
+}
+.wn-bg-grid {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+    -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+}
+
+/* MAIN */
+.wn-main {
+    margin-left: calc(var(--wn-navbar-width) + 32px);
+    margin-right: 16px; margin-top: 16px; margin-bottom: 16px;
+    padding: 32px 40px;
+    min-height: calc(100vh - 32px);
+    background-color: var(--wn-bg-panel);
+    border: 1px solid var(--wn-border);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    position: relative; z-index: 1;
+    transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+body.navbar-collapsed .wn-main {
+    margin-left: calc(var(--wn-navbar-width-mini) + 32px);
+}
+
+/* HEADER */
+.wn-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 16px; margin-bottom: 28px; padding-bottom: 20px;
+    border-bottom: 1px solid var(--wn-border); flex-wrap: wrap;
+}
+.wn-header-left h1 {
+    font-size: 1.75rem; font-weight: 700;
+    margin: 0 0 4px 0; letter-spacing: -0.5px;
+}
+.wn-header-left p { color: var(--wn-text-muted); margin: 0; font-size: 0.9rem; }
+.wn-header-left p strong { color: var(--wn-text); font-weight: 600; }
+
+/* TABS */
+.wn-tabs {
+    display: flex; gap: 4px; margin-bottom: 20px;
+    border-bottom: 1px solid var(--wn-border);
+    overflow-x: auto;
+}
+.wn-tab {
+    background: none; border: none;
+    color: var(--wn-text-muted);
+    font-family: inherit; font-size: 0.85rem;
+    font-weight: 500; padding: 10px 16px;
+    cursor: pointer; border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    display: inline-flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+}
+.wn-tab:hover { color: var(--wn-text); }
+.wn-tab.active {
+    color: var(--wn-accent);
+    border-bottom-color: var(--wn-accent);
+    font-weight: 600;
+}
+.wn-tab .count {
+    background-color: var(--wn-bg-elevated);
+    color: var(--wn-text-muted);
+    font-size: 0.7rem; font-weight: 700;
+    padding: 1px 7px; border-radius: 10px;
+}
+.wn-tab.active .count { background-color: var(--wn-accent); color: white; }
+
+/* ENTREVISTAS */
+.wn-interviews {
+    display: flex; flex-direction: column; gap: 18px;
+}
+
+.wn-interview-card {
+    background-color: var(--wn-bg-dark);
+    border: 1px solid var(--wn-border);
+    border-radius: 16px;
+    padding: 22px;
+    display: grid;
+    grid-template-columns: 80px 1fr 280px;
+    gap: 22px;
+    transition: all 0.2s ease;
+    align-items: flex-start;
+}
+.wn-interview-card:hover {
+    border-color: var(--wn-accent);
+    box-shadow: 0 8px 24px rgba(31, 111, 235, 0.12);
+}
+.wn-interview-card.past { opacity: 0.65; }
+.wn-interview-card.cancelled { opacity: 0.5; }
+
+/* Columna fecha */
+.wn-date-block {
+    background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+    color: white;
+    border-radius: 14px;
+    padding: 14px 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+    flex-shrink: 0;
+}
+.wn-date-block .day {
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+.wn-date-block .month {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-top: 3px;
+    opacity: 0.9;
+}
+.wn-date-block .year {
+    font-size: 0.65rem;
+    opacity: 0.7;
+    margin-top: 1px;
+}
+.wn-date-block.past { background: var(--wn-bg-elevated); color: var(--wn-text-muted); }
+.wn-date-block.cancelled { background: rgba(218, 54, 51, 0.2); color: var(--wn-danger); }
+
+/* Columna info */
+.wn-interview-content { min-width: 0; }
+.wn-interview-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+.wn-interview-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.3px;
+}
+.wn-interview-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.wn-status-scheduled { background-color: rgba(35, 134, 54, 0.15); color: var(--wn-success); }
+.wn-status-past { background-color: rgba(139, 148, 158, 0.15); color: var(--wn-text-muted); }
+.wn-status-cancelled { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+
+.wn-interview-company {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.wn-company-logo {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 0.75rem;
+    flex-shrink: 0;
+}
+.wn-company-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--wn-text);
+    margin: 0;
+}
+.wn-company-position {
+    font-size: 0.75rem;
+    color: var(--wn-text-muted);
+    margin: 0;
+}
+
+.wn-interview-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.wn-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--wn-text-muted);
+}
+.wn-meta-item i {
+    color: var(--wn-accent);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    width: 16px;
+    text-align: center;
+}
+.wn-meta-item strong {
+    color: var(--wn-text);
+    font-weight: 500;
+}
+
+.wn-interview-notes {
+    background-color: var(--wn-bg-elevated);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.78rem;
+    color: var(--wn-text-muted);
+    line-height: 1.5;
+    border-left: 3px solid var(--wn-accent);
+}
+.wn-interview-notes strong {
+    color: var(--wn-text);
+    display: block;
+    margin-bottom: 2px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Columna mapa */
+.wn-interview-map-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.wn-mini-map {
+    width: 100%;
+    height: 180px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--wn-border);
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: var(--wn-bg-elevated);
+}
+.wn-mini-map:hover {
+    border-color: var(--wn-accent);
+    box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15);
+}
+.wn-mini-map .map-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 50%, rgba(13, 17, 23, 0.85) 100%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 12px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 500;
+    pointer-events: none;
+}
+.wn-mini-map:hover .map-overlay { opacity: 1; }
+.wn-mini-map .map-overlay-text {
+    background-color: var(--wn-accent);
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.wn-mini-map .leaflet-control-attribution {
+    font-size: 0.55rem !important;
+    padding: 1px 4px !important;
+}
+.wn-mini-map .leaflet-control-zoom { display: none; }
+
+.wn-interview-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.wn-action-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 14px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    text-decoration: none !important;
+    white-space: nowrap;
+}
+.wn-action-btn-primary {
+    background-color: var(--wn-accent);
+    color: #ffffff !important;
+}
+.wn-action-btn-primary:hover {
+    background-color: var(--wn-accent-hover);
+    color: #ffffff !important;
+}
+.wn-action-btn-secondary {
+    background-color: transparent;
+    color: var(--wn-text-muted) !important;
+    border: 1px solid var(--wn-border);
+}
+.wn-action-btn-secondary:hover {
+    background-color: var(--wn-bg-elevated);
+    color: var(--wn-text) !important;
+}
+.wn-action-btn-danger {
+    background-color: transparent;
+    color: var(--wn-danger) !important;
+    border: 1px solid rgba(218, 54, 51, 0.4);
+}
+.wn-action-btn-danger:hover {
+    background-color: rgba(218, 54, 51, 0.15);
+    border-color: var(--wn-danger);
+    color: var(--wn-danger) !important;
+}
+
+/* EMPTY STATE */
+.wn-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    text-align: center;
+    color: var(--wn-text-muted);
+}
+.wn-empty i {
+    font-size: 3.5rem;
+    opacity: 0.3;
+    margin-bottom: 16px;
+    color: var(--wn-accent);
+}
+.wn-empty h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--wn-text);
+    margin: 0 0 6px 0;
+}
+.wn-empty p {
+    font-size: 0.85rem;
+    margin: 0 0 20px 0;
+    max-width: 380px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1100px) {
+    .wn-interview-card {
+        grid-template-columns: 70px 1fr;
+        gap: 16px;
+    }
+    .wn-interview-map-col {
+        grid-column: 1 / -1;
+    }
+    .wn-mini-map { height: 200px; }
+}
+@media (max-width: 992px) {
+    .wn-main {
+        padding: 24px 20px;
+    }
+}
+@media (max-width: 768px) {
+    .wn-main {
+        margin-left: calc(var(--wn-navbar-width-mini) + 24px);
+        margin-right: 12px; margin-top: 12px;
+        padding: 20px 16px;
+    }
+    .wn-header { flex-direction: column; align-items: stretch; }
+    .wn-interview-card {
+        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+    .wn-date-block {
+        min-height: auto;
+        flex-direction: row;
+        gap: 8px;
+        padding: 10px 16px;
+        justify-content: flex-start;
+        border-radius: 10px;
+    }
+    .wn-date-block .day { font-size: 1.4rem; }
+    .wn-date-block .month { margin-top: 0; }
+    .wn-interview-meta-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+    .wn-main {
+        margin-left: calc(var(--wn-navbar-width-mini) + 16px);
+        margin-right: 8px; margin-top: 8px;
+        padding: 16px 12px; border-radius: 14px;
+    }
+    .wn-header-left h1 { font-size: 1.4rem; }
+    .wn-tabs { gap: 0; }
+    .wn-tab { padding: 10px 12px; font-size: 0.8rem; }
+    .wn-interview-actions { flex-direction: column; }
+    .wn-action-btn { width: 100%; flex: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .wn-main, .wn-interview-card { transition: none; }
+}
+
+/* ==== resources/css/worknet-dashboard.css ==== */
+/* ============================================
+   WORK.NET — módulo dashboard del candidato +
+   notificaciones (extraído de specs/dashboard.html
+   y specs/notificaciones.html)
+   Se excluyen :root, reset global, estilos base de
+   html/body y estilos del navbar (viven en worknet.css
+   y worknet-map.css, que se reutilizan).
+   NOTA: .wn-header del dashboard, .btn-wn-* y los
+   widgets .wn-interview-* van bajo el marcador de
+   página para no alterar /mapa ni /entrevistas.
+   ============================================ */
+
+/* Coexistencia: auth y mapa fijan el body (flex centrado /
+   overflow hidden); en estas páginas se restaura el layout
+   con scroll normal. Se usa :has() + clase de respaldo
+   (la agrega dashboard.js) por si :has() no aplica. */
+body:has(.wn-page-dashboard),
+body.wn-page-dashboard,
+body:has(.wn-page-notifications),
+body.wn-page-notifications {
+    position: static;
+    display: block;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    overflow-x: hidden;
+    overscroll-behavior: auto;
+}
+
+html:has(.wn-page-dashboard),
+html.wn-page-dashboard,
+html:has(.wn-page-notifications),
+html.wn-page-notifications {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* La barra de scroll vertical de la página se oculta;
+       se sigue pudiendo desplazar con rueda, táctil y teclado. */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+html:has(.wn-page-dashboard)::-webkit-scrollbar,
+html.wn-page-dashboard::-webkit-scrollbar,
+body:has(.wn-page-dashboard)::-webkit-scrollbar,
+body.wn-page-dashboard::-webkit-scrollbar,
+html:has(.wn-page-notifications)::-webkit-scrollbar,
+html.wn-page-notifications::-webkit-scrollbar,
+body:has(.wn-page-notifications)::-webkit-scrollbar,
+body.wn-page-notifications::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+.wn-bg {
+    position: fixed; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%);
+    pointer-events: none;
+}
+.wn-bg-grid {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+    -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+}
+
+/* MAIN */
+.wn-main {
+    margin-left: calc(var(--wn-navbar-width) + 32px);
+    margin-right: 16px;
+    margin-top: 16px; margin-bottom: 16px;
+    padding: 32px 40px;
+    min-height: calc(100vh - 32px);
+    background-color: var(--wn-bg-panel);
+    border: 1px solid var(--wn-border);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    position: relative; z-index: 1;
+    transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+body.navbar-collapsed .wn-main {
+    margin-left: calc(var(--wn-navbar-width-mini) + 32px);
+}
+
+/* HEADER (valores del dashboard; van con marcador porque
+   difieren del resto de páginas) */
+.wn-page-dashboard .wn-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--wn-border);
+    flex-wrap: wrap;
+}
+.wn-page-dashboard .wn-header-left h1 {
+    font-size: 1.75rem; font-weight: 700;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.5px;
+}
+.wn-page-dashboard .wn-header-left p {
+    color: var(--wn-text-muted);
+    margin: 0; font-size: 0.9rem;
+}
+.wn-page-dashboard .wn-header-left p strong { color: var(--wn-text); font-weight: 600; }
+
+/* HEADER (notificaciones: mismos valores que entrevistas) */
+.wn-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--wn-border);
+    flex-wrap: wrap;
+}
+.wn-header-left h1 {
+    font-size: 1.75rem; font-weight: 700;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.5px;
+}
+.wn-header-left p {
+    color: var(--wn-text-muted);
+    margin: 0; font-size: 0.9rem;
+}
+.wn-header-left p strong { color: var(--wn-text); font-weight: 600; }
+.wn-header-actions {
+    display: flex; gap: 10px; flex-wrap: wrap;
+}
+
+/* STATS */
+.wn-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+.wn-stat-card {
+    background-color: var(--wn-bg-dark);
+    border: 1px solid var(--wn-border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex; align-items: center; gap: 16px;
+    transition: all 0.2s ease;
+}
+.wn-stat-card:hover { border-color: var(--wn-accent); transform: translateY(-2px); }
+.wn-stat-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background-color: rgba(31, 111, 235, 0.12);
+    color: var(--wn-accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; flex-shrink: 0;
+}
+.wn-stat-icon.success { background-color: rgba(35, 134, 54, 0.12); color: var(--wn-success); }
+.wn-stat-icon.warning { background-color: rgba(210, 153, 34, 0.12); color: var(--wn-warning); }
+.wn-stat-icon.purple { background-color: rgba(110, 64, 201, 0.12); color: var(--wn-purple); }
+.wn-stat-info { min-width: 0; }
+.wn-stat-value {
+    font-size: 1.5rem; font-weight: 700;
+    line-height: 1; margin-bottom: 4px;
+    letter-spacing: -0.5px;
+}
+.wn-stat-label {
+    font-size: 0.75rem; color: var(--wn-text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+/* SECCIONES */
+.wn-section { margin-bottom: 32px; }
+.wn-section:last-child { margin-bottom: 0; }
+
+.wn-section-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 18px; gap: 12px; flex-wrap: wrap;
+}
+.wn-section-title {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 1.05rem; font-weight: 600; margin: 0;
+}
+.wn-section-title i { color: var(--wn-accent); font-size: 1.15rem; }
+
+.wn-link {
+    color: var(--wn-accent);
+    text-decoration: none;
+    font-weight: 500; font-size: 0.85rem;
+    display: inline-flex; align-items: center; gap: 4px;
+    transition: color 0.2s ease;
+}
+.wn-link:hover { color: var(--wn-accent-hover); text-decoration: underline; }
+
+/* OFERTAS GRID */
+.wn-offers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+.wn-offer-card {
+    background-color: var(--wn-bg-dark);
+    border: 1px solid var(--wn-border);
+    border-radius: 14px;
+    padding: 18px;
+    display: flex; flex-direction: column; gap: 14px;
+    transition: all 0.2s ease;
+    position: relative; overflow: hidden;
+}
+.wn-offer-card:hover {
+    border-color: var(--wn-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(31, 111, 235, 0.15);
+}
+.wn-offer-card-header { display: flex; align-items: flex-start; gap: 12px; }
+.wn-offer-logo {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 1rem;
+    flex-shrink: 0; overflow: hidden;
+}
+.wn-offer-logo img { width: 100%; height: 100%; object-fit: cover; }
+.wn-offer-info { min-width: 0; flex: 1; }
+.wn-offer-title {
+    font-size: 0.95rem; font-weight: 700;
+    margin: 0 0 2px 0; line-height: 1.3;
+    letter-spacing: -0.2px;
+}
+.wn-offer-company { font-size: 0.78rem; color: var(--wn-text-muted); margin: 0; }
+.wn-offer-badge-new {
+    position: absolute; top: 14px; right: 14px;
+    background-color: var(--wn-success); color: white;
+    font-size: 0.65rem; font-weight: 700;
+    padding: 3px 8px; border-radius: 10px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.wn-offer-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.wn-offer-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px;
+    background-color: var(--wn-bg-elevated);
+    border-radius: 20px;
+    font-size: 0.7rem; color: var(--wn-text-muted);
+    font-weight: 500;
+}
+.wn-offer-badge i { font-size: 0.7rem; color: var(--wn-accent); }
+.wn-offer-description {
+    font-size: 0.8rem; color: var(--wn-text-muted);
+    line-height: 1.55; margin: 0;
+}
+.wn-offer-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 10px; margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--wn-border);
+}
+.wn-offer-salary {
+    font-size: 0.82rem; font-weight: 600;
+    color: var(--wn-success);
+    display: flex; align-items: center; gap: 5px;
+}
+
+/* Botón "Ver en mapa" dentro de la card */
+.wn-offer-map-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    background-color: rgba(31, 111, 235, 0.12);
+    border: 1px solid rgba(31, 111, 235, 0.3);
+    color: var(--wn-accent-hover) !important;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.wn-offer-map-btn:hover {
+    background-color: var(--wn-accent);
+    border-color: var(--wn-accent);
+    color: white !important;
+}
+.wn-offer-map-btn i { font-size: 0.8rem; }
+
+/* POSTULACIONES */
+.wn-applications { display: flex; flex-direction: column; gap: 10px; }
+.wn-application-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px;
+    background-color: var(--wn-bg-dark);
+    border: 1px solid var(--wn-border);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    text-decoration: none; color: inherit;
+}
+.wn-application-item:hover {
+    border-color: var(--wn-accent);
+    background-color: var(--wn-bg-elevated);
+    color: inherit;
+}
+.wn-application-logo {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 0.85rem;
+    flex-shrink: 0; overflow: hidden;
+}
+.wn-application-logo img { width: 100%; height: 100%; object-fit: cover; }
+.wn-application-info { flex: 1; min-width: 0; }
+.wn-application-title {
+    font-size: 0.88rem; font-weight: 600;
+    margin: 0 0 2px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.wn-application-company { font-size: 0.75rem; color: var(--wn-text-muted); margin: 0; }
+.wn-application-status {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 600;
+    white-space: nowrap; flex-shrink: 0;
+}
+.wn-status-registered { background-color: rgba(139, 148, 158, 0.15); color: var(--wn-text-muted); }
+.wn-status-review { background-color: rgba(210, 153, 34, 0.15); color: var(--wn-warning); }
+.wn-status-accepted { background-color: rgba(35, 134, 54, 0.15); color: var(--wn-success); }
+.wn-status-rejected { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+
+/* WIDGETS */
+.wn-widgets-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+.wn-widget {
+    background-color: var(--wn-bg-dark);
+    border: 1px solid var(--wn-border);
+    border-radius: 14px;
+    padding: 20px;
+    display: flex; flex-direction: column; gap: 14px;
+}
+.wn-widget-header {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 0.95rem; font-weight: 600;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--wn-border);
+}
+.wn-widget-header i { color: var(--wn-accent); font-size: 1.1rem; }
+
+/* Perfil progreso */
+.wn-profile-progress { display: flex; flex-direction: column; gap: 12px; }
+.wn-progress-info {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.85rem;
+}
+.wn-progress-info strong { font-size: 1.1rem; color: var(--wn-accent); font-weight: 700; }
+.wn-progress-bar {
+    width: 100%; height: 8px;
+    background-color: var(--wn-bg-elevated);
+    border-radius: 4px; overflow: hidden;
+}
+.wn-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--wn-accent), #6E40C9);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+.wn-profile-checklist {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-direction: column; gap: 8px;
+}
+.wn-profile-checklist li {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.82rem; color: var(--wn-text-muted);
+}
+.wn-profile-checklist li.done { color: var(--wn-text); }
+.wn-profile-checklist li i { font-size: 1rem; flex-shrink: 0; }
+.wn-profile-checklist li.done i { color: var(--wn-success); }
+.wn-profile-checklist li.pending i { color: var(--wn-text-muted); opacity: 0.5; }
+
+/* Widget entrevistas (con marcador: .wn-interview-title
+   colisiona con la página de entrevistas) */
+.wn-page-dashboard .wn-interview-item {
+    display: flex; gap: 12px;
+    padding: 12px;
+    background-color: var(--wn-bg-elevated);
+    border-radius: 10px;
+}
+.wn-page-dashboard .wn-interview-date {
+    width: 48px; height: 48px; border-radius: 10px;
+    background-color: var(--wn-accent); color: white;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-weight: 700; flex-shrink: 0; line-height: 1;
+}
+.wn-page-dashboard .wn-interview-date .day { font-size: 1.1rem; }
+.wn-page-dashboard .wn-interview-date .month {
+    font-size: 0.65rem; text-transform: uppercase;
+    opacity: 0.9; letter-spacing: 0.5px;
+}
+.wn-page-dashboard .wn-interview-info { flex: 1; min-width: 0; }
+.wn-page-dashboard .wn-interview-title {
+    font-size: 0.85rem; font-weight: 600;
+    margin: 0 0 2px 0;
+}
+.wn-page-dashboard .wn-interview-meta {
+    font-size: 0.72rem; color: var(--wn-text-muted);
+    display: flex; align-items: center; gap: 4px; margin: 0;
+}
+.wn-page-dashboard .wn-interview-meta i { color: var(--wn-accent); }
+
+/* Guardadas */
+.wn-saved-list { display: flex; flex-direction: column; gap: 8px; }
+.wn-saved-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background-color: var(--wn-bg-elevated);
+    border-radius: 10px;
+    text-decoration: none; color: inherit;
+    transition: all 0.2s ease;
+}
+.wn-saved-item:hover { background-color: var(--wn-border); color: inherit; }
+.wn-saved-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background-color: var(--wn-accent); flex-shrink: 0;
+}
+.wn-saved-info { flex: 1; min-width: 0; }
+.wn-saved-title {
+    font-size: 0.82rem; font-weight: 600;
+    margin: 0 0 1px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.wn-saved-company { font-size: 0.7rem; color: var(--wn-text-muted); margin: 0; }
+.wn-saved-remove {
+    background: none; border: none;
+    color: var(--wn-text-muted);
+    cursor: pointer; padding: 4px; border-radius: 6px;
+    transition: all 0.2s ease;
+}
+.wn-saved-remove:hover {
+    background-color: rgba(218, 54, 51, 0.15);
+    color: var(--wn-danger);
+}
+
+/* Botones (con marcador: difieren de los del mapa) */
+.wn-page-dashboard .btn-wn-primary,
+.wn-page-notifications .btn-wn-primary {
+    background-color: var(--wn-accent);
+    border: none; color: #ffffff !important;
+    font-weight: 600; padding: 10px 20px;
+    border-radius: 10px; font-size: 0.85rem;
+    transition: all 0.2s ease;
+    cursor: pointer; font-family: inherit;
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 8px; text-decoration: none !important;
+    white-space: nowrap;
+}
+.wn-page-dashboard .btn-wn-primary:hover,
+.wn-page-notifications .btn-wn-primary:hover {
+    background-color: var(--wn-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35);
+    color: #ffffff !important;
+}
+.wn-page-dashboard .btn-wn-secondary,
+.wn-page-notifications .btn-wn-secondary {
+    background-color: transparent;
+    border: 1px solid var(--wn-border);
+    color: var(--wn-text-muted) !important;
+    font-weight: 500; padding: 10px 20px;
+    border-radius: 10px; font-size: 0.85rem;
+    transition: all 0.2s ease;
+    cursor: pointer; font-family: inherit;
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 8px; text-decoration: none !important;
+    white-space: nowrap;
+}
+.wn-page-dashboard .btn-wn-secondary:hover,
+.wn-page-notifications .btn-wn-secondary:hover {
+    background-color: var(--wn-bg-elevated);
+    color: var(--wn-text) !important;
+    border-color: var(--wn-text-muted);
+}
+
+/* TABS (notificaciones) */
+.wn-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--wn-border);
+    padding-bottom: 0;
+    overflow-x: auto;
+}
+.wn-tab {
+    background: none;
+    border: none;
+    color: var(--wn-text-muted);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 10px 16px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.wn-tab:hover { color: var(--wn-text); }
+.wn-tab.active {
+    color: var(--wn-accent);
+    border-bottom-color: var(--wn-accent);
+    font-weight: 600;
+}
+.wn-tab .count {
+    background-color: var(--wn-bg-elevated);
+    color: var(--wn-text-muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 10px;
+}
+.wn-tab.active .count {
+    background-color: var(--wn-accent);
+    color: white;
+}
+
+/* NOTIFICACIONES */
+.wn-notifications {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.wn-notification {
+    display: flex;
+    gap: 14px;
+    padding: 16px 18px;
+    background-color: var(--wn-bg-dark);
+    border: 1px solid var(--wn-border);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    position: relative;
+    text-decoration: none;
+    color: inherit;
+}
+.wn-notification:hover {
+    border-color: var(--wn-accent);
+    background-color: var(--wn-bg-elevated);
+    color: inherit;
+    transform: translateX(2px);
+}
+.wn-notification.unread {
+    border-left: 3px solid var(--wn-accent);
+    background-color: rgba(31, 111, 235, 0.05);
+}
+.wn-notification.unread::before {
+    content: '';
+    position: absolute;
+    top: 22px;
+    left: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--wn-accent);
+}
+
+.wn-notification-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+.wn-notification-icon.application {
+    background-color: rgba(31, 111, 235, 0.12);
+    color: var(--wn-accent);
+}
+.wn-notification-icon.success {
+    background-color: rgba(35, 134, 54, 0.12);
+    color: var(--wn-success);
+}
+.wn-notification-icon.warning {
+    background-color: rgba(210, 153, 34, 0.12);
+    color: var(--wn-warning);
+}
+.wn-notification-icon.danger {
+    background-color: rgba(218, 54, 51, 0.12);
+    color: var(--wn-danger);
+}
+.wn-notification-icon.interview {
+    background-color: rgba(110, 64, 201, 0.12);
+    color: var(--wn-purple);
+}
+
+.wn-notification-info {
+    flex: 1;
+    min-width: 0;
+}
+.wn-notification-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    line-height: 1.35;
+}
+.wn-notification-title strong {
+    color: var(--wn-accent);
+    font-weight: 600;
+}
+.wn-notification-text {
+    font-size: 0.8rem;
+    color: var(--wn-text-muted);
+    margin: 0 0 6px 0;
+    line-height: 1.5;
+}
+.wn-notification-time {
+    font-size: 0.72rem;
+    color: var(--wn-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    opacity: 0.8;
+}
+.wn-notification-time i {
+    font-size: 0.72rem;
+}
+
+.wn-notification-actions {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.wn-notification-action {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: none;
+    background-color: transparent;
+    color: var(--wn-text-muted);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+.wn-notification-action:hover {
+    background-color: var(--wn-bg-elevated);
+    color: var(--wn-text);
+}
+.wn-notification-action.mark-read:hover {
+    color: var(--wn-success);
+}
+.wn-notification-action.delete:hover {
+    color: var(--wn-danger);
+}
+
+/* FECHA HEADER */
+.wn-date-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--wn-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+.wn-date-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: var(--wn-border);
+}
+.wn-date-header:first-child { margin-top: 0; }
+
+/* RESPONSIVE */
+@media (max-width: 992px) {
+    .wn-main {
+        margin-left: calc(var(--wn-navbar-width) + 32px);
+        padding: 24px 20px;
+    }
+    .wn-widgets-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+    .wn-main {
+        margin-left: calc(var(--wn-navbar-width-mini) + 24px);
+        margin-right: 12px; margin-top: 12px;
+        padding: 20px 16px;
+    }
+    .wn-offers-grid { grid-template-columns: 1fr; }
+    .wn-header { flex-direction: column; align-items: stretch; }
+    .wn-header-actions { width: 100%; }
+    .wn-header-actions .btn-wn-secondary { flex: 1; }
+    .wn-notification { padding: 14px; gap: 12px; }
+    .wn-notification-icon { width: 38px; height: 38px; font-size: 1rem; }
+}
+@media (max-width: 480px) {
+    .wn-main {
+        margin-left: calc(var(--wn-navbar-width-mini) + 16px);
+        margin-right: 8px; margin-top: 8px;
+        padding: 16px 12px; border-radius: 14px;
+    }
+    .wn-header-left h1 { font-size: 1.4rem; }
+    .wn-stat-value { font-size: 1.25rem; }
+    .wn-stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .wn-stat-card { padding: 14px; gap: 12px; }
+    .wn-stat-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+    .wn-tabs { gap: 0; }
+    .wn-tab { padding: 10px 12px; font-size: 0.8rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .wn-main, .wn-offer-card, .wn-stat-card,
+    .wn-progress-fill, .wn-application-item, .wn-saved-item,
+    .wn-notification { transition: none; }
+}
+
+/* ==== resources/css/worknet-applications.css ==== */
+/* ============================================
+   WORK.NET — módulo mis postulaciones del candidato
+   (extraído de specs/postulaciones.html)
+   Se excluyen :root, reset global, estilos base de
+   html/body y estilos del navbar (viven en worknet.css
+   y worknet-map.css, que se reutilizan).
+   NOTA: .wn-tabs ya existe (interviews/dashboard);
+   aquí solo se ajusta su margin-bottom con marcador.
+   .btn-wn-primary va con marcador porque difiere del mapa.
+   ============================================ */
+
+/* Coexistencia: auth y mapa fijan el body (flex centrado /
+   overflow hidden); en esta página se restaura el layout
+   con scroll normal. Se usa :has() + clase de respaldo
+   (la agrega el script de la página) por si :has() no aplica. */
+body:has(.wn-page-applications),
+body.wn-page-applications {
+    position: static;
+    display: block;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    overflow-x: hidden;
+    overscroll-behavior: auto;
+}
+
+html:has(.wn-page-applications),
+html.wn-page-applications {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* La barra de scroll vertical de la página se oculta;
+       se sigue pudiendo desplazar con rueda, táctil y teclado. */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+html:has(.wn-page-applications)::-webkit-scrollbar,
+html.wn-page-applications::-webkit-scrollbar,
+body:has(.wn-page-applications)::-webkit-scrollbar,
+body.wn-page-applications::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+.wn-bg {
+    position: fixed; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%);
+    pointer-events: none;
+}
+.wn-bg-grid {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+    -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+}
+
+/* MAIN, HEADER y TABS base: idénticos a worknet-interviews.css,
+   se reutilizan de ahí (no se duplican). En esta vista los
+   tabs llevan margin-bottom 24px. */
+.wn-page-applications .wn-tabs { margin-bottom: 24px; }
+
+/* LISTA DE POSTULACIONES */
+.wn-applications-list {
+    display: flex; flex-direction: column; gap: 14px;
+}
+
+.wn-application-card {
+    background-color: var(--wn-bg-dark);
+    border: 1px solid var(--wn-border);
+    border-radius: 16px;
+    padding: 22px;
+    transition: all 0.2s ease;
+    display: grid;
+    grid-template-columns: 1fr 240px;
+    gap: 24px;
+    align-items: flex-start;
+}
+.wn-application-card:hover {
+    border-color: var(--wn-accent);
+    box-shadow: 0 8px 24px rgba(31, 111, 235, 0.1);
+}
+.wn-application-card.rejected { opacity: 0.7; }
+
+/* Columna izquierda */
+.wn-app-main { min-width: 0; }
+
+.wn-app-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+.wn-app-logo {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--wn-accent), #6E40C9);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 1.1rem;
+    flex-shrink: 0; overflow: hidden;
+}
+.wn-app-logo img { width: 100%; height: 100%; object-fit: cover; }
+.wn-app-info { flex: 1; min-width: 0; }
+.wn-app-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    line-height: 1.3;
+    letter-spacing: -0.2px;
+}
+.wn-app-company {
+    font-size: 0.82rem;
+    color: var(--wn-text-muted);
+    margin: 0 0 4px 0;
+}
+.wn-app-date {
+    font-size: 0.75rem;
+    color: var(--wn-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    opacity: 0.85;
+}
+.wn-app-date i { font-size: 0.75rem; }
+
+/* Timeline de progreso */
+.wn-app-timeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 18px 0 16px;
+    padding: 16px 12px;
+    background-color: var(--wn-bg-elevated);
+    border-radius: 12px;
+    overflow-x: auto;
+}
+.wn-timeline-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.wn-timeline-dot {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background-color: var(--wn-bg-dark);
+    border: 2px solid var(--wn-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    color: var(--wn-text-muted);
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+.wn-timeline-step.done .wn-timeline-dot {
+    background-color: var(--wn-accent);
+    border-color: var(--wn-accent);
+    color: white;
+}
+.wn-timeline-step.current .wn-timeline-dot {
+    background-color: var(--wn-accent);
+    border-color: var(--wn-accent);
+    color: white;
+    box-shadow: 0 0 0 4px rgba(31, 111, 235, 0.2);
+}
+.wn-timeline-step.rejected .wn-timeline-dot {
+    background-color: var(--wn-danger);
+    border-color: var(--wn-danger);
+    color: white;
+}
+.wn-timeline-label {
+    font-size: 0.72rem;
+    color: var(--wn-text-muted);
+    font-weight: 500;
+    white-space: nowrap;
+}
+.wn-timeline-step.done .wn-timeline-label,
+.wn-timeline-step.current .wn-timeline-label {
+    color: var(--wn-text);
+    font-weight: 600;
+}
+.wn-timeline-line {
+    flex: 1;
+    min-width: 24px;
+    height: 2px;
+    background-color: var(--wn-border);
+    margin: 0 8px;
+}
+.wn-timeline-step.done + .wn-timeline-line,
+.wn-timeline-step.current + .wn-timeline-line {
+    background-color: var(--wn-accent);
+}
+
+/* Acciones */
+.wn-app-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.wn-app-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    white-space: nowrap;
+}
+.wn-app-action.primary {
+    background-color: var(--wn-accent);
+    color: #ffffff !important;
+}
+.wn-app-action.primary:hover {
+    background-color: var(--wn-accent-hover);
+    color: #ffffff !important;
+}
+.wn-app-action.secondary {
+    background-color: transparent;
+    color: var(--wn-text-muted) !important;
+    border: 1px solid var(--wn-border);
+}
+.wn-app-action.secondary:hover {
+    background-color: var(--wn-bg-elevated);
+    color: var(--wn-text) !important;
+}
+.wn-app-action.danger {
+    background-color: transparent;
+    color: var(--wn-danger) !important;
+    border: 1px solid rgba(218, 54, 51, 0.4);
+}
+.wn-app-action.danger:hover {
+    background-color: rgba(218, 54, 51, 0.15);
+    border-color: var(--wn-danger);
+}
+
+/* Columna derecha: estado */
+.wn-app-status-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+}
+.wn-app-status-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px 16px;
+    border-radius: 14px;
+    text-align: center;
+    border: 1px solid;
+}
+.wn-app-status-badge i {
+    font-size: 1.8rem;
+}
+.wn-app-status-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    opacity: 0.8;
+}
+.wn-app-status-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.wn-app-status-badge.registered {
+    background-color: rgba(139, 148, 158, 0.08);
+    border-color: rgba(139, 148, 158, 0.3);
+    color: var(--wn-text-muted);
+}
+.wn-app-status-badge.review {
+    background-color: rgba(210, 153, 34, 0.08);
+    border-color: rgba(210, 153, 34, 0.3);
+    color: var(--wn-warning);
+}
+.wn-app-status-badge.accepted {
+    background-color: rgba(35, 134, 54, 0.08);
+    border-color: rgba(35, 134, 54, 0.3);
+    color: var(--wn-success);
+}
+.wn-app-status-badge.rejected {
+    background-color: rgba(218, 54, 51, 0.08);
+    border-color: rgba(218, 54, 51, 0.3);
+    color: var(--wn-danger);
+}
+
+.wn-app-status-note {
+    font-size: 0.75rem;
+    color: var(--wn-text-muted);
+    text-align: center;
+    line-height: 1.5;
+    padding: 0 4px;
+}
+
+/* EMPTY STATE (idéntico al de entrevistas; se reutilizan sus reglas) */
+
+/* Botón primario (con marcador: difiere del mapa) */
+.wn-page-applications .btn-wn-primary {
+    background-color: var(--wn-accent);
+    border: none;
+    color: #ffffff !important;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none !important;
+}
+.wn-page-applications .btn-wn-primary:hover {
+    background-color: var(--wn-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35);
+    color: #ffffff !important;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1100px) {
+    .wn-application-card {
+        grid-template-columns: 1fr;
+    }
+    .wn-app-status-col {
+        flex-direction: row;
+        align-items: center;
+    }
+    .wn-app-status-badge {
+        flex: 0 0 auto;
+        flex-direction: row;
+        padding: 12px 16px;
+        gap: 10px;
+    }
+    .wn-app-status-badge i { font-size: 1.3rem; }
+    .wn-app-status-badge .status-text {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+    .wn-app-status-note {
+        flex: 1;
+        text-align: left;
+        padding: 0;
+    }
+}
+/* 992px: .wn-main se reutiliza de worknet-interviews.css */
+@media (max-width: 768px) {
+    .wn-app-timeline { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .wn-timeline-line { width: 2px; height: 16px; margin: 0 0 0 11px; }
+    .wn-app-status-col { flex-direction: column; }
+    .wn-app-status-badge { width: 100%; justify-content: center; }
+}
+@media (max-width: 480px) {
+    .wn-app-actions { flex-direction: column; }
+    .wn-app-action { width: 100%; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .wn-application-card { transition: none; }
+}
+
+/* ==== resources/css/worknet-saved.css ==== */
+/* ============================================
+   WORK.NET — módulo ofertas guardadas del candidato
+   (extraído de specs/guardadas.html)
+   Se excluyen :root, reset global, estilos base de
+   html/body y estilos del navbar (viven en worknet.css
+   y worknet-map.css, que se reutilizan).
+   NO se duplican reglas ya existentes en
+   worknet-dashboard.css (.wn-offers-grid, .wn-offer-card,
+   .wn-offer-logo/info/title/company, .wn-offer-badges/badge,
+   .wn-offer-description, .wn-offer-footer/salary) ni en
+   worknet-interviews.css (.wn-main, .wn-header, .wn-tabs).
+   ============================================ */
+
+/* Coexistencia: auth y mapa fijan el body (flex centrado /
+   overflow hidden); en esta página se restaura el layout
+   con scroll normal. Se usa :has() + clase de respaldo
+   (la agrega el script de la página) por si :has() no aplica. */
+body:has(.wn-page-saved),
+body.wn-page-saved {
+    position: static;
+    display: block;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    overflow-x: hidden;
+    overscroll-behavior: auto;
+}
+
+html:has(.wn-page-saved),
+html.wn-page-saved {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* La barra de scroll vertical de la página se oculta;
+       se sigue pudiendo desplazar con rueda, táctil y teclado. */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+html:has(.wn-page-saved)::-webkit-scrollbar,
+html.wn-page-saved::-webkit-scrollbar,
+body:has(.wn-page-saved)::-webkit-scrollbar,
+body.wn-page-saved::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+.wn-bg {
+    position: fixed; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%);
+    pointer-events: none;
+}
+.wn-bg-grid {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+    -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+}
+
+/* BARRA DE BÚSQUEDA Y FILTROS */
+.wn-toolbar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+.wn-search-input {
+    flex: 1;
+    min-width: 240px;
+    position: relative;
+}
+.wn-search-input i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--wn-text-muted);
+    font-size: 0.95rem;
+    pointer-events: none;
+}
+.wn-search-input input {
+    width: 100%;
+    background-color: var(--wn-bg-dark);
+    border: 1px solid var(--wn-border);
+    color: var(--wn-text);
+    border-radius: 10px;
+    padding: 10px 14px 10px 42px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+.wn-search-input input:focus {
+    outline: none;
+    border-color: var(--wn-accent);
+    box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15);
+}
+.wn-search-input input::placeholder {
+    color: var(--wn-text-muted);
+    opacity: 0.6;
+}
+.wn-sort-select {
+    background-color: var(--wn-bg-dark);
+    border: 1px solid var(--wn-border);
+    color: var(--wn-text);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    cursor: pointer;
+    min-width: 180px;
+}
+.wn-sort-select:focus {
+    outline: none;
+    border-color: var(--wn-accent);
+    box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15);
+}
+
+/* Botón quitar (los estilos base de .wn-offer-card se
+   reutilizan de worknet-dashboard.css) */
+.wn-offer-remove {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background-color: rgba(218, 54, 51, 0.1);
+    border: 1px solid rgba(218, 54, 51, 0.3);
+    color: var(--wn-danger);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    z-index: 2;
+}
+.wn-offer-remove:hover {
+    background-color: var(--wn-danger);
+    border-color: var(--wn-danger);
+    color: white;
+}
+
+/* En esta vista el header de la card deja lugar al botón quitar */
+.wn-page-saved .wn-offer-card-header { padding-right: 36px; }
+
+.wn-offer-saved-date {
+    font-size: 0.7rem;
+    color: var(--wn-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    opacity: 0.75;
+}
+
+.wn-offer-actions {
+    display: flex;
+    gap: 6px;
+}
+.wn-offer-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    white-space: nowrap;
+}
+.wn-offer-action.primary {
+    background-color: var(--wn-accent);
+    color: #ffffff !important;
+}
+.wn-offer-action.primary:hover {
+    background-color: var(--wn-accent-hover);
+    color: #ffffff !important;
+}
+.wn-offer-action.map {
+    background-color: rgba(31, 111, 235, 0.12);
+    border: 1px solid rgba(31, 111, 235, 0.3);
+    color: var(--wn-accent-hover) !important;
+}
+.wn-offer-action.map:hover {
+    background-color: var(--wn-accent);
+    border-color: var(--wn-accent);
+    color: white !important;
+}
+
+/* EMPTY STATE (con marcador: difiere del de entrevistas) */
+.wn-page-saved .wn-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 24px;
+    text-align: center;
+    color: var(--wn-text-muted);
+}
+.wn-page-saved .wn-empty i {
+    font-size: 4rem;
+    opacity: 0.3;
+    margin-bottom: 20px;
+    color: var(--wn-accent);
+}
+.wn-page-saved .wn-empty h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--wn-text);
+    margin: 0 0 8px 0;
+}
+.wn-page-saved .wn-empty p {
+    font-size: 0.88rem;
+    margin: 0 0 24px 0;
+    max-width: 420px;
+    line-height: 1.6;
+}
+
+/* Botón primario (con marcador: difiere del mapa y del dashboard) */
+.wn-page-saved .btn-wn-primary {
+    background-color: var(--wn-accent);
+    border: none;
+    color: #ffffff !important;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none !important;
+}
+.wn-page-saved .btn-wn-primary:hover {
+    background-color: var(--wn-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35);
+    color: #ffffff !important;
+}
+
+/* RESPONSIVE (las reglas de .wn-main se reutilizan de
+   worknet-interviews.css; aquí solo lo específico) */
+@media (max-width: 768px) {
+    .wn-toolbar { flex-direction: column; }
+    .wn-sort-select { width: 100%; }
+}
+@media (max-width: 480px) {
+    .wn-offer-actions { flex-direction: column; width: 100%; }
+    .wn-offer-action { width: 100%; }
+}
+/* (prefers-reduced-motion se reutiliza de los CSS previos) */
+
+/* ==== resources/css/worknet-profile.css ==== */
+/* ============================================
+   WORK.NET — módulo perfil del candidato
+   (extraído de specs/perfil.html)
+   Excluidos: :root, reset, base html/body, navbar,
+   fondo, dropdown (vive en worknet-map.css) y reglas
+   duplicadas ya existentes (.wn-main, .btn-wn-*,
+   .wn-section base).
+   ============================================ */
+/* Var adicional del prototipo (no existe en worknet.css,
+   que NO se modifica): degradados de foto y progreso. */
+:root {
+    --wn-purple: #6E40C9;
+}
+
+
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); }
+            50% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.6), 0 0 28px rgba(31, 111, 235, 0.55); }
+        }
+
+
+
+        /* HEADER DEL PERFIL */
+        .wn-profile-header {
+            display: flex; align-items: flex-start;
+            gap: 24px; margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--wn-border);
+            flex-wrap: wrap;
+        }
+
+
+        .wn-profile-photo-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+
+        .wn-profile-photo {
+            width: 120px; height: 120px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple));
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: 2.5rem;
+            border: 4px solid var(--wn-bg-panel);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+
+
+        .wn-profile-photo img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+
+
+        .wn-profile-photo-edit {
+            position: absolute;
+            bottom: -8px; right: -8px;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background-color: var(--wn-accent);
+            border: 3px solid var(--wn-bg-panel);
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+
+        .wn-profile-photo-edit:hover { background-color: var(--wn-accent-hover); transform: scale(1.05); }
+
+
+
+        .wn-profile-header-info { flex: 1; min-width: 240px; }
+
+
+        .wn-profile-name {
+            font-size: 1.75rem; font-weight: 700;
+            margin: 0 0 4px 0;
+            letter-spacing: -0.5px;
+        }
+
+
+        .wn-profile-headline {
+            font-size: 0.95rem;
+            color: var(--wn-text-muted);
+            margin: 0 0 12px 0;
+        }
+
+
+        .wn-profile-meta {
+            display: flex; flex-wrap: wrap; gap: 16px;
+            margin-bottom: 16px;
+        }
+
+
+        .wn-profile-meta-item {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 0.82rem;
+            color: var(--wn-text-muted);
+        }
+
+
+        .wn-profile-meta-item i { color: var(--wn-accent); font-size: 0.9rem; }
+
+
+        .wn-profile-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+
+        .btn-wn-danger {
+            background-color: transparent;
+            border: 1px solid rgba(218, 54, 51, 0.4);
+            color: var(--wn-danger) !important;
+            font-weight: 500; padding: 8px 14px;
+            border-radius: 8px; font-size: 0.78rem;
+            transition: all 0.2s ease;
+            cursor: pointer; font-family: inherit;
+            display: inline-flex; align-items: center; gap: 6px;
+            text-decoration: none !important;
+        }
+
+
+        .btn-wn-danger:hover {
+            background-color: rgba(218, 54, 51, 0.15);
+            border-color: var(--wn-danger);
+        }
+
+
+
+        /* Barra de progreso del perfil */
+        .wn-profile-progress-card {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 32px;
+        }
+
+
+        .wn-profile-progress-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 12px;
+            flex-wrap: wrap; gap: 8px;
+        }
+
+
+        .wn-profile-progress-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.95rem; font-weight: 600;
+        }
+
+
+        .wn-profile-progress-title i { color: var(--wn-accent); font-size: 1.1rem; }
+
+
+        .wn-profile-progress-value {
+            font-size: 1.3rem; font-weight: 700;
+            color: var(--wn-accent);
+            letter-spacing: -0.5px;
+        }
+
+
+        .wn-progress-bar {
+            width: 100%; height: 10px;
+            background-color: var(--wn-bg-elevated);
+            border-radius: 5px; overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+
+        .wn-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--wn-accent), var(--wn-purple));
+            border-radius: 5px;
+            transition: width 0.6s ease;
+        }
+
+
+        .wn-profile-progress-hint {
+            font-size: 0.8rem;
+            color: var(--wn-text-muted);
+            display: flex; align-items: center; gap: 6px;
+        }
+
+
+        .wn-profile-progress-hint i { color: var(--wn-warning); }
+
+
+        .wn-section-actions { display: flex; gap: 8px; }
+
+
+
+        .wn-add-btn {
+            background-color: transparent;
+            border: 1px solid var(--wn-border);
+            color: var(--wn-accent) !important;
+            font-weight: 500; padding: 7px 14px;
+            border-radius: 8px; font-size: 0.78rem;
+            transition: all 0.2s ease;
+            cursor: pointer; font-family: inherit;
+            display: inline-flex; align-items: center; gap: 6px;
+            text-decoration: none !important;
+        }
+
+
+        .wn-add-btn:hover {
+            background-color: rgba(31, 111, 235, 0.1);
+            border-color: var(--wn-accent);
+        }
+
+
+
+        /* Cards de cada sección */
+        .wn-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+
+        .wn-info-card {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+
+        .wn-info-card:hover {
+            border-color: var(--wn-accent);
+        }
+
+
+        .wn-info-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+
+        .wn-info-card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.2px;
+        }
+
+
+        .wn-info-card-subtitle {
+            font-size: 0.82rem;
+            color: var(--wn-accent);
+            margin: 0;
+            font-weight: 500;
+        }
+
+
+        .wn-info-card-date {
+            font-size: 0.72rem;
+            color: var(--wn-text-muted);
+            display: flex; align-items: center; gap: 5px;
+        }
+
+
+        .wn-info-card-description {
+            font-size: 0.8rem;
+            color: var(--wn-text-muted);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+
+        .wn-info-card-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+
+        .wn-icon-btn {
+            width: 30px; height: 30px;
+            border-radius: 7px;
+            border: 1px solid var(--wn-border);
+            background-color: transparent;
+            color: var(--wn-text-muted);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+        }
+
+
+        .wn-icon-btn:hover {
+            background-color: var(--wn-bg-elevated);
+            color: var(--wn-text);
+        }
+
+
+        .wn-icon-btn.danger:hover {
+            background-color: rgba(218, 54, 51, 0.15);
+            color: var(--wn-danger);
+            border-color: var(--wn-danger);
+        }
+
+
+
+        /* Grid de datos personales */
+        .wn-personal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px;
+        }
+
+
+        .wn-personal-item {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+
+
+        .wn-personal-label {
+            font-size: 0.7rem;
+            color: var(--wn-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex; align-items: center; gap: 5px;
+        }
+
+
+        .wn-personal-label i { color: var(--wn-accent); font-size: 0.75rem; }
+
+
+        .wn-personal-value {
+            font-size: 0.88rem;
+            color: var(--wn-text);
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+
+
+        /* Chips de habilidades */
+        .wn-chips {
+            display: flex; flex-wrap: wrap; gap: 8px;
+        }
+
+
+        .wn-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 14px;
+            background-color: rgba(31, 111, 235, 0.1);
+            border: 1px solid rgba(31, 111, 235, 0.3);
+            color: var(--wn-accent-hover);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+
+        .wn-chip:hover {
+            background-color: rgba(31, 111, 235, 0.2);
+            border-color: var(--wn-accent);
+        }
+
+
+        .wn-chip-remove {
+            background: none; border: none;
+            color: inherit; cursor: pointer;
+            padding: 0; margin-left: 2px;
+            display: flex; align-items: center;
+            opacity: 0.7;
+            font-size: 0.75rem;
+        }
+
+
+        .wn-chip-remove:hover { opacity: 1; }
+
+
+
+        /* CV Card */
+        .wn-cv-card {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.2s ease;
+            flex-wrap: wrap;
+        }
+
+
+        .wn-cv-card:hover { border-color: var(--wn-accent); }
+
+
+        .wn-cv-icon {
+            width: 56px; height: 56px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(35, 134, 54, 0.15), rgba(35, 134, 54, 0.05));
+            border: 1px solid rgba(35, 134, 54, 0.3);
+            color: var(--wn-success);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+
+
+        .wn-cv-info { flex: 1; min-width: 200px; }
+
+
+        .wn-cv-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+            display: flex; align-items: center; gap: 8px;
+            flex-wrap: wrap;
+        }
+
+
+        .wn-cv-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 10px;
+            background-color: rgba(35, 134, 54, 0.15);
+            color: var(--wn-success);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+
+        .wn-cv-meta {
+            font-size: 0.78rem;
+            color: var(--wn-text-muted);
+            margin: 0;
+        }
+
+
+        .wn-cv-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+
+
+        /* Empty state */
+        .wn-empty {
+            background-color: var(--wn-bg-dark);
+            border: 1px dashed var(--wn-border);
+            border-radius: 12px;
+            padding: 32px 24px;
+            text-align: center;
+            color: var(--wn-text-muted);
+        }
+
+
+        .wn-empty i {
+            font-size: 2.5rem;
+            opacity: 0.3;
+            color: var(--wn-accent);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+
+        .wn-empty p {
+            margin: 0 0 16px 0;
+            font-size: 0.85rem;
+        }
+
+
+
+        /* Preferencias laborales */
+        .wn-preferences {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+
+        .wn-preference-card {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+
+        .wn-preference-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            background-color: rgba(31, 111, 235, 0.1);
+            color: var(--wn-accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+
+        .wn-preference-info { min-width: 0; }
+
+
+        .wn-preference-label {
+            font-size: 0.7rem;
+            color: var(--wn-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+
+        .wn-preference-value {
+            font-size: 0.85rem;
+            color: var(--wn-text);
+            font-weight: 500;
+        }
+
+@media (max-width: 768px) {
+
+            .wn-profile-header { flex-direction: column; align-items: center; text-align: center; }
+            .wn-profile-header-info { align-items: center; display: flex; flex-direction: column; }
+            .wn-profile-meta { justify-content: center; }
+            .wn-profile-actions { justify-content: center; width: 100%; }
+            .wn-profile-photo { width: 100px; height: 100px; font-size: 2rem; }
+            .wn-profile-name { font-size: 1.4rem; }
+            .wn-info-grid, .wn-personal-grid, .wn-preferences { grid-template-columns: 1fr; }
+            .wn-cv-card { flex-direction: column; text-align: center; }
+            .wn-cv-actions { width: 100%; justify-content: center; }}
+
+@media (max-width: 480px) {
+
+            .wn-profile-actions { flex-direction: column; width: 100%; }
+            .wn-profile-actions .btn-wn-primary,
+            .wn-profile-actions .btn-wn-secondary {
+                width: 100%;
+            }}
+
+/* ============================================
+   FIX 1 — LAYOUT DE PÁGINA CON SCROLL
+   El módulo auth fija el body (position:fixed + flex
+   centrado + overflow:hidden) para el login. La página
+   de perfil necesita flujo normal con scroll, igual que
+   el prototipo. Solo aplica con .wn-profile-header.
+   ============================================ */
+html:has(.wn-profile-header) { overflow-y: auto; }
+body:has(.wn-profile-header) {
+    position: static;
+    display: block;
+    overflow: visible;
+    height: auto;
+    min-height: 100%;
+}
+
+/* ============================================
+   FIX 2 — BOTONES COMPACTOS DEL HEADER
+   worknet-auth.css define .btn-wn-primary con
+   width:100% (para formularios). En el header del
+   perfil los botones van compactos uno al lado del
+   otro, como en el prototipo. (En 480px siguen al
+   100% por la media query del prototipo.)
+   ============================================ */
+.wn-profile-actions .btn-wn-primary,
+.wn-profile-actions .btn-wn-secondary {
+    width: auto;
+}

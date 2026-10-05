@@ -1,0 +1,578 @@
+/* ============================================
+   WORK.NET — módulo perfil del candidato
+   (extraído de specs/perfil.html)
+   Excluidos: :root, reset, base html/body, navbar,
+   fondo, dropdown (vive en worknet-map.css) y reglas
+   duplicadas ya existentes (.wn-main, .btn-wn-*,
+   .wn-section base).
+   ============================================ */
+/* Var adicional del prototipo (no existe en worknet.css,
+   que NO se modifica): degradados de foto y progreso. */
+:root {
+    --wn-purple: #6E40C9;
+}
+
+
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); }
+            50% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.6), 0 0 28px rgba(31, 111, 235, 0.55); }
+        }
+
+
+
+        /* HEADER DEL PERFIL */
+        .wn-profile-header {
+            display: flex; align-items: flex-start;
+            gap: 24px; margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--wn-border);
+            flex-wrap: wrap;
+        }
+
+
+        .wn-profile-photo-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+
+        .wn-profile-photo {
+            width: 120px; height: 120px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple));
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: 2.5rem;
+            border: 4px solid var(--wn-bg-panel);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+
+
+        .wn-profile-photo img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+
+
+        .wn-profile-photo-edit {
+            position: absolute;
+            bottom: -8px; right: -8px;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background-color: var(--wn-accent);
+            border: 3px solid var(--wn-bg-panel);
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+
+        .wn-profile-photo-edit:hover { background-color: var(--wn-accent-hover); transform: scale(1.05); }
+
+
+
+        .wn-profile-header-info { flex: 1; min-width: 240px; }
+
+
+        .wn-profile-name {
+            font-size: 1.75rem; font-weight: 700;
+            margin: 0 0 4px 0;
+            letter-spacing: -0.5px;
+        }
+
+
+        .wn-profile-headline {
+            font-size: 0.95rem;
+            color: var(--wn-text-muted);
+            margin: 0 0 12px 0;
+        }
+
+
+        .wn-profile-meta {
+            display: flex; flex-wrap: wrap; gap: 16px;
+            margin-bottom: 16px;
+        }
+
+
+        .wn-profile-meta-item {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 0.82rem;
+            color: var(--wn-text-muted);
+        }
+
+
+        .wn-profile-meta-item i { color: var(--wn-accent); font-size: 0.9rem; }
+
+
+        .wn-profile-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+
+        .btn-wn-danger {
+            background-color: transparent;
+            border: 1px solid rgba(218, 54, 51, 0.4);
+            color: var(--wn-danger) !important;
+            font-weight: 500; padding: 8px 14px;
+            border-radius: 8px; font-size: 0.78rem;
+            transition: all 0.2s ease;
+            cursor: pointer; font-family: inherit;
+            display: inline-flex; align-items: center; gap: 6px;
+            text-decoration: none !important;
+        }
+
+
+        .btn-wn-danger:hover {
+            background-color: rgba(218, 54, 51, 0.15);
+            border-color: var(--wn-danger);
+        }
+
+
+
+        /* Barra de progreso del perfil */
+        .wn-profile-progress-card {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 32px;
+        }
+
+
+        .wn-profile-progress-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 12px;
+            flex-wrap: wrap; gap: 8px;
+        }
+
+
+        .wn-profile-progress-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.95rem; font-weight: 600;
+        }
+
+
+        .wn-profile-progress-title i { color: var(--wn-accent); font-size: 1.1rem; }
+
+
+        .wn-profile-progress-value {
+            font-size: 1.3rem; font-weight: 700;
+            color: var(--wn-accent);
+            letter-spacing: -0.5px;
+        }
+
+
+        .wn-progress-bar {
+            width: 100%; height: 10px;
+            background-color: var(--wn-bg-elevated);
+            border-radius: 5px; overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+
+        .wn-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--wn-accent), var(--wn-purple));
+            border-radius: 5px;
+            transition: width 0.6s ease;
+        }
+
+
+        .wn-profile-progress-hint {
+            font-size: 0.8rem;
+            color: var(--wn-text-muted);
+            display: flex; align-items: center; gap: 6px;
+        }
+
+
+        .wn-profile-progress-hint i { color: var(--wn-warning); }
+
+
+        .wn-section-actions { display: flex; gap: 8px; }
+
+
+
+        .wn-add-btn {
+            background-color: transparent;
+            border: 1px solid var(--wn-border);
+            color: var(--wn-accent) !important;
+            font-weight: 500; padding: 7px 14px;
+            border-radius: 8px; font-size: 0.78rem;
+            transition: all 0.2s ease;
+            cursor: pointer; font-family: inherit;
+            display: inline-flex; align-items: center; gap: 6px;
+            text-decoration: none !important;
+        }
+
+
+        .wn-add-btn:hover {
+            background-color: rgba(31, 111, 235, 0.1);
+            border-color: var(--wn-accent);
+        }
+
+
+
+        /* Cards de cada sección */
+        .wn-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+
+        .wn-info-card {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+
+        .wn-info-card:hover {
+            border-color: var(--wn-accent);
+        }
+
+
+        .wn-info-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+
+        .wn-info-card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.2px;
+        }
+
+
+        .wn-info-card-subtitle {
+            font-size: 0.82rem;
+            color: var(--wn-accent);
+            margin: 0;
+            font-weight: 500;
+        }
+
+
+        .wn-info-card-date {
+            font-size: 0.72rem;
+            color: var(--wn-text-muted);
+            display: flex; align-items: center; gap: 5px;
+        }
+
+
+        .wn-info-card-description {
+            font-size: 0.8rem;
+            color: var(--wn-text-muted);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+
+        .wn-info-card-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+
+        .wn-icon-btn {
+            width: 30px; height: 30px;
+            border-radius: 7px;
+            border: 1px solid var(--wn-border);
+            background-color: transparent;
+            color: var(--wn-text-muted);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+        }
+
+
+        .wn-icon-btn:hover {
+            background-color: var(--wn-bg-elevated);
+            color: var(--wn-text);
+        }
+
+
+        .wn-icon-btn.danger:hover {
+            background-color: rgba(218, 54, 51, 0.15);
+            color: var(--wn-danger);
+            border-color: var(--wn-danger);
+        }
+
+
+
+        /* Grid de datos personales */
+        .wn-personal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px;
+        }
+
+
+        .wn-personal-item {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+
+
+        .wn-personal-label {
+            font-size: 0.7rem;
+            color: var(--wn-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex; align-items: center; gap: 5px;
+        }
+
+
+        .wn-personal-label i { color: var(--wn-accent); font-size: 0.75rem; }
+
+
+        .wn-personal-value {
+            font-size: 0.88rem;
+            color: var(--wn-text);
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+
+
+        /* Chips de habilidades */
+        .wn-chips {
+            display: flex; flex-wrap: wrap; gap: 8px;
+        }
+
+
+        .wn-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 14px;
+            background-color: rgba(31, 111, 235, 0.1);
+            border: 1px solid rgba(31, 111, 235, 0.3);
+            color: var(--wn-accent-hover);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+
+        .wn-chip:hover {
+            background-color: rgba(31, 111, 235, 0.2);
+            border-color: var(--wn-accent);
+        }
+
+
+        .wn-chip-remove {
+            background: none; border: none;
+            color: inherit; cursor: pointer;
+            padding: 0; margin-left: 2px;
+            display: flex; align-items: center;
+            opacity: 0.7;
+            font-size: 0.75rem;
+        }
+
+
+        .wn-chip-remove:hover { opacity: 1; }
+
+
+
+        /* CV Card */
+        .wn-cv-card {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.2s ease;
+            flex-wrap: wrap;
+        }
+
+
+        .wn-cv-card:hover { border-color: var(--wn-accent); }
+
+
+        .wn-cv-icon {
+            width: 56px; height: 56px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(35, 134, 54, 0.15), rgba(35, 134, 54, 0.05));
+            border: 1px solid rgba(35, 134, 54, 0.3);
+            color: var(--wn-success);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+
+
+        .wn-cv-info { flex: 1; min-width: 200px; }
+
+
+        .wn-cv-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+            display: flex; align-items: center; gap: 8px;
+            flex-wrap: wrap;
+        }
+
+
+        .wn-cv-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 10px;
+            background-color: rgba(35, 134, 54, 0.15);
+            color: var(--wn-success);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+
+        .wn-cv-meta {
+            font-size: 0.78rem;
+            color: var(--wn-text-muted);
+            margin: 0;
+        }
+
+
+        .wn-cv-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+
+
+        /* Empty state */
+        .wn-empty {
+            background-color: var(--wn-bg-dark);
+            border: 1px dashed var(--wn-border);
+            border-radius: 12px;
+            padding: 32px 24px;
+            text-align: center;
+            color: var(--wn-text-muted);
+        }
+
+
+        .wn-empty i {
+            font-size: 2.5rem;
+            opacity: 0.3;
+            color: var(--wn-accent);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+
+        .wn-empty p {
+            margin: 0 0 16px 0;
+            font-size: 0.85rem;
+        }
+
+
+
+        /* Preferencias laborales */
+        .wn-preferences {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+
+        .wn-preference-card {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+
+        .wn-preference-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            background-color: rgba(31, 111, 235, 0.1);
+            color: var(--wn-accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+
+        .wn-preference-info { min-width: 0; }
+
+
+        .wn-preference-label {
+            font-size: 0.7rem;
+            color: var(--wn-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+
+        .wn-preference-value {
+            font-size: 0.85rem;
+            color: var(--wn-text);
+            font-weight: 500;
+        }
+
+@media (max-width: 768px) {
+
+            .wn-profile-header { flex-direction: column; align-items: center; text-align: center; }
+            .wn-profile-header-info { align-items: center; display: flex; flex-direction: column; }
+            .wn-profile-meta { justify-content: center; }
+            .wn-profile-actions { justify-content: center; width: 100%; }
+            .wn-profile-photo { width: 100px; height: 100px; font-size: 2rem; }
+            .wn-profile-name { font-size: 1.4rem; }
+            .wn-info-grid, .wn-personal-grid, .wn-preferences { grid-template-columns: 1fr; }
+            .wn-cv-card { flex-direction: column; text-align: center; }
+            .wn-cv-actions { width: 100%; justify-content: center; }}
+
+@media (max-width: 480px) {
+
+            .wn-profile-actions { flex-direction: column; width: 100%; }
+            .wn-profile-actions .btn-wn-primary,
+            .wn-profile-actions .btn-wn-secondary {
+                width: 100%;
+            }}
+
+/* ============================================
+   FIX 1 — LAYOUT DE PÁGINA CON SCROLL
+   El módulo auth fija el body (position:fixed + flex
+   centrado + overflow:hidden) para el login. La página
+   de perfil necesita flujo normal con scroll, igual que
+   el prototipo. Solo aplica con .wn-profile-header.
+   ============================================ */
+html:has(.wn-profile-header) { overflow-y: auto; }
+body:has(.wn-profile-header) {
+    position: static;
+    display: block;
+    overflow: visible;
+    height: auto;
+    min-height: 100%;
+}
+
+/* ============================================
+   FIX 2 — BOTONES COMPACTOS DEL HEADER
+   worknet-auth.css define .btn-wn-primary con
+   width:100% (para formularios). En el header del
+   perfil los botones van compactos uno al lado del
+   otro, como en el prototipo. (En 480px siguen al
+   100% por la media query del prototipo.)
+   ============================================ */
+.wn-profile-actions .btn-wn-primary,
+.wn-profile-actions .btn-wn-secondary {
+    width: auto;
+}

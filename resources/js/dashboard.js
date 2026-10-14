@@ -10,7 +10,9 @@
     // La página de perfil no usa .wn-page-* pero necesita el toggle
     // del navbar (no tiene #map, así que map.js no lo registra ahí).
     const profileMain = document.querySelector('.wn-profile-header');
-    if (!dashMain && !notifMain && !profileMain) return;
+    // Las páginas del empleador tampoco tienen #map.
+    const employerMain = document.querySelector('.wn-page-employer');
+    if (!dashMain && !notifMain && !profileMain && !employerMain) return;
 
     // Clases de respaldo para el CSS de la página (por si :has() no aplica).
     if (dashMain) {

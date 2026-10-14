@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Work.net - Detalle de oferta</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* === Reutilizar TODO el CSS base del dashboard === */
+        :root { --wn-bg-dark: #0D1117; --wn-bg-panel: #161B22; --wn-bg-elevated: #21262D; --wn-border: #30363D; --wn-text: #E6EDF3; --wn-text-muted: #8B949E; --wn-accent: #1F6FEB; --wn-accent-hover: #388BFD; --wn-success: #238636; --wn-danger: #DA3633; --wn-warning: #D29922; --wn-purple: #6E40C9; --wn-navbar-width: 240px; --wn-navbar-width-mini: 72px; }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--wn-bg-dark); color: var(--wn-text); overflow-x: hidden; }
+        .wn-bg { position: fixed; inset: 0; z-index: 0; background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%); pointer-events: none; }
+        .wn-bg-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px); background-size: 40px 40px; mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%); -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%); }
+
+        /* NAVBAR (idéntico) */
+        .wn-navbar { position: fixed; top: 16px; left: 16px; bottom: 16px; width: var(--wn-navbar-width); background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); border-radius: 16px; padding: 20px 16px; display: flex; flex-direction: column; z-index: 100; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .wn-navbar.collapsed { width: var(--wn-navbar-width-mini); padding: 20px 8px; }
+        .wn-navbar-brand { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--wn-border); margin-bottom: 16px; }
+        .wn-navbar-brand-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; padding: 6px 8px; border-radius: 10px; transition: background-color 0.2s ease, box-shadow 0.2s ease; user-select: none; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { cursor: pointer; background-color: rgba(31, 111, 235, 0.15); box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); animation: glowPulse 2s ease-in-out infinite; }
+        .wn-navbar.collapsed .wn-navbar-brand-left i { color: var(--wn-accent-hover); filter: drop-shadow(0 0 8px rgba(31, 111, 235, 0.8)); }
+        @keyframes glowPulse { 0%, 100% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); } 50% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.6), 0 0 28px rgba(31, 111, 235, 0.55); } }
+        .wn-navbar-brand i { color: var(--wn-accent); font-size: 1.5rem; flex-shrink: 0; transition: color 0.2s ease, filter 0.2s ease; }
+        .wn-navbar-brand span { font-weight: 700; font-size: 1.1rem; letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; }
+        .wn-navbar-toggle { background: none; border: none; color: var(--wn-text-muted); cursor: pointer; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.2s ease; flex-shrink: 0; }
+        .wn-navbar-toggle:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar.collapsed .wn-navbar-brand { justify-content: center; padding-bottom: 12px; margin-bottom: 12px; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { justify-content: center; flex: none; }
+        .wn-navbar.collapsed .wn-navbar-brand span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-toggle { display: none; }
+        .wn-navbar-menu { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .wn-navbar-menu li { margin-bottom: 4px; }
+        .wn-navbar-menu a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--wn-text-muted); text-decoration: none; border-radius: 8px; font-size: 0.9rem; transition: all 0.2s ease; position: relative; white-space: nowrap; }
+        .wn-navbar-menu a:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar-menu a.active { background-color: var(--wn-accent); color: white; font-weight: 500; }
+        .wn-navbar-menu a i { font-size: 1.1rem; flex-shrink: 0; width: 20px; text-align: center; }
+        .wn-navbar.collapsed .wn-navbar-menu a { justify-content: center; padding: 12px 8px; }
+        .wn-navbar.collapsed .wn-navbar-menu a span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-menu a .badge { position: absolute; top: 4px; right: 4px; font-size: 0.6rem; padding: 2px 5px; }
+        .wn-navbar-footer { padding-top: 16px; border-top: 1px solid var(--wn-border); position: relative; }
+        .wn-user-info { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; cursor: pointer; transition: background-color 0.2s ease; user-select: none; }
+        .wn-user-info:hover { background-color: var(--wn-bg-elevated); }
+        .wn-user-text { flex: 1; min-width: 0; }
+        .wn-user-chevron { color: var(--wn-text-muted); font-size: 0.75rem; transition: transform 0.2s ease; flex-shrink: 0; }
+        .wn-user-info.open .wn-user-chevron { transform: rotate(180deg); }
+        .wn-navbar.collapsed .wn-user-info { justify-content: center; padding: 8px 4px; }
+        .wn-navbar.collapsed .wn-user-info > div:not(.wn-avatar) { display: none; }
+        .wn-navbar.collapsed .wn-user-chevron { display: none; }
+        .wn-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+        .wn-user-name { font-size: 0.85rem; font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-user-role { font-size: 0.7rem; color: var(--wn-text-muted); text-transform: capitalize; }
+        .wn-user-dropdown { position: absolute; bottom: calc(100% + 8px); left: 0; right: 0; background-color: var(--wn-bg-elevated); border: 1px solid var(--wn-border); border-radius: 12px; padding: 6px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6); opacity: 0; visibility: hidden; transform: translateY(8px); transition: all 0.2s ease; z-index: 200; }
+        .wn-navbar.collapsed .wn-user-dropdown { left: 100%; bottom: 0; width: 220px; margin-left: 8px; }
+        .wn-user-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .wn-user-dropdown-header { padding: 10px 12px 8px; border-bottom: 1px solid var(--wn-border); margin-bottom: 6px; }
+        .wn-user-dropdown-name { font-size: 0.85rem; font-weight: 600; margin: 0 0 2px 0; }
+        .wn-user-dropdown-email { font-size: 0.7rem; color: var(--wn-text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-user-dropdown-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; color: var(--wn-text-muted); text-decoration: none; border-radius: 8px; font-size: 0.82rem; transition: all 0.2s ease; cursor: pointer; border: none; background: none; width: 100%; text-align: left; font-family: inherit; }
+        .wn-user-dropdown-item:hover { background-color: var(--wn-bg-panel); color: var(--wn-text); }
+        .wn-user-dropdown-item.danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+        .wn-user-dropdown-item i { font-size: 0.95rem; flex-shrink: 0; }
+        .wn-user-dropdown-divider { height: 1px; background-color: var(--wn-border); margin: 6px 0; }
+
+        /* MAIN */
+        .wn-main { margin-left: calc(var(--wn-navbar-width) + 32px); margin-right: 16px; margin-top: 16px; margin-bottom: 16px; padding: 32px 40px; min-height: calc(100vh - 32px); background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); position: relative; z-index: 1; transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        body.navbar-collapsed .wn-main { margin-left: calc(var(--wn-navbar-width-mini) + 32px); }
+
+        /* HEADER */
+        .wn-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--wn-border); flex-wrap: wrap; }
+        .wn-header-left { display: flex; gap: 16px; align-items: flex-start; flex: 1; min-width: 0; }
+        .wn-header-logo { width: 64px; height: 64px; border-radius: 14px; background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.4rem; flex-shrink: 0; }
+        .wn-header-info { min-width: 0; flex: 1; }
+        .wn-header-info h1 { font-size: 1.5rem; font-weight: 700; margin: 0 0 4px 0; letter-spacing: -0.5px; line-height: 1.2; }
+        .wn-header-company { font-size: 0.88rem; color: var(--wn-text-muted); margin: 0 0 8px 0; }
+        .wn-header-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+        .wn-badge-pill { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 20px; font-size: 0.75rem; color: var(--wn-text-muted); font-weight: 500; }
+        .wn-badge-pill i { color: var(--wn-accent); font-size: 0.8rem; }
+        .wn-badge-pill.status-active { background-color: rgba(35, 134, 54, 0.15); border-color: rgba(35, 134, 54, 0.3); color: var(--wn-success); }
+        .wn-badge-pill.status-active i { color: var(--wn-success); }
+        .wn-header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .btn-wn-primary { background-color: var(--wn-accent); border: none; color: #ffffff !important; font-weight: 600; padding: 10px 18px; border-radius: 10px; font-size: 0.82rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-primary:hover { background-color: var(--wn-accent-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35); color: #ffffff !important; }
+        .btn-wn-secondary { background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted) !important; font-weight: 500; padding: 10px 18px; border-radius: 10px; font-size: 0.82rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-secondary:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text) !important; border-color: var(--wn-text-muted); }
+        .btn-wn-warning { background-color: transparent; border: 1px solid rgba(210, 153, 34, 0.4); color: var(--wn-warning) !important; font-weight: 500; padding: 10px 18px; border-radius: 10px; font-size: 0.82rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-warning:hover { background-color: rgba(210, 153, 34, 0.15); border-color: var(--wn-warning); }
+        .btn-wn-danger { background-color: transparent; border: 1px solid rgba(218, 54, 51, 0.4); color: var(--wn-danger) !important; font-weight: 500; padding: 10px 18px; border-radius: 10px; font-size: 0.82rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-danger:hover { background-color: rgba(218, 54, 51, 0.15); border-color: var(--wn-danger); }
+
+        /* GRID DE DETALLE */
+        .wn-detail-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start; }
+
+        /* Columna izquierda */
+        .wn-detail-main { min-width: 0; display: flex; flex-direction: column; gap: 24px; }
+        .wn-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 22px; }
+        .wn-card-title { display: flex; align-items: center; gap: 10px; font-size: 1rem; font-weight: 700; margin: 0 0 16px 0; padding-bottom: 12px; border-bottom: 1px solid var(--wn-border); }
+        .wn-card-title i { color: var(--wn-accent); font-size: 1.1rem; }
+        .wn-card-text { font-size: 0.88rem; color: var(--wn-text-muted); line-height: 1.7; margin: 0; }
+        .wn-card-text strong { color: var(--wn-text); }
+
+        /* Requisitos como chips */
+        .wn-requirements { display: flex; flex-wrap: wrap; gap: 8px; }
+        .wn-requirement { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; background-color: rgba(31, 111, 235, 0.1); border: 1px solid rgba(31, 111, 235, 0.3); color: var(--wn-accent-hover); border-radius: 20px; font-size: 0.78rem; font-weight: 500; }
+
+        /* Mapa */
+        .wn-detail-map { height: 220px; border-radius: 12px; border: 1px solid var(--wn-border); overflow: hidden; margin-top: 12px; }
+
+        /* Columna derecha - sidebar */
+        .wn-detail-sidebar { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 32px; }
+
+        /* Stats card */
+        .wn-sidebar-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 20px; }
+        .wn-sidebar-card-title { font-size: 0.85rem; font-weight: 600; color: var(--wn-text); margin: 0 0 14px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .wn-sidebar-stats { display: flex; flex-direction: column; gap: 12px; }
+        .wn-sidebar-stat { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .wn-sidebar-stat-label { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--wn-text-muted); }
+        .wn-sidebar-stat-label i { color: var(--wn-accent); font-size: 0.9rem; }
+        .wn-sidebar-stat-value { font-size: 1rem; font-weight: 700; color: var(--wn-text); }
+
+        /* Acciones del sidebar */
+        .wn-sidebar-actions { display: flex; flex-direction: column; gap: 8px; }
+        .wn-sidebar-actions .btn-wn-primary,
+        .wn-sidebar-actions .btn-wn-secondary,
+        .wn-sidebar-actions .btn-wn-warning,
+        .wn-sidebar-actions .btn-wn-danger { width: 100%; justify-content: center; }
+
+        /* Postulantes recientes */
+        .wn-applicants-list { display: flex; flex-direction: column; gap: 10px; }
+        .wn-applicant-item { display: flex; align-items: center; gap: 12px; padding: 12px; background-color: var(--wn-bg-elevated); border-radius: 10px; transition: all 0.2s ease; text-decoration: none; color: inherit; }
+        .wn-applicant-item:hover { background-color: var(--wn-border); color: inherit; }
+        .wn-applicant-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; }
+        .wn-applicant-info { flex: 1; min-width: 0; }
+        .wn-applicant-name { font-size: 0.82rem; font-weight: 600; margin: 0 0 1px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-applicant-date { font-size: 0.7rem; color: var(--wn-text-muted); margin: 0; }
+        .wn-applicant-match { font-size: 0.7rem; font-weight: 700; color: var(--wn-success); flex-shrink: 0; }
+
+        /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .wn-detail-grid { grid-template-columns: 1fr; }
+            .wn-detail-sidebar { position: static; }
+        }
+        @media (max-width: 992px) {
+            :root { --wn-navbar-width: 72px; }
+            .wn-navbar { width: var(--wn-navbar-width); padding: 16px 8px; }
+            .wn-navbar-brand span, .wn-navbar-menu a span, .wn-user-info > div:not(.wn-avatar) { display: none; }
+            .wn-navbar-menu a { justify-content: center; }
+            .wn-navbar-toggle { display: none; }
+            .wn-navbar.collapsed .wn-navbar-brand-left { box-shadow: none; animation: none; background: none; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 32px); padding: 24px 20px; }
+            .wn-user-chevron { display: none; }
+            .wn-user-info { justify-content: center; }
+        }
+        @media (max-width: 768px) {
+            :root { --wn-navbar-width: 60px; }
+            .wn-navbar { top: 12px; left: 12px; bottom: 12px; padding: 12px 6px; border-radius: 14px; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 24px); margin-right: 12px; margin-top: 12px; padding: 20px 16px; }
+            .wn-header { flex-direction: column; align-items: stretch; }
+            .wn-header-left { flex-direction: column; }
+            .wn-header-actions { width: 100%; flex-wrap: wrap; }
+            .wn-header-actions .btn-wn-primary,
+            .wn-header-actions .btn-wn-secondary { flex: 1; justify-content: center; }
+        }
+        @media (max-width: 480px) {
+            :root { --wn-navbar-width: 52px; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 16px); margin-right: 8px; margin-top: 8px; padding: 16px 12px; border-radius: 14px; }
+            .wn-header-info h1 { font-size: 1.25rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .wn-navbar.collapsed .wn-navbar-brand-left { animation: none; }
+            .wn-navbar, .wn-main, .wn-applicant-item { transition: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wn-bg"><div class="wn-bg-grid"></div></div>
+
+    <!-- NAVBAR -->
+    <nav class="wn-navbar" id="navbar">
+        <div class="wn-navbar-brand">
+            <div class="wn-navbar-brand-left" id="navbarBrandTrigger">
+                <i class="bi bi-briefcase-fill"></i>
+                <span>Work.net</span>
+            </div>
+            <button class="wn-navbar-toggle" id="navbarToggle" aria-label="Minimizar menú" type="button">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+        <ul class="wn-navbar-menu">
+            <li><a href="dashboard-empleador.html" title="Inicio"><i class="bi bi-house-door"></i> <span>Inicio</span></a></li>
+            <li><a href="mis-ofertas.html" class="active" title="Ofertas"><i class="bi bi-briefcase"></i> <span>Ofertas</span></a></li>
+            <li><a href="#" title="Postulaciones"><i class="bi bi-inbox"></i> <span>Postulaciones</span></a></li>
+            <li><a href="#" title="Entrevistas"><i class="bi bi-calendar-event"></i> <span>Entrevistas</span></a></li>
+            <li><a href="#" title="Mi empresa"><i class="bi bi-building"></i> <span>Mi empresa</span></a></li>
+            <li><a href="#" title="Notificaciones"><i class="bi bi-bell"></i> <span>Notificaciones</span> <span class="badge bg-danger ms-auto" style="font-size:0.65rem;">3</span></a></li>
+        </ul>
+        <div class="wn-navbar-footer">
+            <div class="wn-user-info" id="userInfoTrigger">
+                <div class="wn-avatar">TS</div>
+                <div class="wn-user-text">
+                    <div class="wn-user-name">Tech Solutions</div>
+                    <div class="wn-user-role">Empleador</div>
+                </div>
+                <i class="bi bi-chevron-up wn-user-chevron"></i>
+            </div>
+            <div class="wn-user-dropdown" id="userDropdown">
+                <div class="wn-user-dropdown-header">
+                    <p class="wn-user-dropdown-name">Tech Solutions S.A.</p>
+                    <p class="wn-user-dropdown-email">contacto@techsolutions.com</p>
+                </div>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-building"></i> Mi empresa</a>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-gear"></i> Configuración</a>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-question-circle"></i> Ayuda</a>
+                <div class="wn-user-dropdown-divider"></div>
+                <a href="login.html" class="wn-user-dropdown-item danger"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="wn-main">
+
+        <!-- HEADER -->
+        <header class="wn-header">
+            <div class="wn-header-left">
+                <div class="wn-header-logo">DL</div>
+                <div class="wn-header-info">
+                    <h1>Desarrollador Laravel Senior</h1>
+                    <p class="wn-header-company">Tech Solutions S.A. · Publicada el 5 de octubre de 2026</p>
+                    <div class="wn-header-badges">
+                        <span class="wn-badge-pill status-active"><i class="bi bi-circle-fill"></i> Activa</span>
+                        <span class="wn-badge-pill"><i class="bi bi-geo-alt-fill"></i> Encarnación</span>
+                        <span class="wn-badge-pill"><i class="bi bi-laptop"></i> Híbrido</span>
+                        <span class="wn-badge-pill"><i class="bi bi-clock"></i> Tiempo completo</span>
+                    </div>
+                </div>
+            </div>
+            <div class="wn-header-actions">
+                <a href="mis-ofertas.html" class="btn-wn-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </a>
+                <a href="editar-oferta.html" class="btn-wn-secondary">
+                    <i class="bi bi-pencil"></i> Editar
+                </a>
+                <button class="btn-wn-warning">
+                    <i class="bi bi-pause"></i> Pausar
+                </button>
+                <button class="btn-wn-danger">
+                    <i class="bi bi-x-lg"></i> Cerrar
+                </button>
+            </div>
+        </header>
+
+        <!-- GRID -->
+        <div class="wn-detail-grid">
+
+            <!-- COLUMNA IZQUIERDA -->
+            <div class="wn-detail-main">
+
+                <div class="wn-card">
+                    <h2 class="wn-card-title"><i class="bi bi-file-text"></i> Descripción del puesto</h2>
+                    <p class="wn-card-text">
+                        Estamos buscando un Desarrollador Laravel Senior para liderar el desarrollo de nuestras aplicaciones web internas. La persona seleccionada será responsable del diseño de arquitectura, la implementación de nuevas funcionalidades, la integración con APIs de terceros, la optimización del rendimiento y la mentoría de desarrolladores junior.
+                    </p>
+                </div>
+
+                <div class="wn-card">
+                    <h2 class="wn-card-title"><i class="bi bi-list-check"></i> Requisitos</h2>
+                    <p class="wn-card-text" style="margin-bottom: 16px;">
+                        <strong>Experiencia:</strong> 5+ años en desarrollo backend con PHP y Laravel. Experiencia comprobable en proyectos de mediana a gran escala.
+                    </p>
+                    <p class="wn-card-text" style="margin-bottom: 16px;">
+                        <strong>Formación:</strong> Licenciatura en Análisis de Sistemas, Ingeniería Informática o similar.
+                    </p>
+                    <div class="wn-requirements">
+                        <span class="wn-requirement"><i class="bi bi-check-circle-fill"></i> PHP 8.3+</span>
+                        <span class="wn-requirement"><i class="bi bi-check-circle-fill"></i> Laravel 12</span>
+                        <span class="wn-requirement"><i class="bi bi-check-circle-fill"></i> PostgreSQL</span>
+                        <span class="wn-requirement"><i class="bi bi-check-circle-fill"></i> Docker</span>
+                        <span class="wn-requirement"><i class="bi bi-check-circle-fill"></i> Git</span>
+                        <span class="wn-requirement"><i class="bi bi-check-circle-fill"></i> APIs REST</span>
+                        <span class="wn-requirement"><i class="bi bi-check-circle-fill"></i> Testing</span>
+                    </div>
+                </div>
+
+                <div class="wn-card">
+                    <h2 class="wn-card-title"><i class="bi bi-star"></i> Beneficios</h2>
+                    <div class="wn-requirements">
+                        <span class="wn-requirement"><i class="bi bi-heart-pulse"></i> Seguro médico</span>
+                        <span class="wn-requirement"><i class="bi bi-mortarboard"></i> Capacitaciones</span>
+                        <span class="wn-requirement"><i class="bi bi-clock"></i> Horario flexible</span>
+                        <span class="wn-requirement"><i class="bi bi-house-door"></i> Home office</span>
+                    </div>
+                </div>
+
+                <div class="wn-card">
+                    <h2 class="wn-card-title"><i class="bi bi-geo-alt"></i> Ubicación</h2>
+                    <p class="wn-card-text" style="margin-bottom: 12px;">
+                        <i class="bi bi-pin-map-fill" style="color: var(--wn-accent);"></i>
+                        Av. Irrazábal 1234, Encarnación, Paraguay
+                    </p>
+                    <div class="wn-detail-map" id="detailMap"></div>
+                </div>
+
+            </div>
+
+            <!-- COLUMNA DERECHA - SIDEBAR -->
+            <aside class="wn-detail-sidebar">
+
+                <!-- Stats -->
+                <div class="wn-sidebar-card">
+                    <h3 class="wn-sidebar-card-title">Estadísticas</h3>
+                    <div class="wn-sidebar-stats">
+                        <div class="wn-sidebar-stat">
+                            <span class="wn-sidebar-stat-label"><i class="bi bi-inbox-fill"></i> Postulantes</span>
+                            <span class="wn-sidebar-stat-value">12</span>
+                        </div>
+                        <div class="wn-sidebar-stat">
+                            <span class="wn-sidebar-stat-label"><i class="bi bi-eye-fill"></i> Vistas</span>
+                            <span class="wn-sidebar-stat-value">245</span>
+                        </div>
+                        <div class="wn-sidebar-stat">
+                            <span class="wn-sidebar-stat-label"><i class="bi bi-bookmark-fill"></i> Guardadas</span>
+                            <span class="wn-sidebar-stat-value">18</span>
+                        </div>
+                        <div class="wn-sidebar-stat">
+                            <span class="wn-sidebar-stat-label"><i class="bi bi-hourglass-split"></i> Días restantes</span>
+                            <span class="wn-sidebar-stat-value">15</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Acciones -->
+                <div class="wn-sidebar-card">
+                    <h3 class="wn-sidebar-card-title">Acciones</h3>
+                    <div class="wn-sidebar-actions">
+                        <a href="postulantes.html" class="btn-wn-primary">
+                            <i class="bi bi-inbox"></i> Ver todos los postulantes
+                        </a>
+                        <a href="editar-oferta.html" class="btn-wn-secondary">
+                            <i class="bi bi-pencil"></i> Editar oferta
+                        </a>
+                        <button class="btn-wn-secondary">
+                            <i class="bi bi-files"></i> Duplicar oferta
+                        </button>
+                        <button class="btn-wn-secondary">
+                            <i class="bi bi-share"></i> Compartir
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Postulantes recientes -->
+                <div class="wn-sidebar-card">
+                    <h3 class="wn-sidebar-card-title">Postulantes recientes</h3>
+                    <div class="wn-applicants-list">
+                        <a href="#" class="wn-applicant-item">
+                            <div class="wn-applicant-avatar">JP</div>
+                            <div class="wn-applicant-info">
+                                <p class="wn-applicant-name">Juan Pérez</p>
+                                <p class="wn-applicant-date">Hace 2 horas</p>
+                            </div>
+                            <span class="wn-applicant-match">92%</span>
+                        </a>
+                        <a href="#" class="wn-applicant-item">
+                            <div class="wn-applicant-avatar">MG</div>
+                            <div class="wn-applicant-info">
+                                <p class="wn-applicant-name">María González</p>
+                                <p class="wn-applicant-date">Hace 4 horas</p>
+                            </div>
+                            <span class="wn-applicant-match">85%</span>
+                        </a>
+                        <a href="#" class="wn-applicant-item">
+                            <div class="wn-applicant-avatar">CR</div>
+                            <div class="wn-applicant-info">
+                                <p class="wn-applicant-name">Carlos Ramírez</p>
+                                <p class="wn-applicant-date">Hace 6 horas</p>
+                            </div>
+                            <span class="wn-applicant-match">78%</span>
+                        </a>
+                    </div>
+                    <a href="postulantes.html" class="btn-wn-secondary" style="width: 100%; margin-top: 12px; justify-content: center;">
+                        Ver los 12 postulantes
+                    </a>
+                </div>
+
+            </aside>
+
+        </div>
+
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const navbar = document.getElementById('navbar');
+        const navbarToggle = document.getElementById('navbarToggle');
+        const navbarBrandTrigger = document.getElementById('navbarBrandTrigger');
+        const userInfoTrigger = document.getElementById('userInfoTrigger');
+        const userDropdown = document.getElementById('userDropdown');
+
+        navbarToggle.addEventListener('click', () => { navbar.classList.add('collapsed'); document.body.classList.add('navbar-collapsed'); });
+        navbarBrandTrigger.addEventListener('click', () => { if (navbar.classList.contains('collapsed')) { navbar.classList.remove('collapsed'); document.body.classList.remove('navbar-collapsed'); } });
+        userInfoTrigger.addEventListener('click', (e) => { e.stopPropagation(); userInfoTrigger.classList.toggle('open'); userDropdown.classList.toggle('show'); });
+        document.addEventListener('click', (e) => { if (!userInfoTrigger.contains(e.target) && !userDropdown.contains(e.target)) { userInfoTrigger.classList.remove('open'); userDropdown.classList.remove('show'); } });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { userInfoTrigger.classList.remove('open'); userDropdown.classList.remove('show'); } });
+
+        const detailMap = L.map('detailMap', { zoomControl: true, attributionControl: false }).setView([-27.3306, -55.8667], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { subdomains: ['a', 'b', 'c'], maxZoom: 19 }).addTo(detailMap);
+        L.marker([-27.3306, -55.8667]).addTo(detailMap);
+    </script>
+
+</body>
+</html>

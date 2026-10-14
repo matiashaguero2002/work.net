@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Work.net - Publicar oferta</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* === REUTILIZAR TODO EL CSS base del dashboard === */
+        :root {
+            --wn-bg-dark:       #0D1117;
+            --wn-bg-panel:      #161B22;
+            --wn-bg-elevated:   #21262D;
+            --wn-border:        #30363D;
+            --wn-text:          #E6EDF3;
+            --wn-text-muted:    #8B949E;
+            --wn-accent:        #1F6FEB;
+            --wn-accent-hover:  #388BFD;
+            --wn-success:       #238636;
+            --wn-danger:        #DA3633;
+            --wn-warning:       #D29922;
+            --wn-purple:        #6E40C9;
+            --wn-navbar-width: 240px;
+            --wn-navbar-width-mini: 72px;
+        }
+
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--wn-bg-dark); color: var(--wn-text); overflow-x: hidden; }
+        .wn-bg { position: fixed; inset: 0; z-index: 0; background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%); pointer-events: none; }
+        .wn-bg-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px); background-size: 40px 40px; mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%); -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%); }
+
+        /* === NAVBAR === */
+        .wn-navbar { position: fixed; top: 16px; left: 16px; bottom: 16px; width: var(--wn-navbar-width); background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); border-radius: 16px; padding: 20px 16px; display: flex; flex-direction: column; z-index: 100; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .wn-navbar.collapsed { width: var(--wn-navbar-width-mini); padding: 20px 8px; }
+        .wn-navbar-brand { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--wn-border); margin-bottom: 16px; }
+        .wn-navbar-brand-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; padding: 6px 8px; border-radius: 10px; transition: background-color 0.2s ease, box-shadow 0.2s ease; user-select: none; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { cursor: pointer; background-color: rgba(31, 111, 235, 0.15); box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); animation: glowPulse 2s ease-in-out infinite; }
+        .wn-navbar.collapsed .wn-navbar-brand-left i { color: var(--wn-accent-hover); filter: drop-shadow(0 0 8px rgba(31, 111, 235, 0.8)); }
+        @keyframes glowPulse { 0%, 100% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); } 50% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.6), 0 0 28px rgba(31, 111, 235, 0.55); } }
+        .wn-navbar-brand i { color: var(--wn-accent); font-size: 1.5rem; flex-shrink: 0; transition: color 0.2s ease, filter 0.2s ease; }
+        .wn-navbar-brand span { font-weight: 700; font-size: 1.1rem; letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; }
+        .wn-navbar-toggle { background: none; border: none; color: var(--wn-text-muted); cursor: pointer; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.2s ease; flex-shrink: 0; }
+        .wn-navbar-toggle:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar.collapsed .wn-navbar-brand { justify-content: center; padding-bottom: 12px; margin-bottom: 12px; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { justify-content: center; flex: none; }
+        .wn-navbar.collapsed .wn-navbar-brand span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-toggle { display: none; }
+        .wn-navbar-menu { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .wn-navbar-menu li { margin-bottom: 4px; }
+        .wn-navbar-menu a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--wn-text-muted); text-decoration: none; border-radius: 8px; font-size: 0.9rem; transition: all 0.2s ease; position: relative; white-space: nowrap; }
+        .wn-navbar-menu a:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar-menu a.active { background-color: var(--wn-accent); color: white; font-weight: 500; }
+        .wn-navbar-menu a i { font-size: 1.1rem; flex-shrink: 0; width: 20px; text-align: center; }
+        .wn-navbar.collapsed .wn-navbar-menu a { justify-content: center; padding: 12px 8px; }
+        .wn-navbar.collapsed .wn-navbar-menu a span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-menu a .badge { position: absolute; top: 4px; right: 4px; font-size: 0.6rem; padding: 2px 5px; }
+        .wn-navbar-footer { padding-top: 16px; border-top: 1px solid var(--wn-border); position: relative; }
+        .wn-user-info { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; cursor: pointer; transition: background-color 0.2s ease; user-select: none; }
+        .wn-user-info:hover { background-color: var(--wn-bg-elevated); }
+        .wn-user-text { flex: 1; min-width: 0; }
+        .wn-user-chevron { color: var(--wn-text-muted); font-size: 0.75rem; transition: transform 0.2s ease; flex-shrink: 0; }
+        .wn-user-info.open .wn-user-chevron { transform: rotate(180deg); }
+        .wn-navbar.collapsed .wn-user-info { justify-content: center; padding: 8px 4px; }
+        .wn-navbar.collapsed .wn-user-info > div:not(.wn-avatar) { display: none; }
+        .wn-navbar.collapsed .wn-user-chevron { display: none; }
+        .wn-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+        .wn-user-name { font-size: 0.85rem; font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-user-role { font-size: 0.7rem; color: var(--wn-text-muted); text-transform: capitalize; }
+        .wn-user-dropdown { position: absolute; bottom: calc(100% + 8px); left: 0; right: 0; background-color: var(--wn-bg-elevated); border: 1px solid var(--wn-border); border-radius: 12px; padding: 6px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6); opacity: 0; visibility: hidden; transform: translateY(8px); transition: all 0.2s ease; z-index: 200; }
+        .wn-navbar.collapsed .wn-user-dropdown { left: 100%; bottom: 0; width: 220px; margin-left: 8px; }
+        .wn-user-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .wn-user-dropdown-header { padding: 10px 12px 8px; border-bottom: 1px solid var(--wn-border); margin-bottom: 6px; }
+        .wn-user-dropdown-name { font-size: 0.85rem; font-weight: 600; margin: 0 0 2px 0; }
+        .wn-user-dropdown-email { font-size: 0.7rem; color: var(--wn-text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-user-dropdown-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; color: var(--wn-text-muted); text-decoration: none; border-radius: 8px; font-size: 0.82rem; transition: all 0.2s ease; cursor: pointer; border: none; background: none; width: 100%; text-align: left; font-family: inherit; }
+        .wn-user-dropdown-item:hover { background-color: var(--wn-bg-panel); color: var(--wn-text); }
+        .wn-user-dropdown-item.danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+        .wn-user-dropdown-item i { font-size: 0.95rem; flex-shrink: 0; }
+        .wn-user-dropdown-divider { height: 1px; background-color: var(--wn-border); margin: 6px 0; }
+
+        /* === MAIN === */
+        .wn-main { margin-left: calc(var(--wn-navbar-width) + 32px); margin-right: 16px; margin-top: 16px; margin-bottom: 16px; padding: 32px 40px; min-height: calc(100vh - 32px); background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); position: relative; z-index: 1; transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        body.navbar-collapsed .wn-main { margin-left: calc(var(--wn-navbar-width-mini) + 32px); }
+
+        /* === HEADER === */
+        .wn-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--wn-border); flex-wrap: wrap; }
+        .wn-header-left h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 4px 0; letter-spacing: -0.5px; }
+        .wn-header-left p { color: var(--wn-text-muted); margin: 0; font-size: 0.9rem; }
+        .wn-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        /* === Botones === */
+        .btn-wn-primary { background-color: var(--wn-accent); border: none; color: #ffffff !important; font-weight: 600; padding: 11px 22px; border-radius: 10px; font-size: 0.85rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-primary:hover { background-color: var(--wn-accent-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35); color: #ffffff !important; }
+        .btn-wn-secondary { background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted) !important; font-weight: 500; padding: 11px 22px; border-radius: 10px; font-size: 0.85rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-secondary:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text) !important; border-color: var(--wn-text-muted); }
+
+        /* === SECCIONES DEL FORMULARIO === */
+        .wn-section { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--wn-border); }
+        .wn-section:last-of-type { border-bottom: none; }
+        .wn-section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .wn-section-icon { width: 40px; height: 40px; border-radius: 10px; background-color: rgba(31, 111, 235, 0.12); color: var(--wn-accent); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+        .wn-section-title { font-size: 1.1rem; font-weight: 700; margin: 0; letter-spacing: -0.3px; }
+        .wn-section-subtitle { font-size: 0.8rem; color: var(--wn-text-muted); margin: 2px 0 0 0; }
+
+        /* === CAMPOS === */
+        .wn-form-group { margin-bottom: 18px; }
+        .wn-label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--wn-text); margin-bottom: 6px; }
+        .wn-label .required { color: var(--wn-danger); margin-left: 2px; }
+        .wn-label .optional { color: var(--wn-text-muted); font-weight: 400; font-size: 0.75rem; }
+        .wn-hint { font-size: 0.72rem; color: var(--wn-text-muted); margin-top: 4px; display: block; }
+        .wn-input, .wn-select, .wn-textarea {
+            width: 100%; background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border);
+            color: var(--wn-text); border-radius: 10px; padding: 11px 14px;
+            font-size: 0.88rem; font-family: inherit; transition: all 0.2s ease;
+        }
+        .wn-input:focus, .wn-select:focus, .wn-textarea:focus {
+            outline: none; border-color: var(--wn-accent); box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15);
+        }
+        .wn-input::placeholder, .wn-textarea::placeholder { color: var(--wn-text-muted); opacity: 0.5; }
+        .wn-textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+        .wn-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .wn-form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+
+        /* === Radio cards (modalidad) === */
+        .wn-radio-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .wn-radio-card { position: relative; }
+        .wn-radio-card input { position: absolute; opacity: 0; pointer-events: none; }
+        .wn-radio-card label {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            padding: 14px 12px; background-color: var(--wn-bg-dark);
+            border: 2px solid var(--wn-border); border-radius: 12px;
+            cursor: pointer; transition: all 0.2s ease;
+            text-align: center; font-size: 0.82rem; font-weight: 500;
+        }
+        .wn-radio-card label i { font-size: 1.4rem; color: var(--wn-text-muted); }
+        .wn-radio-card input:checked + label {
+            border-color: var(--wn-accent);
+            background-color: rgba(31, 111, 235, 0.08);
+            color: var(--wn-text);
+        }
+        .wn-radio-card input:checked + label i { color: var(--wn-accent); }
+
+        /* === Chips (beneficios) === */
+        .wn-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .wn-chip { position: relative; }
+        .wn-chip input { position: absolute; opacity: 0; }
+        .wn-chip label {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 14px; background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border); border-radius: 20px;
+            font-size: 0.8rem; color: var(--wn-text-muted);
+            cursor: pointer; transition: all 0.2s ease;
+            user-select: none;
+        }
+        .wn-chip label:hover { border-color: var(--wn-accent); color: var(--wn-text); }
+        .wn-chip input:checked + label {
+            background-color: var(--wn-accent); border-color: var(--wn-accent); color: white;
+        }
+        .wn-chip label i { font-size: 0.9rem; }
+
+        /* === Mapa de ubicación === */
+        .wn-location-search { position: relative; margin-bottom: 12px; }
+        .wn-location-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--wn-text-muted); pointer-events: none; font-size: 0.95rem; }
+        .wn-location-search input { padding-left: 42px; }
+        .wn-location-map { height: 280px; border-radius: 12px; border: 1px solid var(--wn-border); overflow: hidden; margin-bottom: 12px; }
+        .wn-location-coords { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        /* === Barra de progreso del formulario === */
+        .wn-form-progress { display: flex; gap: 4px; margin-bottom: 24px; }
+        .wn-form-progress-step { flex: 1; height: 4px; background-color: var(--wn-bg-elevated); border-radius: 2px; transition: background-color 0.3s ease; }
+        .wn-form-progress-step.done { background-color: var(--wn-accent); }
+
+        /* === Acciones del formulario === */
+        .wn-form-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--wn-border); flex-wrap: wrap; }
+        .wn-form-actions-right { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        /* === Preview card === */
+        .wn-preview-card {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        .wn-preview-label {
+            font-size: 0.7rem;
+            color: var(--wn-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .wn-preview-label i { color: var(--wn-accent); }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 992px) {
+            :root { --wn-navbar-width: 72px; }
+            .wn-navbar { width: var(--wn-navbar-width); padding: 16px 8px; }
+            .wn-navbar-brand span, .wn-navbar-menu a span, .wn-user-info > div:not(.wn-avatar) { display: none; }
+            .wn-navbar-menu a { justify-content: center; }
+            .wn-navbar-toggle { display: none; }
+            .wn-navbar.collapsed .wn-navbar-brand-left { box-shadow: none; animation: none; background: none; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 32px); padding: 24px 20px; }
+            .wn-user-chevron { display: none; }
+            .wn-user-info { justify-content: center; }
+            .wn-form-row, .wn-form-row.three { grid-template-columns: 1fr; }
+            .wn-radio-cards { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            :root { --wn-navbar-width: 60px; }
+            .wn-navbar { top: 12px; left: 12px; bottom: 12px; padding: 12px 6px; border-radius: 14px; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 24px); margin-right: 12px; margin-top: 12px; padding: 20px 16px; }
+            .wn-header { flex-direction: column; align-items: stretch; }
+            .wn-header-actions { width: 100%; }
+            .wn-header-actions .btn-wn-primary { width: 100%; }
+            .wn-location-coords { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            :root { --wn-navbar-width: 52px; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 16px); margin-right: 8px; margin-top: 8px; padding: 16px 12px; border-radius: 14px; }
+            .wn-header-left h1 { font-size: 1.4rem; }
+            .wn-form-actions { flex-direction: column-reverse; align-items: stretch; }
+            .wn-form-actions .btn-wn-primary, .wn-form-actions .btn-wn-secondary { width: 100%; }
+            .wn-form-actions-right { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wn-bg"><div class="wn-bg-grid"></div></div>
+
+    <!-- NAVBAR -->
+    <nav class="wn-navbar" id="navbar">
+        <div class="wn-navbar-brand">
+            <div class="wn-navbar-brand-left" id="navbarBrandTrigger">
+                <i class="bi bi-briefcase-fill"></i>
+                <span>Work.net</span>
+            </div>
+            <button class="wn-navbar-toggle" id="navbarToggle" aria-label="Minimizar menú" type="button">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+
+        <ul class="wn-navbar-menu">
+            <li><a href="dashboard-empleador.html" title="Inicio"><i class="bi bi-house-door"></i> <span>Inicio</span></a></li>
+            <li><a href="mis-ofertas.html" class="active" title="Ofertas"><i class="bi bi-briefcase"></i> <span>Ofertas</span></a></li>
+            <li><a href="#" title="Postulaciones"><i class="bi bi-inbox"></i> <span>Postulaciones</span></a></li>
+            <li><a href="#" title="Entrevistas"><i class="bi bi-calendar-event"></i> <span>Entrevistas</span></a></li>
+            <li><a href="#" title="Mi empresa"><i class="bi bi-building"></i> <span>Mi empresa</span></a></li>
+            <li>
+                <a href="#" title="Notificaciones">
+                    <i class="bi bi-bell"></i> <span>Notificaciones</span>
+                    <span class="badge bg-danger ms-auto" style="font-size:0.65rem;">3</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="wn-navbar-footer">
+            <div class="wn-user-info" id="userInfoTrigger">
+                <div class="wn-avatar">TS</div>
+                <div class="wn-user-text">
+                    <div class="wn-user-name">Tech Solutions</div>
+                    <div class="wn-user-role">Empleador</div>
+                </div>
+                <i class="bi bi-chevron-up wn-user-chevron"></i>
+            </div>
+
+            <div class="wn-user-dropdown" id="userDropdown">
+                <div class="wn-user-dropdown-header">
+                    <p class="wn-user-dropdown-name">Tech Solutions S.A.</p>
+                    <p class="wn-user-dropdown-email">contacto@techsolutions.com</p>
+                </div>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-building"></i> Mi empresa</a>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-gear"></i> Configuración</a>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-question-circle"></i> Ayuda</a>
+                <div class="wn-user-dropdown-divider"></div>
+                <a href="login.html" class="wn-user-dropdown-item danger"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="wn-main">
+
+        <!-- HEADER -->
+        <header class="wn-header">
+            <div class="wn-header-left">
+                <h1>Publicar nueva oferta</h1>
+                <p>Completá la información del puesto. Los campos con <span style="color: var(--wn-danger);">*</span> son obligatorios.</p>
+            </div>
+            <div class="wn-header-actions">
+                <a href="mis-ofertas.html" class="btn-wn-secondary">
+                    <i class="bi bi-arrow-left"></i> Cancelar
+                </a>
+            </div>
+        </header>
+
+        <!-- Barra de progreso -->
+        <div class="wn-form-progress">
+            <div class="wn-form-progress-step done"></div>
+            <div class="wn-form-progress-step done"></div>
+            <div class="wn-form-progress-step"></div>
+            <div class="wn-form-progress-step"></div>
+        </div>
+
+        <form>
+
+            <!-- SECCIÓN 1: Información del puesto -->
+            <section class="wn-section">
+                <div class="wn-section-header">
+                    <div class="wn-section-icon"><i class="bi bi-briefcase"></i></div>
+                    <div>
+                        <h2 class="wn-section-title">Información del puesto</h2>
+                        <p class="wn-section-subtitle">Datos principales que verán los candidatos.</p>
+                    </div>
+                </div>
+
+                <div class="wn-form-group">
+                    <label class="wn-label">Título del puesto <span class="required">*</span></label>
+                    <input type="text" class="wn-input" placeholder="Ej: Desarrollador Full Stack Laravel" required>
+                    <span class="wn-hint">Sé específico. Un buen título atrae más candidatos.</span>
+                </div>
+
+                <div class="wn-form-row">
+                    <div class="wn-form-group">
+                        <label class="wn-label">Área laboral <span class="required">*</span></label>
+                        <select class="wn-select" required>
+                            <option value="">Seleccionar área</option>
+                            <option value="informatica" selected>Informática / TI</option>
+                            <option value="diseno">Diseño</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="admin">Administración</option>
+                        </select>
+                    </div>
+                    <div class="wn-form-group">
+                        <label class="wn-label">Categoría / Nivel <span class="required">*</span></label>
+                        <select class="wn-select" required>
+                            <option value="">Seleccionar nivel</option>
+                            <option value="junior">Junior</option>
+                            <option value="semi-senior">Semi-Senior</option>
+                            <option value="senior" selected>Senior</option>
+                            <option value="lead">Lead / Tech Lead</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="wn-form-group">
+                    <label class="wn-label">Descripción del puesto <span class="required">*</span></label>
+                    <textarea class="wn-textarea" rows="5" placeholder="Describe las responsabilidades principales, el contexto del rol y las tareas diarias..." required></textarea>
+                    <span class="wn-hint">Mínimo 100 caracteres. Cuanto más claro, mejor.</span>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 2: Modalidad y contratación -->
+            <section class="wn-section">
+                <div class="wn-section-header">
+                    <div class="wn-section-icon"><i class="bi bi-laptop"></i></div>
+                    <div>
+                        <h2 class="wn-section-title">Modalidad y contratación</h2>
+                        <p class="wn-section-subtitle">Definí cómo se trabajará y bajo qué condiciones.</p>
+                    </div>
+                </div>
+
+                <div class="wn-form-group">
+                    <label class="wn-label">Modalidad de trabajo <span class="required">*</span></label>
+                    <div class="wn-radio-cards">
+                        <div class="wn-radio-card">
+                            <input type="radio" name="modality" id="mod-presencial" value="presencial" checked>
+                            <label for="mod-presencial">
+                                <i class="bi bi-building"></i>
+                                <span>Presencial</span>
+                            </label>
+                        </div>
+                        <div class="wn-radio-card">
+                            <input type="radio" name="modality" id="mod-remoto" value="remoto">
+                            <label for="mod-remoto">
+                                <i class="bi bi-house"></i>
+                                <span>Remoto</span>
+                            </label>
+                        </div>
+                        <div class="wn-radio-card">
+                            <input type="radio" name="modality" id="mod-hibrido" value="hibrido">
+                            <label for="mod-hibrido">
+                                <i class="bi bi-arrow-left-right"></i>
+                                <span>Híbrido</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wn-form-row three">
+                    <div class="wn-form-group">
+                        <label class="wn-label">Tipo de contrato <span class="required">*</span></label>
+                        <select class="wn-select" required>
+                            <option value="">Seleccionar</option>
+                            <option value="tiempo-completo" selected>Tiempo completo</option>
+                            <option value="medio-tiempo">Medio tiempo</option>
+                            <option value="pasantia">Pasantía</option>
+                            <option value="contrato">Por contrato</option>
+                            <option value="freelance">Freelance</option>
+                        </select>
+                    </div>
+                    <div class="wn-form-group">
+                        <label class="wn-label">Jornada <span class="required">*</span></label>
+                        <select class="wn-select" required>
+                            <option value="">Seleccionar</option>
+                            <option value="completa" selected>Jornada completa</option>
+                            <option value="parcial">Jornada parcial</option>
+                            <option value="flexible">Horario flexible</option>
+                        </select>
+                    </div>
+                    <div class="wn-form-group">
+                        <label class="wn-label">Fecha límite <span class="required">*</span></label>
+                        <input type="date" class="wn-input" required>
+                    </div>
+                </div>
+
+                <div class="wn-form-row">
+                    <div class="wn-form-group">
+                        <label class="wn-label">Remuneración mínima (Gs.) <span class="optional">(opcional)</span></label>
+                        <input type="text" class="wn-input" placeholder="Ej: 7.000.000">
+                    </div>
+                    <div class="wn-form-group">
+                        <label class="wn-label">Remuneración máxima (Gs.) <span class="optional">(opcional)</span></label>
+                        <input type="text" class="wn-input" placeholder="Ej: 10.000.000">
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 3: Requisitos -->
+            <section class="wn-section">
+                <div class="wn-section-header">
+                    <div class="wn-section-icon"><i class="bi bi-list-check"></i></div>
+                    <div>
+                        <h2 class="wn-section-title">Requisitos y habilidades</h2>
+                        <p class="wn-section-subtitle">Lo que buscás en el candidato ideal.</p>
+                    </div>
+                </div>
+
+                <div class="wn-form-group">
+                    <label class="wn-label">Experiencia requerida <span class="required">*</span></label>
+                    <textarea class="wn-textarea" rows="3" placeholder="Ej: 3+ años de experiencia en desarrollo backend con PHP y Laravel..." required></textarea>
+                </div>
+
+                <div class="wn-form-group">
+                    <label class="wn-label">Formación académica <span class="optional">(opcional)</span></label>
+                    <textarea class="wn-textarea" rows="2" placeholder="Ej: Licenciatura en Análisis de Sistemas, Ingeniería Informática o similar..."></textarea>
+                </div>
+
+                <div class="wn-form-group">
+                    <label class="wn-label">Habilidades técnicas <span class="required">*</span></label>
+                    <textarea class="wn-textarea" rows="3" placeholder="Ej: PHP, Laravel, MySQL, PostgreSQL, Git, Docker, APIs REST..." required></textarea>
+                    <span class="wn-hint">Separá las habilidades con comas.</span>
+                </div>
+
+                <div class="wn-form-group">
+                    <label class="wn-label">Habilidades blandas <span class="optional">(opcional)</span></label>
+                    <textarea class="wn-textarea" rows="2" placeholder="Ej: Trabajo en equipo, comunicación efectiva, proactividad..."></textarea>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 4: Ubicación -->
+            <section class="wn-section">
+                <div class="wn-section-header">
+                    <div class="wn-section-icon"><i class="bi bi-geo-alt"></i></div>
+                    <div>
+                        <h2 class="wn-section-title">Ubicación</h2>
+                        <p class="wn-section-subtitle">El puesto se mostrará en el mapa interactivo.</p>
+                    </div>
+                </div>
+
+                <div class="wn-form-group">
+                    <label class="wn-label">Dirección <span class="required">*</span></label>
+                    <div class="wn-location-search">
+                        <i class="bi bi-search"></i>
+                        <input type="text" class="wn-input" placeholder="Ej: Av. Irrazábal 1234, Encarnación" required>
+                    </div>
+                    <span class="wn-hint">Escribí la dirección y ajustá el marcador en el mapa si es necesario.</span>
+                </div>
+
+                <div class="wn-form-group">
+                    <div class="wn-location-map" id="locationMap"></div>
+                </div>
+
+                <div class="wn-location-coords">
+                    <div class="wn-form-group">
+                        <label class="wn-label">Latitud</label>
+                        <input type="text" class="wn-input" id="latInput" value="-27.3306" readonly>
+                    </div>
+                    <div class="wn-form-group">
+                        <label class="wn-label">Longitud</label>
+                        <input type="text" class="wn-input" id="lngInput" value="-55.8667" readonly>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN 5: Beneficios -->
+            <section class="wn-section">
+                <div class="wn-section-header">
+                    <div class="wn-section-icon"><i class="bi bi-star"></i></div>
+                    <div>
+                        <h2 class="wn-section-title">Beneficios adicionales</h2>
+                        <p class="wn-section-subtitle">Seleccioná los que aplican a esta oferta.</p>
+                    </div>
+                </div>
+
+                <div class="wn-chips">
+                    <div class="wn-chip">
+                        <input type="checkbox" id="b-seguro" checked>
+                        <label for="b-seguro"><i class="bi bi-heart-pulse"></i> Seguro médico</label>
+                    </div>
+                    <div class="wn-chip">
+                        <input type="checkbox" id="b-capacitacion">
+                        <label for="b-capacitacion"><i class="bi bi-mortarboard"></i> Capacitaciones</label>
+                    </div>
+                    <div class="wn-chip">
+                        <input type="checkbox" id="b-horario">
+                        <label for="b-horario"><i class="bi bi-clock"></i> Horario flexible</label>
+                    </div>
+                    <div class="wn-chip">
+                        <input type="checkbox" id="b-almuerzo">
+                        <label for="b-almuerzo"><i class="bi bi-cup-hot"></i> Almuerzo</label>
+                    </div>
+                    <div class="wn-chip">
+                        <input type="checkbox" id="b-transporte">
+                        <label for="b-transporte"><i class="bi bi-bus-front"></i> Transporte</label>
+                    </div>
+                    <div class="wn-chip">
+                        <input type="checkbox" id="b-bonos">
+                        <label for="b-bonos"><i class="bi bi-cash-coin"></i> Bonos</label>
+                    </div>
+                    <div class="wn-chip">
+                        <input type="checkbox" id="b-homeoffice">
+                        <label for="b-homeoffice"><i class="bi bi-house-door"></i> Home office</label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ACCIONES -->
+            <div class="wn-form-actions">
+                <a href="mis-ofertas.html" class="btn-wn-secondary">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </a>
+                <div class="wn-form-actions-right">
+                    <button type="button" class="btn-wn-secondary">
+                        <i class="bi bi-file-earmark"></i> Guardar borrador
+                    </button>
+                    <button type="submit" class="btn-wn-primary">
+                        <i class="bi bi-send"></i> Publicar oferta
+                    </button>
+                </div>
+            </div>
+
+        </form>
+
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const navbar = document.getElementById('navbar');
+        const navbarToggle = document.getElementById('navbarToggle');
+        const navbarBrandTrigger = document.getElementById('navbarBrandTrigger');
+        const userInfoTrigger = document.getElementById('userInfoTrigger');
+        const userDropdown = document.getElementById('userDropdown');
+
+        navbarToggle.addEventListener('click', () => {
+            navbar.classList.add('collapsed');
+            document.body.classList.add('navbar-collapsed');
+        });
+
+        navbarBrandTrigger.addEventListener('click', () => {
+            if (navbar.classList.contains('collapsed')) {
+                navbar.classList.remove('collapsed');
+                document.body.classList.remove('navbar-collapsed');
+            }
+        });
+
+        userInfoTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userInfoTrigger.classList.toggle('open');
+            userDropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!userInfoTrigger.contains(e.target) && !userDropdown.contains(e.target)) {
+                userInfoTrigger.classList.remove('open');
+                userDropdown.classList.remove('show');
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                userInfoTrigger.classList.remove('open');
+                userDropdown.classList.remove('show');
+            }
+        });
+
+        // Mapa de ubicación
+        const map = L.map('locationMap').setView([-27.3306, -55.8667], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            subdomains: ['a', 'b', 'c'],
+            attribution: '© OpenStreetMap',
+            maxZoom: 19
+        }).addTo(map);
+
+        const marker = L.marker([-27.3306, -55.8667], { draggable: true }).addTo(map);
+
+        marker.on('dragend', (e) => {
+            const pos = e.target.getLatLng();
+            document.getElementById('latInput').value = pos.lat.toFixed(6);
+            document.getElementById('lngInput').value = pos.lng.toFixed(6);
+        });
+
+        map.on('click', (e) => {
+            marker.setLatLng(e.latlng);
+            document.getElementById('latInput').value = e.latlng.lat.toFixed(6);
+            document.getElementById('lngInput').value = e.latlng.lng.toFixed(6);
+        });
+    </script>
+
+</body>
+</html>

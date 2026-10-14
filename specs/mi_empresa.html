@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Work.net - Mi empresa</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --wn-bg-dark:       #0D1117;
+            --wn-bg-panel:      #161B22;
+            --wn-bg-elevated:   #21262D;
+            --wn-border:        #30363D;
+            --wn-text:          #E6EDF3;
+            --wn-text-muted:    #8B949E;
+            --wn-accent:        #1F6FEB;
+            --wn-accent-hover:  #388BFD;
+            --wn-success:       #238636;
+            --wn-danger:        #DA3633;
+            --wn-warning:       #D29922;
+            --wn-purple:        #6E40C9;
+            --wn-navbar-width: 240px;
+            --wn-navbar-width-mini: 72px;
+        }
+
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--wn-bg-dark); color: var(--wn-text); overflow-x: hidden; }
+        .wn-bg { position: fixed; inset: 0; z-index: 0; background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%); pointer-events: none; }
+        .wn-bg-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px); background-size: 40px 40px; mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%); -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%); }
+
+        /* NAVBAR */
+        .wn-navbar { position: fixed; top: 16px; left: 16px; bottom: 16px; width: var(--wn-navbar-width); background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); border-radius: 16px; padding: 20px 16px; display: flex; flex-direction: column; z-index: 100; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .wn-navbar.collapsed { width: var(--wn-navbar-width-mini); padding: 20px 8px; }
+        .wn-navbar-brand { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--wn-border); margin-bottom: 16px; }
+        .wn-navbar-brand-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; padding: 6px 8px; border-radius: 10px; transition: background-color 0.2s ease, box-shadow 0.2s ease; user-select: none; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { cursor: pointer; background-color: rgba(31, 111, 235, 0.15); box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); animation: glowPulse 2s ease-in-out infinite; }
+        .wn-navbar.collapsed .wn-navbar-brand-left i { color: var(--wn-accent-hover); filter: drop-shadow(0 0 8px rgba(31, 111, 235, 0.8)); }
+        @keyframes glowPulse { 0%, 100% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); } 50% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.6), 0 0 28px rgba(31, 111, 235, 0.55); } }
+        .wn-navbar-brand i { color: var(--wn-accent); font-size: 1.5rem; flex-shrink: 0; transition: color 0.2s ease, filter 0.2s ease; }
+        .wn-navbar-brand span { font-weight: 700; font-size: 1.1rem; letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; }
+        .wn-navbar-toggle { background: none; border: none; color: var(--wn-text-muted); cursor: pointer; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.2s ease; flex-shrink: 0; }
+        .wn-navbar-toggle:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar.collapsed .wn-navbar-brand { justify-content: center; padding-bottom: 12px; margin-bottom: 12px; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { justify-content: center; flex: none; }
+        .wn-navbar.collapsed .wn-navbar-brand span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-toggle { display: none; }
+        .wn-navbar-menu { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .wn-navbar-menu li { margin-bottom: 4px; }
+        .wn-navbar-menu a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--wn-text-muted); text-decoration: none; border-radius: 8px; font-size: 0.9rem; transition: all 0.2s ease; position: relative; white-space: nowrap; }
+        .wn-navbar-menu a:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar-menu a.active { background-color: var(--wn-accent); color: white; font-weight: 500; }
+        .wn-navbar-menu a i { font-size: 1.1rem; flex-shrink: 0; width: 20px; text-align: center; }
+        .wn-navbar.collapsed .wn-navbar-menu a { justify-content: center; padding: 12px 8px; }
+        .wn-navbar.collapsed .wn-navbar-menu a span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-menu a .badge { position: absolute; top: 4px; right: 4px; font-size: 0.6rem; padding: 2px 5px; }
+        .wn-navbar-footer { padding-top: 16px; border-top: 1px solid var(--wn-border); position: relative; }
+        .wn-user-info { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; cursor: pointer; transition: background-color 0.2s ease; user-select: none; }
+        .wn-user-info:hover { background-color: var(--wn-bg-elevated); }
+        .wn-user-text { flex: 1; min-width: 0; }
+        .wn-user-chevron { color: var(--wn-text-muted); font-size: 0.75rem; transition: transform 0.2s ease; flex-shrink: 0; }
+        .wn-user-info.open .wn-user-chevron { transform: rotate(180deg); }
+        .wn-navbar.collapsed .wn-user-info { justify-content: center; padding: 8px 4px; }
+        .wn-navbar.collapsed .wn-user-info > div:not(.wn-avatar) { display: none; }
+        .wn-navbar.collapsed .wn-user-chevron { display: none; }
+        .wn-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+        .wn-user-name { font-size: 0.85rem; font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-user-role { font-size: 0.7rem; color: var(--wn-text-muted); text-transform: capitalize; }
+        .wn-user-dropdown { position: absolute; bottom: calc(100% + 8px); left: 0; right: 0; background-color: var(--wn-bg-elevated); border: 1px solid var(--wn-border); border-radius: 12px; padding: 6px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6); opacity: 0; visibility: hidden; transform: translateY(8px); transition: all 0.2s ease; z-index: 200; }
+        .wn-navbar.collapsed .wn-user-dropdown { left: 100%; bottom: 0; width: 220px; margin-left: 8px; }
+        .wn-user-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .wn-user-dropdown-header { padding: 10px 12px 8px; border-bottom: 1px solid var(--wn-border); margin-bottom: 6px; }
+        .wn-user-dropdown-name { font-size: 0.85rem; font-weight: 600; margin: 0 0 2px 0; }
+        .wn-user-dropdown-email { font-size: 0.7rem; color: var(--wn-text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-user-dropdown-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; color: var(--wn-text-muted); text-decoration: none; border-radius: 8px; font-size: 0.82rem; transition: all 0.2s ease; cursor: pointer; border: none; background: none; width: 100%; text-align: left; font-family: inherit; }
+        .wn-user-dropdown-item:hover { background-color: var(--wn-bg-panel); color: var(--wn-text); }
+        .wn-user-dropdown-item.danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+        .wn-user-dropdown-item i { font-size: 0.95rem; flex-shrink: 0; }
+        .wn-user-dropdown-divider { height: 1px; background-color: var(--wn-border); margin: 6px 0; }
+
+        /* MAIN */
+        .wn-main { margin-left: calc(var(--wn-navbar-width) + 32px); margin-right: 16px; margin-top: 16px; margin-bottom: 16px; padding: 32px 40px; min-height: calc(100vh - 32px); background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); position: relative; z-index: 1; transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        body.navbar-collapsed .wn-main { margin-left: calc(var(--wn-navbar-width-mini) + 32px); }
+
+        /* HEADER DE EMPRESA */
+        .wn-company-header {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        .wn-company-cover {
+            height: 180px;
+            background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple));
+            position: relative;
+            background-size: cover;
+            background-position: center;
+        }
+        .wn-company-cover-edit {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background-color: rgba(13, 17, 23, 0.8);
+            border: 1px solid var(--wn-border);
+            color: var(--wn-text);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(8px);
+        }
+        .wn-company-cover-edit:hover { background-color: var(--wn-accent); border-color: var(--wn-accent); color: white; }
+
+        .wn-company-info {
+            padding: 0 24px 24px;
+            position: relative;
+        }
+        .wn-company-logo-wrapper {
+            position: relative;
+            margin-top: -50px;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+        .wn-company-logo {
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple));
+            border: 4px solid var(--wn-bg-panel);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 2rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+        .wn-company-logo-edit {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--wn-accent);
+            border: 3px solid var(--wn-bg-panel);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+        }
+        .wn-company-logo-edit:hover { background-color: var(--wn-accent-hover); transform: scale(1.05); }
+
+        .wn-company-details { display: flex; flex-direction: column; gap: 12px; }
+        .wn-company-name-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .wn-company-name { font-size: 1.75rem; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
+        .wn-company-verified {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background-color: rgba(35, 134, 54, 0.15);
+            border: 1px solid rgba(35, 134, 54, 0.3);
+            color: var(--wn-success);
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+        .wn-company-meta { display: flex; flex-wrap: wrap; gap: 20px; font-size: 0.85rem; color: var(--wn-text-muted); }
+        .wn-company-meta span { display: flex; align-items: center; gap: 6px; }
+        .wn-company-meta i { color: var(--wn-accent); }
+        .wn-company-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+
+        /* Botones */
+        .btn-wn-primary { background-color: var(--wn-accent); border: none; color: #ffffff !important; font-weight: 600; padding: 10px 20px; border-radius: 10px; font-size: 0.85rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-primary:hover { background-color: var(--wn-accent-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35); color: #ffffff !important; }
+        .btn-wn-secondary { background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted) !important; font-weight: 500; padding: 10px 20px; border-radius: 10px; font-size: 0.85rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-secondary:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text) !important; border-color: var(--wn-text-muted); }
+
+        /* Secciones */
+        .wn-section { margin-bottom: 32px; }
+        .wn-section:last-child { margin-bottom: 0; }
+        .wn-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
+        .wn-section-title { display: flex; align-items: center; gap: 10px; font-size: 1.05rem; font-weight: 600; margin: 0; }
+        .wn-section-title i { color: var(--wn-accent); font-size: 1.15rem; }
+        .wn-add-btn { background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-accent) !important; font-weight: 500; padding: 7px 14px; border-radius: 8px; font-size: 0.78rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; text-decoration: none !important; }
+        .wn-add-btn:hover { background-color: rgba(31, 111, 235, 0.1); border-color: var(--wn-accent); }
+
+        /* Progress bar de completitud */
+        .wn-profile-progress-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 20px; margin-bottom: 24px; }
+        .wn-profile-progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+        .wn-profile-progress-title { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; font-weight: 600; }
+        .wn-profile-progress-title i { color: var(--wn-accent); font-size: 1.1rem; }
+        .wn-profile-progress-value { font-size: 1.3rem; font-weight: 700; color: var(--wn-accent); letter-spacing: -0.5px; }
+        .wn-progress-bar { width: 100%; height: 10px; background-color: var(--wn-bg-elevated); border-radius: 5px; overflow: hidden; margin-bottom: 12px; }
+        .wn-progress-fill { height: 100%; background: linear-gradient(90deg, var(--wn-accent), var(--wn-purple)); border-radius: 5px; transition: width 0.6s ease; }
+        .wn-profile-progress-hint { font-size: 0.8rem; color: var(--wn-text-muted); display: flex; align-items: center; gap: 6px; }
+        .wn-profile-progress-hint i { color: var(--wn-warning); }
+
+        /* Grid de datos */
+        .wn-personal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+        .wn-personal-item { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 10px; padding: 14px 16px; }
+        .wn-personal-label { font-size: 0.7rem; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+        .wn-personal-label i { color: var(--wn-accent); font-size: 0.75rem; }
+        .wn-personal-value { font-size: 0.88rem; color: var(--wn-text); font-weight: 500; word-break: break-word; }
+
+        /* Descripción */
+        .wn-company-description { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 12px; padding: 20px; font-size: 0.88rem; color: var(--wn-text-muted); line-height: 1.7; }
+
+        /* Ubicación + mapa */
+        .wn-location-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 12px; padding: 20px; }
+        .wn-location-address { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; margin-bottom: 12px; color: var(--wn-text); }
+        .wn-location-address i { color: var(--wn-accent); }
+        .wn-company-map { height: 240px; border-radius: 10px; border: 1px solid var(--wn-border); overflow: hidden; }
+
+        /* Stats */
+        .wn-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .wn-stat-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 12px; padding: 18px 20px; display: flex; align-items: center; gap: 16px; transition: all 0.2s ease; }
+        .wn-stat-card:hover { border-color: var(--wn-accent); transform: translateY(-2px); }
+        .wn-stat-icon { width: 48px; height: 48px; border-radius: 12px; background-color: rgba(31, 111, 235, 0.12); color: var(--wn-accent); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+        .wn-stat-icon.success { background-color: rgba(35, 134, 54, 0.12); color: var(--wn-success); }
+        .wn-stat-icon.warning { background-color: rgba(210, 153, 34, 0.12); color: var(--wn-warning); }
+        .wn-stat-icon.purple { background-color: rgba(110, 64, 201, 0.12); color: var(--wn-purple); }
+        .wn-stat-info { min-width: 0; }
+        .wn-stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 4px; letter-spacing: -0.5px; }
+        .wn-stat-label { font-size: 0.75rem; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+
+        /* Redes sociales */
+        .wn-social-list { display: flex; flex-wrap: wrap; gap: 10px; }
+        .wn-social-item { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 10px; font-size: 0.82rem; color: var(--wn-text); text-decoration: none; transition: all 0.2s ease; }
+        .wn-social-item:hover { border-color: var(--wn-accent); background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-social-item i { color: var(--wn-accent); font-size: 1rem; }
+
+        /* RESPONSIVE */
+        @media (max-width: 992px) {
+            :root { --wn-navbar-width: 72px; }
+            .wn-navbar { width: var(--wn-navbar-width); padding: 16px 8px; }
+            .wn-navbar-brand span, .wn-navbar-menu a span, .wn-user-info > div:not(.wn-avatar) { display: none; }
+            .wn-navbar-menu a { justify-content: center; }
+            .wn-navbar-toggle { display: none; }
+            .wn-navbar.collapsed .wn-navbar-brand-left { box-shadow: none; animation: none; background: none; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 32px); padding: 24px 20px; }
+            .wn-user-chevron { display: none; }
+            .wn-user-info { justify-content: center; }
+        }
+        @media (max-width: 768px) {
+            :root { --wn-navbar-width: 60px; }
+            .wn-navbar { top: 12px; left: 12px; bottom: 12px; padding: 12px 6px; border-radius: 14px; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 24px); margin-right: 12px; margin-top: 12px; padding: 20px 16px; }
+            .wn-company-info { padding: 0 16px 16px; }
+            .wn-company-name { font-size: 1.4rem; }
+            .wn-company-cover { height: 140px; }
+            .wn-company-logo { width: 80px; height: 80px; font-size: 1.6rem; }
+            .wn-company-logo-wrapper { margin-top: -40px; }
+            .wn-personal-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            :root { --wn-navbar-width: 52px; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 16px); margin-right: 8px; margin-top: 8px; padding: 16px 12px; border-radius: 14px; }
+            .wn-company-actions { flex-direction: column; width: 100%; }
+            .wn-company-actions .btn-wn-primary, .wn-company-actions .btn-wn-secondary { width: 100%; }
+            .wn-stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .wn-stat-card { padding: 14px; gap: 12px; }
+            .wn-stat-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .wn-navbar.collapsed .wn-navbar-brand-left { animation: none; }
+            .wn-navbar, .wn-main, .wn-stat-card, .wn-progress-fill { transition: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wn-bg"><div class="wn-bg-grid"></div></div>
+
+    <!-- NAVBAR EMPLEADOR -->
+    <nav class="wn-navbar" id="navbar">
+        <div class="wn-navbar-brand">
+            <div class="wn-navbar-brand-left" id="navbarBrandTrigger">
+                <i class="bi bi-briefcase-fill"></i>
+                <span>Work.net</span>
+            </div>
+            <button class="wn-navbar-toggle" id="navbarToggle" aria-label="Minimizar menú" type="button">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+
+        <ul class="wn-navbar-menu">
+            <li><a href="dashboard-empleador.html" title="Inicio"><i class="bi bi-house-door"></i> <span>Inicio</span></a></li>
+            <li><a href="ofertas.html" title="Ofertas"><i class="bi bi-briefcase"></i> <span>Ofertas</span></a></li>
+            <li><a href="postulantes.html" title="Postulaciones"><i class="bi bi-inbox"></i> <span>Postulaciones</span></a></li>
+            <li><a href="#" title="Entrevistas"><i class="bi bi-calendar-event"></i> <span>Entrevistas</span></a></li>
+            <li><a href="#" class="active" title="Mi empresa"><i class="bi bi-building"></i> <span>Mi empresa</span></a></li>
+            <li>
+                <a href="#" title="Notificaciones">
+                    <i class="bi bi-bell"></i> <span>Notificaciones</span>
+                    <span class="badge bg-danger ms-auto" style="font-size:0.65rem;">3</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="wn-navbar-footer">
+            <div class="wn-user-info" id="userInfoTrigger">
+                <div class="wn-avatar">TS</div>
+                <div class="wn-user-text">
+                    <div class="wn-user-name">Tech Solutions</div>
+                    <div class="wn-user-role">Empleador</div>
+                </div>
+                <i class="bi bi-chevron-up wn-user-chevron"></i>
+            </div>
+
+            <div class="wn-user-dropdown" id="userDropdown">
+                <div class="wn-user-dropdown-header">
+                    <p class="wn-user-dropdown-name">Tech Solutions S.A.</p>
+                    <p class="wn-user-dropdown-email">contacto@techsolutions.com</p>
+                </div>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-building"></i> Mi empresa</a>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-gear"></i> Configuración</a>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-question-circle"></i> Ayuda</a>
+                <div class="wn-user-dropdown-divider"></div>
+                <a href="login.html" class="wn-user-dropdown-item danger"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="wn-main">
+
+        <!-- HEADER DE EMPRESA -->
+        <div class="wn-company-header">
+            <div class="wn-company-cover">
+                <button class="wn-company-cover-edit">
+                    <i class="bi bi-camera-fill"></i> Cambiar portada
+                </button>
+            </div>
+
+            <div class="wn-company-info">
+                <div class="wn-company-logo-wrapper">
+                    <div class="wn-company-logo">TS</div>
+                    <button class="wn-company-logo-edit" title="Cambiar logo">
+                        <i class="bi bi-camera-fill"></i>
+                    </button>
+                </div>
+
+                <div class="wn-company-details">
+                    <div class="wn-company-name-row">
+                        <h1 class="wn-company-name">Tech Solutions S.A.</h1>
+                        <span class="wn-company-verified">
+                            <i class="bi bi-patch-check-fill"></i> Verificada
+                        </span>
+                    </div>
+
+                    <div class="wn-company-meta">
+                        <span><i class="bi bi-card-text"></i> RUC: 80012345-6</span>
+                        <span><i class="bi bi-geo-alt-fill"></i> Encarnación, Paraguay</span>
+                        <span><i class="bi bi-envelope-fill"></i> contacto@techsolutions.com</span>
+                        <span><i class="bi bi-telephone-fill"></i> +595 71 200 300</span>
+                        <span><i class="bi bi-globe"></i> www.techsolutions.com.py</span>
+                    </div>
+
+                    <div class="wn-company-actions">
+                        <button class="btn-wn-primary">
+                            <i class="bi bi-pencil"></i> Editar empresa
+                        </button>
+                        <button class="btn-wn-secondary">
+                            <i class="bi bi-eye"></i> Ver perfil público
+                        </button>
+                        <button class="btn-wn-secondary">
+                            <i class="bi bi-share"></i> Compartir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BARRA DE PROGRESO -->
+        <section class="wn-profile-progress-card">
+            <div class="wn-profile-progress-header">
+                <div class="wn-profile-progress-title">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Completitud del perfil de empresa</span>
+                </div>
+                <div class="wn-profile-progress-value">75%</div>
+            </div>
+            <div class="wn-progress-bar">
+                <div class="wn-progress-fill" style="width: 75%;"></div>
+            </div>
+            <p class="wn-profile-progress-hint">
+                <i class="bi bi-lightbulb-fill"></i>
+                Agregá una <strong>foto de portada</strong> y una <strong>descripción institucional</strong> para completar tu perfil.
+            </p>
+        </section>
+
+        <!-- STATS -->
+        <section class="wn-stats">
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon success"><i class="bi bi-briefcase-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">4</div>
+                    <div class="wn-stat-label">Ofertas activas</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon"><i class="bi bi-inbox-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">23</div>
+                    <div class="wn-stat-label">Postulaciones</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon purple"><i class="bi bi-people-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">128</div>
+                    <div class="wn-stat-label">Seguidores</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon warning"><i class="bi bi-star-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">4.8</div>
+                    <div class="wn-stat-label">Valoración</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DESCRIPCIÓN -->
+        <section class="wn-section">
+            <div class="wn-section-header">
+                <h2 class="wn-section-title">
+                    <i class="bi bi-file-text"></i>
+                    Descripción institucional
+                </h2>
+                <button class="wn-add-btn">
+                    <i class="bi bi-pencil"></i> Editar
+                </button>
+            </div>
+            <div class="wn-company-description">
+                Tech Solutions S.A. es una empresa paraguaya dedicada al desarrollo de software a medida, consultoría tecnológica e integración de sistemas. Con más de 10 años de experiencia, hemos trabajado con clientes de diversos rubros, desde startups hasta grandes corporaciones. Nuestro equipo está conformado por profesionales apasionados por la tecnología y comprometidos con la excelencia.
+            </div>
+        </section>
+
+        <!-- DATOS INSTITUCIONALES -->
+        <section class="wn-section">
+            <div class="wn-section-header">
+                <h2 class="wn-section-title">
+                    <i class="bi bi-building"></i>
+                    Datos institucionales
+                </h2>
+                <button class="wn-add-btn">
+                    <i class="bi bi-pencil"></i> Editar
+                </button>
+            </div>
+            <div class="wn-personal-grid">
+                <div class="wn-personal-item">
+                    <div class="wn-personal-label"><i class="bi bi-building"></i> Razón social</div>
+                    <div class="wn-personal-value">Tech Solutions S.A.</div>
+                </div>
+                <div class="wn-personal-item">
+                    <div class="wn-personal-label"><i class="bi bi-card-text"></i> RUC</div>
+                    <div class="wn-personal-value">80012345-6</div>
+                </div>
+                <div class="wn-personal-item">
+                    <div class="wn-personal-label"><i class="bi bi-briefcase"></i> Rubro</div>
+                    <div class="wn-personal-value">Desarrollo de software</div>
+                </div>
+                <div class="wn-personal-item">
+                    <div class="wn-personal-label"><i class="bi bi-people"></i> Tamaño</div>
+                    <div class="wn-personal-value">11-50 empleados</div>
+                </div>
+                <div class="wn-personal-item">
+                    <div class="wn-personal-label"><i class="bi bi-calendar3"></i> Fundación</div>
+                    <div class="wn-personal-value">2014</div>
+                </div>
+                <div class="wn-personal-item">
+                    <div class="wn-personal-label"><i class="bi bi-globe"></i> Sitio web</div>
+                    <div class="wn-personal-value">www.techsolutions.com.py</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACTO -->
+        <section class="wn-section">
+            <div class="wn-section-header">
+                <h2 class="wn-section-title">
+                    <i class="bi bi-telephone"></i>
+                    Contacto
+                </h2>
+                <button class="wn-add-btn">
+                    <i class="bi bi-pencil"></i> Editar
+                </button>
+            </div>
+            <div class="wn-personal-grid">
+                <div class="wn-personal-item">
+                    <div class="wn-personal-label"><i class="bi bi-envelope"></i> Email corporativo</div>
+                    <div class="wn-personal-value">contacto@techsolutions.com</div>
+                </div>
+                <div class="wn-personal-item">
+                    <div class="wn-personal-label"><i class="bi bi-telephone"></i> Teléfono</div>
+                    <div class="wn-personal-value">+595 71 200 300</div>
+                </div>
+                <div class="wn-personal-item">
+                    <div class="wn-personal-label"><i class="bi bi-whatsapp"></i> WhatsApp</div>
+                    <div class="wn-personal-value">+595 985 123 456</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- UBICACIÓN -->
+        <section class="wn-section">
+            <div class="wn-section-header">
+                <h2 class="wn-section-title">
+                    <i class="bi bi-geo-alt"></i>
+                    Ubicación
+                </h2>
+                <button class="wn-add-btn">
+                    <i class="bi bi-pencil"></i> Editar
+                </button>
+            </div>
+            <div class="wn-location-card">
+                <div class="wn-location-address">
+                    <i class="bi bi-pin-map-fill"></i>
+                    Av. Irrazábal 1234, Encarnación, Paraguay
+                </div>
+                <div class="wn-company-map" id="companyMap"></div>
+            </div>
+        </section>
+
+        <!-- REDES SOCIALES -->
+        <section class="wn-section">
+            <div class="wn-section-header">
+                <h2 class="wn-section-title">
+                    <i class="bi bi-share"></i>
+                    Redes sociales
+                </h2>
+                <button class="wn-add-btn">
+                    <i class="bi bi-plus-lg"></i> Agregar
+                </button>
+            </div>
+            <div class="wn-social-list">
+                <a href="#" class="wn-social-item">
+                    <i class="bi bi-linkedin"></i> linkedin.com/company/techsolutions
+                </a>
+                <a href="#" class="wn-social-item">
+                    <i class="bi bi-facebook"></i> facebook.com/techsolutionspy
+                </a>
+                <a href="#" class="wn-social-item">
+                    <i class="bi bi-instagram"></i> @techsolutionspy
+                </a>
+                <a href="#" class="wn-social-item">
+                    <i class="bi bi-globe"></i> www.techsolutions.com.py
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const navbar = document.getElementById('navbar');
+        const navbarToggle = document.getElementById('navbarToggle');
+        const navbarBrandTrigger = document.getElementById('navbarBrandTrigger');
+        const userInfoTrigger = document.getElementById('userInfoTrigger');
+        const userDropdown = document.getElementById('userDropdown');
+
+        navbarToggle.addEventListener('click', () => { navbar.classList.add('collapsed'); document.body.classList.add('navbar-collapsed'); });
+        navbarBrandTrigger.addEventListener('click', () => { if (navbar.classList.contains('collapsed')) { navbar.classList.remove('collapsed'); document.body.classList.remove('navbar-collapsed'); } });
+        userInfoTrigger.addEventListener('click', (e) => { e.stopPropagation(); userInfoTrigger.classList.toggle('open'); userDropdown.classList.toggle('show'); });
+        document.addEventListener('click', (e) => { if (!userInfoTrigger.contains(e.target) && !userDropdown.contains(e.target)) { userInfoTrigger.classList.remove('open'); userDropdown.classList.remove('show'); } });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { userInfoTrigger.classList.remove('open'); userDropdown.classList.remove('show'); } });
+
+        const companyMap = L.map('companyMap', { zoomControl: true, attributionControl: false }).setView([-27.3306, -55.8667], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { subdomains: ['a', 'b', 'c'], maxZoom: 19 }).addTo(companyMap);
+        L.marker([-27.3306, -55.8667]).addTo(companyMap);
+    </script>
+
+</body>
+</html>

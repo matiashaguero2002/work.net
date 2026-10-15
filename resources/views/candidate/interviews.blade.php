@@ -93,6 +93,9 @@
                                 <button class="wn-action-btn wn-action-btn-danger" type="button">
                                     <i class="bi bi-x-circle"></i> Cancelar
                                 </button>
+                                <button class="wn-action-btn wn-action-btn-secondary" type="button">
+                                    <i class="bi bi-calendar-plus"></i> Negociar horario
+                                </button>
                             @endif
                         </div>
                     </div>

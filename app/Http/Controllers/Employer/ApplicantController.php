@@ -29,7 +29,7 @@ class ApplicantController extends Controller
                 'match' => 92,
                 'lowMatch' => false,
                 'dimmed' => false,
-                'actions' => ['profile', 'cv', 'interview'],
+                'actions' => ['profile', 'cv'],
             ],
             [
                 'id' => 2,
@@ -49,7 +49,7 @@ class ApplicantController extends Controller
                 'match' => 85,
                 'lowMatch' => false,
                 'dimmed' => false,
-                'actions' => ['profile', 'cv', 'interview'],
+                'actions' => ['profile', 'cv'],
             ],
             [
                 'id' => 3,
@@ -69,7 +69,7 @@ class ApplicantController extends Controller
                 'match' => 78,
                 'lowMatch' => false,
                 'dimmed' => false,
-                'actions' => ['profile', 'cv', 'interview'],
+                'actions' => ['profile', 'cv'],
             ],
             [
                 'id' => 4,
@@ -89,7 +89,7 @@ class ApplicantController extends Controller
                 'match' => 88,
                 'lowMatch' => false,
                 'dimmed' => false,
-                'actions' => ['profile', 'cv', 'interview'],
+                'actions' => ['profile', 'cv'],
             ],
             [
                 'id' => 5,

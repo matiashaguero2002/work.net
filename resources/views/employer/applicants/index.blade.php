@@ -73,9 +73,6 @@
                             @if(in_array('cv', $applicant['actions']))
                                 <a href="#" class="wn-applicant-action secondary"><i class="bi bi-file-earmark-pdf"></i> CV</a>
                             @endif
-                            @if(in_array('interview', $applicant['actions']))
-                                <a href="#" class="wn-applicant-action secondary"><i class="bi bi-calendar-plus"></i> Entrevistar</a>
-                            @endif
                         </div>
                     </div>
                 </article>

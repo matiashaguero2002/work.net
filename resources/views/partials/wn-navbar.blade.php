@@ -82,11 +82,6 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('employer.applicants.show', 1) }}" class="{{ request()->routeIs('employer.applicants.show') ? 'active' : '' }}" title="Postulaciones">
-                    <i class="bi bi-inbox"></i> <span>Postulaciones</span>
-                </a>
-            </li>
-            <li>
                 <a href="#" title="Entrevistas">
                     <i class="bi bi-calendar-event"></i> <span>Entrevistas</span>
                 </a>
@@ -122,7 +117,11 @@
              NOTIFICACIONES (común a todos los roles)
              ============================================ --}}
         <li>
-            <a href="{{ route('notifications.index') }}" class="{{ request()->routeIs('notifications.*') ? 'active' : '' }}" title="Notificaciones">
+            @if($role === 'empleador')
+                <a href="{{ route('employer.notifications.index') }}" class="{{ request()->routeIs('employer.notifications.*') ? 'active' : '' }}" title="Notificaciones">
+            @else
+                <a href="{{ route('notifications.index') }}" class="{{ request()->routeIs('notifications.*') ? 'active' : '' }}" title="Notificaciones">
+            @endif
                 <i class="bi bi-bell"></i> <span>Notificaciones</span>
                 <span class="badge bg-danger ms-auto" style="font-size:0.65rem;">3</span>
             </a>
@@ -162,8 +161,6 @@
 
             @if($role === 'empleador')
                 <a href="{{ route('employer.company.profile') }}" class="wn-user-dropdown-item"><i class="bi bi-building"></i> Mi empresa</a>
-            @else
-                <a href="{{ route('candidate.profile') }}" class="wn-user-dropdown-item"><i class="bi bi-person"></i> Mi perfil</a>
             @endif
 
             <a href="#" class="wn-user-dropdown-item"><i class="bi bi-gear"></i> Configuración</a>

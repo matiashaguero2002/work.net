@@ -39,12 +39,30 @@
                 <h2 class="wn-card-title">Registrar empresa</h2>
                 <p class="wn-card-subtitle">Completá los datos de tu organización.</p>
 
-                <form onsubmit="event.preventDefault(); window.location.href='{{ route('auth.dashboard.demo') }}'">
+                <form method="POST" action="{{ route('auth.register.employer.post') }}">
+                    @csrf
+
+                    @error('nombre_empresa')
+                        <div class="alert alert-danger py-2 px-3" role="alert">{{ $message }}</div>
+                    @enderror
+
+                    @error('ruc')
+                        <div class="alert alert-danger py-2 px-3" role="alert">{{ $message }}</div>
+                    @enderror
+
+                    @error('email')
+                        <div class="alert alert-danger py-2 px-3" role="alert">{{ $message }}</div>
+                    @enderror
+
+                    @error('password')
+                        <div class="alert alert-danger py-2 px-3" role="alert">{{ $message }}</div>
+                    @enderror
+
                     <div class="wn-form-group">
                         <label class="wn-label">Nombre de la empresa <span class="required">*</span></label>
                         <div class="wn-input-icon">
                             <i class="bi bi-building"></i>
-                            <input type="text" class="wn-input" placeholder="Tech Solutions S.A." autocomplete="organization" required>
+                            <input type="text" name="nombre_empresa" value="{{ old('nombre_empresa') }}" class="wn-input" placeholder="Tech Solutions S.A." autocomplete="organization" required>
                         </div>
                     </div>
 
@@ -52,7 +70,7 @@
                         <label class="wn-label">RUC <span class="required">*</span></label>
                         <div class="wn-input-icon">
                             <i class="bi bi-card-text"></i>
-                            <input type="text" class="wn-input" placeholder="80012345-6" autocomplete="off" required>
+                            <input type="text" name="ruc" value="{{ old('ruc') }}" class="wn-input" placeholder="80012345-6" autocomplete="off" required>
                         </div>
                     </div>
 
@@ -60,7 +78,7 @@
                         <label class="wn-label">Correo corporativo <span class="required">*</span></label>
                         <div class="wn-input-icon">
                             <i class="bi bi-envelope"></i>
-                            <input type="email" class="wn-input" placeholder="contacto@empresa.com" autocomplete="email" required>
+                            <input type="email" name="email" value="{{ old('email') }}" class="wn-input" placeholder="contacto@empresa.com" autocomplete="email" required>
                         </div>
                     </div>
 
@@ -69,7 +87,7 @@
                             <label class="wn-label">Contraseña <span class="required">*</span></label>
                             <div class="wn-input-icon">
                                 <i class="bi bi-lock"></i>
-                                <input type="password" class="wn-input" placeholder="••••••••" autocomplete="new-password" required>
+                                <input type="password" name="password" class="wn-input" placeholder="••••••••" autocomplete="new-password" required>
                             </div>
                         </div>
 
@@ -77,7 +95,7 @@
                             <label class="wn-label">Confirmar <span class="required">*</span></label>
                             <div class="wn-input-icon">
                                 <i class="bi bi-lock-fill"></i>
-                                <input type="password" class="wn-input" placeholder="••••••••" autocomplete="new-password" required>
+                                <input type="password" name="password_confirmation" class="wn-input" placeholder="••••••••" autocomplete="new-password" required>
                             </div>
                         </div>
                     </div>
@@ -86,7 +104,7 @@
                         <label class="wn-label">Ubicación <span class="required">*</span></label>
                         <div class="wn-input-icon">
                             <i class="bi bi-geo-alt"></i>
-                            <input type="text" class="wn-input" placeholder="Encarnación, Paraguay" autocomplete="address-level2" required>
+                            <input type="text" name="ubicacion" value="{{ old('ubicacion') }}" class="wn-input" placeholder="Encarnación, Paraguay" autocomplete="address-level2" required>
                         </div>
                     </div>
 

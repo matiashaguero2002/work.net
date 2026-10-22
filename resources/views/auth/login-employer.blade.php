@@ -39,12 +39,23 @@
                 <h2 class="wn-card-title">Iniciar sesión</h2>
                 <p class="wn-card-subtitle">Accedé a tu cuenta de Empresa.</p>
 
-                <form onsubmit="event.preventDefault(); window.location.href='{{ route('auth.dashboard.demo') }}'">
+                <form method="POST" action="{{ route('login.post') }}">
+                    @csrf
+                    <input type="hidden" name="portal" value="empleador">
+
+                    @error('email')
+                        <div class="alert alert-danger py-2 px-3" role="alert">{{ $message }}</div>
+                    @enderror
+
+                    @error('password')
+                        <div class="alert alert-danger py-2 px-3" role="alert">{{ $message }}</div>
+                    @enderror
+
                     <div class="wn-form-group">
                         <label class="wn-label">Correo corporativo</label>
                         <div class="wn-input-icon">
                             <i class="bi bi-envelope"></i>
-                            <input type="email" class="wn-input" placeholder="contacto@empresa.com" autocomplete="email" required>
+                            <input type="email" name="email" value="{{ old('email') }}" class="wn-input" placeholder="contacto@empresa.com" autocomplete="email" required>
                         </div>
                     </div>
 
@@ -52,7 +63,7 @@
                         <label class="wn-label">Contraseña</label>
                         <div class="wn-input-icon">
                             <i class="bi bi-lock"></i>
-                            <input type="password" class="wn-input" placeholder="••••••••" autocomplete="current-password" required>
+                            <input type="password" name="password" class="wn-input" placeholder="••••••••" autocomplete="current-password" required>
                         </div>
                     </div>
 

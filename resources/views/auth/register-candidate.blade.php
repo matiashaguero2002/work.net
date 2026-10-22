@@ -39,12 +39,26 @@
                 <h2 class="wn-card-title">Crear cuenta</h2>
                 <p class="wn-card-subtitle">Completá tus datos para registrarte como Empleado.</p>
 
-                <form onsubmit="event.preventDefault(); window.location.href='{{ route('auth.dashboard.demo') }}'">
+                <form method="POST" action="{{ route('auth.register.candidate.post') }}">
+                    @csrf
+
+                    @error('nombre')
+                        <div class="alert alert-danger py-2 px-3" role="alert">{{ $message }}</div>
+                    @enderror
+
+                    @error('email')
+                        <div class="alert alert-danger py-2 px-3" role="alert">{{ $message }}</div>
+                    @enderror
+
+                    @error('password')
+                        <div class="alert alert-danger py-2 px-3" role="alert">{{ $message }}</div>
+                    @enderror
+
                     <div class="wn-form-group">
                         <label class="wn-label">Nombre completo <span class="required">*</span></label>
                         <div class="wn-input-icon">
                             <i class="bi bi-person"></i>
-                            <input type="text" class="wn-input" placeholder="Juan Pérez" autocomplete="name" required>
+                            <input type="text" name="nombre" value="{{ old('nombre') }}" class="wn-input" placeholder="Juan Pérez" autocomplete="name" required>
                         </div>
                     </div>
 
@@ -52,7 +66,7 @@
                         <label class="wn-label">Correo electrónico <span class="required">*</span></label>
                         <div class="wn-input-icon">
                             <i class="bi bi-envelope"></i>
-                            <input type="email" class="wn-input" placeholder="tu@email.com" autocomplete="email" required>
+                            <input type="email" name="email" value="{{ old('email') }}" class="wn-input" placeholder="tu@email.com" autocomplete="email" required>
                         </div>
                     </div>
 
@@ -61,7 +75,7 @@
                             <label class="wn-label">Contraseña <span class="required">*</span></label>
                             <div class="wn-input-icon">
                                 <i class="bi bi-lock"></i>
-                                <input type="password" class="wn-input" placeholder="••••••••" autocomplete="new-password" required>
+                                <input type="password" name="password" class="wn-input" placeholder="••••••••" autocomplete="new-password" required>
                             </div>
                         </div>
 
@@ -69,7 +83,7 @@
                             <label class="wn-label">Confirmar <span class="required">*</span></label>
                             <div class="wn-input-icon">
                                 <i class="bi bi-lock-fill"></i>
-                                <input type="password" class="wn-input" placeholder="••••••••" autocomplete="new-password" required>
+                                <input type="password" name="password_confirmation" class="wn-input" placeholder="••••••••" autocomplete="new-password" required>
                             </div>
                         </div>
                     </div>
@@ -78,7 +92,7 @@
                         <label class="wn-label">Teléfono <span style="color: var(--wn-text-muted); font-weight: 400;">(opcional)</span></label>
                         <div class="wn-input-icon">
                             <i class="bi bi-telephone"></i>
-                            <input type="tel" class="wn-input" placeholder="+595 9XX XXX XXX" autocomplete="tel">
+                            <input type="tel" name="telefono" value="{{ old('telefono') }}" class="wn-input" placeholder="+595 9XX XXX XXX" autocomplete="tel">
                         </div>
                     </div>
 

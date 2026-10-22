@@ -30,5 +30,13 @@
 
     @yield('content')
 
+    {{-- Si la página se restaura de la caché de "atrás/adelante" del
+         navegador, se recarga: el servidor decide si mostrar el
+         formulario o redirigir al panel según la sesión real. --}}
+    <script>
+        window.addEventListener('pageshow', function (e) {
+            if (e.persisted) { location.reload(); }
+        });
+    </script>
 </body>
 </html>

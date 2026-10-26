@@ -6,6 +6,9 @@
     } elseif (request()->routeIs('employer.*')) {
         // No hay sesión pero estamos en ruta de empleador → modo demo
         $role = 'empleador';
+    } elseif (request()->routeIs('admin.*')) {
+        // No hay sesión pero estamos en ruta de admin → modo demo
+        $role = 'admin';
     } elseif (request()->routeIs('candidate.*')) {
         // No hay sesión pero estamos en ruta de candidato → modo demo
         $role = 'candidato';
@@ -18,7 +21,11 @@
 <nav class="wn-navbar" id="navbar">
     <div class="wn-navbar-brand">
         <div class="wn-navbar-brand-left" id="navbarBrandTrigger">
-            <i class="bi bi-briefcase-fill"></i>
+            @if($role === 'admin')
+                <i class="bi bi-shield-lock-fill"></i>
+            @else
+                <i class="bi bi-briefcase-fill"></i>
+            @endif
             <span>Work.net</span>
         </div>
         <button class="wn-navbar-toggle" id="navbarToggle" aria-label="Minimizar menú" type="button">
@@ -82,7 +89,7 @@
                 </a>
             </li>
             <li>
-                <a href="#" title="Entrevistas">
+                <a href="{{ route('employer.interviews.index') }}" class="{{ request()->routeIs('employer.interviews.*') ? 'active' : '' }}" title="Entrevistas">
                     <i class="bi bi-calendar-event"></i> <span>Entrevistas</span>
                 </a>
             </li>
@@ -92,30 +99,41 @@
                 </a>
             </li>
 
-        @elseif($role === 'administrador')
+        @elseif($role === 'admin')
             {{-- ============================================
                  CARA 3: MENÚ DEL ADMINISTRADOR
                  ============================================ --}}
             <li>
-                <a href="#" title="Dashboard">
-                    <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+                <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" title="Panel">
+                    <i class="bi bi-speedometer2"></i> <span>Panel</span>
                 </a>
             </li>
             <li>
-                <a href="#" title="Usuarios">
+                <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}" title="Usuarios">
                     <i class="bi bi-people"></i> <span>Usuarios</span>
                 </a>
             </li>
             <li>
-                <a href="#" title="Ofertas">
-                    <i class="bi bi-list-check"></i> <span>Ofertas</span>
+                <a href="{{ route('admin.offers.index') }}" class="{{ request()->routeIs('admin.offers.*') ? 'active' : '' }}" title="Ofertas">
+                    <i class="bi bi-briefcase"></i> <span>Ofertas</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('admin.reports.index') }}" class="{{ request()->routeIs('admin.reports.*') ? 'active' : '' }}" title="Reportes">
+                    <i class="bi bi-flag"></i> <span>Reportes</span> <span class="badge bg-danger" style="font-size:0.65rem;">2</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" title="Configuración">
+                    <i class="bi bi-gear"></i> <span>Configuración</span>
                 </a>
             </li>
         @endif
 
         {{-- ============================================
-             NOTIFICACIONES (común a todos los roles)
+             NOTIFICACIONES (común a candidato y empleador)
              ============================================ --}}
+        @if($role !== 'admin')
         <li>
             @if($role === 'empleador')
                 <a href="{{ route('employer.notifications.index') }}" class="{{ request()->routeIs('employer.notifications.*') ? 'active' : '' }}" title="Notificaciones">
@@ -126,11 +144,17 @@
                 <span class="badge bg-danger ms-auto" style="font-size:0.65rem;">3</span>
             </a>
         </li>
+        @endif
     </ul>
 
     @php
         // Datos del usuario para el footer
-        if ($role === 'empleador') {
+        if ($role === 'admin') {
+            $userName = auth()->check() ? (auth()->user()->name ?? 'Admin General') : 'Admin General';
+            $userInitials = auth()->check() ? (auth()->user()->initials ?? 'AD') : 'AD';
+            $userRole = 'Administrador';
+            $userEmail = auth()->check() ? (auth()->user()->email ?? 'admin@work.net') : 'admin@work.net';
+        } elseif ($role === 'empleador') {
             $userName = auth()->check() ? (auth()->user()->company_name ?? 'Tech Solutions') : 'Tech Solutions';
             $userInitials = auth()->check() ? (auth()->user()->company_initials ?? 'TS') : 'TS';
             $userRole = 'Empleador';
@@ -145,7 +169,7 @@
 
     <div class="wn-navbar-footer">
         <div class="wn-user-info" id="userInfoTrigger">
-            <div class="wn-avatar">{{ $userInitials }}</div>
+            <div class="wn-avatar {{ $role === 'admin' ? 'wn-avatar-admin' : '' }}">{{ $userInitials }}</div>
             <div class="wn-user-text">
                 <div class="wn-user-name">{{ $userName }}</div>
                 <div class="wn-user-role">{{ $userRole }}</div>

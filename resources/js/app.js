@@ -3,3 +3,5 @@ import './auth.js';
 import './map.js';
 import './interviews.js';
 import './dashboard.js';
+import './admin.js';
+import './employer-interviews.js';

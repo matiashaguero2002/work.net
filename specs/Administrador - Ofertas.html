@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Work.net - Ofertas (supervisión)</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --wn-bg-dark: #0D1117; --wn-bg-panel: #161B22; --wn-bg-elevated: #21262D;
+            --wn-border: #30363D; --wn-text: #E6EDF3; --wn-text-muted: #8B949E;
+            --wn-accent: #1F6FEB; --wn-accent-hover: #388BFD;
+            --wn-success: #238636; --wn-danger: #DA3633; --wn-warning: #D29922; --wn-purple: #6E40C9;
+            --wn-navbar-width: 240px; --wn-navbar-width-mini: 72px;
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--wn-bg-dark); color: var(--wn-text); overflow-x: hidden; }
+        .wn-bg { position: fixed; inset: 0; z-index: 0; background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%); pointer-events: none; }
+        .wn-bg-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px); background-size: 40px 40px; mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%); -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%); }
+
+        /* NAVBAR (igual) */
+        .wn-navbar { position: fixed; top: 16px; left: 16px; bottom: 16px; width: var(--wn-navbar-width); background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); border-radius: 16px; padding: 20px 16px; display: flex; flex-direction: column; z-index: 100; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .wn-navbar.collapsed { width: var(--wn-navbar-width-mini); padding: 20px 8px; }
+        .wn-navbar-brand { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--wn-border); margin-bottom: 16px; }
+        .wn-navbar-brand-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; padding: 6px 8px; border-radius: 10px; transition: background-color 0.2s ease, box-shadow 0.2s ease; user-select: none; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { cursor: pointer; background-color: rgba(31, 111, 235, 0.15); box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); animation: glowPulse 2s ease-in-out infinite; }
+        .wn-navbar.collapsed .wn-navbar-brand-left i { color: var(--wn-accent-hover); filter: drop-shadow(0 0 8px rgba(31, 111, 235, 0.8)); }
+        @keyframes glowPulse { 0%, 100% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); } 50% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.6), 0 0 28px rgba(31, 111, 235, 0.55); } }
+        .wn-navbar-brand i { color: var(--wn-accent); font-size: 1.5rem; flex-shrink: 0; transition: color 0.2s ease, filter 0.2s ease; }
+        .wn-navbar-brand span { font-weight: 700; font-size: 1.1rem; letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; }
+        .wn-navbar-toggle { background: none; border: none; color: var(--wn-text-muted); cursor: pointer; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.2s ease; flex-shrink: 0; }
+        .wn-navbar-toggle:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar.collapsed .wn-navbar-brand { justify-content: center; padding-bottom: 12px; margin-bottom: 12px; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { justify-content: center; flex: none; }
+        .wn-navbar.collapsed .wn-navbar-brand span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-toggle { display: none; }
+        .wn-navbar-menu { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .wn-navbar-menu li { margin-bottom: 4px; }
+        .wn-navbar-menu a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--wn-text-muted); text-decoration: none; border-radius: 8px; font-size: 0.9rem; transition: all 0.2s ease; position: relative; white-space: nowrap; }
+        .wn-navbar-menu a:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar-menu a.active { background-color: var(--wn-accent); color: white; font-weight: 500; }
+        .wn-navbar-menu a i { font-size: 1.1rem; flex-shrink: 0; width: 20px; text-align: center; }
+        .wn-navbar.collapsed .wn-navbar-menu a { justify-content: center; padding: 12px 8px; }
+        .wn-navbar.collapsed .wn-navbar-menu a span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-menu a .badge { position: absolute; top: 4px; right: 4px; font-size: 0.6rem; padding: 2px 5px; }
+        .wn-navbar-footer { padding-top: 16px; border-top: 1px solid var(--wn-border); position: relative; }
+        .wn-user-info { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; cursor: pointer; transition: background-color 0.2s ease; user-select: none; }
+        .wn-user-info:hover { background-color: var(--wn-bg-elevated); }
+        .wn-user-text { flex: 1; min-width: 0; }
+        .wn-user-chevron { color: var(--wn-text-muted); font-size: 0.75rem; transition: transform 0.2s ease; flex-shrink: 0; }
+        .wn-user-info.open .wn-user-chevron { transform: rotate(180deg); }
+        .wn-navbar.collapsed .wn-user-info { justify-content: center; padding: 8px 4px; }
+        .wn-navbar.collapsed .wn-user-info > div:not(.wn-avatar) { display: none; }
+        .wn-navbar.collapsed .wn-user-chevron { display: none; }
+        .wn-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--wn-danger), var(--wn-purple)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+        .wn-user-name { font-size: 0.85rem; font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-user-role { font-size: 0.7rem; color: var(--wn-text-muted); text-transform: capitalize; }
+        .wn-user-dropdown { position: absolute; bottom: calc(100% + 8px); left: 0; right: 0; background-color: var(--wn-bg-elevated); border: 1px solid var(--wn-border); border-radius: 12px; padding: 6px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6); opacity: 0; visibility: hidden; transform: translateY(8px); transition: all 0.2s ease; z-index: 200; }
+        .wn-navbar.collapsed .wn-user-dropdown { left: 100%; bottom: 0; width: 220px; margin-left: 8px; }
+        .wn-user-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .wn-user-dropdown-header { padding: 10px 12px 8px; border-bottom: 1px solid var(--wn-border); margin-bottom: 6px; }
+        .wn-user-dropdown-name { font-size: 0.85rem; font-weight: 600; margin: 0 0 2px 0; }
+        .wn-user-dropdown-email { font-size: 0.7rem; color: var(--wn-text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-user-dropdown-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; color: var(--wn-text-muted); text-decoration: none; border-radius: 8px; font-size: 0.82rem; transition: all 0.2s ease; cursor: pointer; border: none; background: none; width: 100%; text-align: left; font-family: inherit; }
+        .wn-user-dropdown-item:hover { background-color: var(--wn-bg-panel); color: var(--wn-text); }
+        .wn-user-dropdown-item.danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+        .wn-user-dropdown-item i { font-size: 0.95rem; flex-shrink: 0; }
+        .wn-user-dropdown-divider { height: 1px; background-color: var(--wn-border); margin: 6px 0; }
+
+        /* MAIN */
+        .wn-main { margin-left: calc(var(--wn-navbar-width) + 32px); margin-right: 16px; margin-top: 16px; margin-bottom: 16px; padding: 32px 40px; min-height: calc(100vh - 32px); background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); position: relative; z-index: 1; transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        body.navbar-collapsed .wn-main { margin-left: calc(var(--wn-navbar-width-mini) + 32px); }
+
+        /* HEADER */
+        .wn-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--wn-border); flex-wrap: wrap; }
+        .wn-header-left h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 4px 0; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
+        .wn-header-left h1 .wn-admin-badge { font-size: 0.65rem; padding: 3px 8px; background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+        .wn-header-left p { color: var(--wn-text-muted); margin: 0; font-size: 0.9rem; }
+        .wn-header-left p strong { color: var(--wn-text); font-weight: 600; }
+        .wn-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        /* Botones */
+        .btn-wn-primary { background-color: var(--wn-accent); border: none; color: #ffffff !important; font-weight: 600; padding: 10px 20px; border-radius: 10px; font-size: 0.85rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-primary:hover { background-color: var(--wn-accent-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35); color: #ffffff !important; }
+        .btn-wn-secondary { background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted) !important; font-weight: 500; padding: 10px 20px; border-radius: 10px; font-size: 0.85rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-secondary:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text) !important; border-color: var(--wn-text-muted); }
+
+        /* Stats */
+        .wn-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .wn-stat-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 12px; padding: 18px 20px; display: flex; align-items: center; gap: 16px; transition: all 0.2s ease; }
+        .wn-stat-card:hover { border-color: var(--wn-accent); transform: translateY(-2px); }
+        .wn-stat-icon { width: 48px; height: 48px; border-radius: 12px; background-color: rgba(31, 111, 235, 0.12); color: var(--wn-accent); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+        .wn-stat-icon.success { background-color: rgba(35, 134, 54, 0.12); color: var(--wn-success); }
+        .wn-stat-icon.warning { background-color: rgba(210, 153, 34, 0.12); color: var(--wn-warning); }
+        .wn-stat-icon.purple { background-color: rgba(110, 64, 201, 0.12); color: var(--wn-purple); }
+        .wn-stat-icon.danger { background-color: rgba(218, 54, 51, 0.12); color: var(--wn-danger); }
+        .wn-stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 4px; letter-spacing: -0.5px; }
+        .wn-stat-label { font-size: 0.75rem; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+
+        /* Filtros */
+        .wn-filters { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 18px; margin-bottom: 24px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
+        .wn-filter-group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+        .wn-filter-label { font-size: 0.72rem; font-weight: 600; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .wn-filter-input, .wn-filter-select { width: 100%; background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); color: var(--wn-text); border-radius: 10px; padding: 10px 12px; font-size: 0.85rem; font-family: inherit; transition: all 0.2s ease; }
+        .wn-filter-input:focus, .wn-filter-select:focus { outline: none; border-color: var(--wn-accent); box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15); }
+        .wn-filter-input::placeholder { color: var(--wn-text-muted); opacity: 0.5; }
+        .wn-filter-search { position: relative; }
+        .wn-filter-search i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--wn-text-muted); font-size: 0.9rem; pointer-events: none; }
+        .wn-filter-search .wn-filter-input { padding-left: 34px; }
+        .wn-filter-clear { background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted); padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; white-space: nowrap; }
+        .wn-filter-clear:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+
+        /* Results info + tabs */
+        .wn-results-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+        .wn-results-count { font-size: 0.85rem; color: var(--wn-text-muted); }
+        .wn-results-count strong { color: var(--wn-text); font-weight: 700; }
+        .wn-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+        .wn-tab { padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background-color: transparent; color: var(--wn-text-muted); border: 1px solid var(--wn-border); cursor: pointer; transition: all 0.2s ease; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; text-decoration: none !important; }
+        .wn-tab:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-tab.active { background-color: var(--wn-accent); border-color: var(--wn-accent); color: white; }
+        .wn-tab.danger.active { background-color: var(--wn-danger); border-color: var(--wn-danger); }
+
+        /* Grid de ofertas (cards) */
+        .wn-offers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+        .wn-offer-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px; transition: all 0.2s ease; position: relative; overflow: hidden; }
+        .wn-offer-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: var(--wn-accent); transition: background-color 0.2s ease; }
+        .wn-offer-card.status-active::before { background-color: var(--wn-success); }
+        .wn-offer-card.status-paused::before { background-color: var(--wn-warning); }
+        .wn-offer-card.status-closed::before { background-color: var(--wn-text-muted); }
+        .wn-offer-card.status-reported::before { background-color: var(--wn-danger); }
+        .wn-offer-card:hover { border-color: var(--wn-accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(31, 111, 235, 0.15); }
+        .wn-offer-card.status-reported { border-color: rgba(218, 54, 51, 0.4); }
+        .wn-offer-card.status-reported:hover { box-shadow: 0 8px 24px rgba(218, 54, 51, 0.2); }
+
+        .wn-offer-card-header { display: flex; align-items: flex-start; gap: 12px; }
+        .wn-offer-logo { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1rem; flex-shrink: 0; overflow: hidden; }
+        .wn-offer-info { min-width: 0; flex: 1; }
+        .wn-offer-title { font-size: 0.95rem; font-weight: 700; margin: 0 0 2px 0; line-height: 1.3; letter-spacing: -0.2px; }
+        .wn-offer-company { font-size: 0.78rem; color: var(--wn-text-muted); margin: 0; display: flex; align-items: center; gap: 4px; }
+        .wn-offer-company i { font-size: 0.75rem; }
+
+        .wn-offer-status { position: absolute; top: 14px; right: 14px; font-size: 0.65rem; font-weight: 700; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .wn-offer-status.active { background-color: rgba(35, 134, 54, 0.15); color: var(--wn-success); }
+        .wn-offer-status.paused { background-color: rgba(210, 153, 34, 0.15); color: var(--wn-warning); }
+        .wn-offer-status.closed { background-color: rgba(139, 148, 158, 0.15); color: var(--wn-text-muted); }
+        .wn-offer-status.reported { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+
+        .wn-offer-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+        .wn-offer-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background-color: var(--wn-bg-elevated); border-radius: 20px; font-size: 0.7rem; color: var(--wn-text-muted); font-weight: 500; }
+        .wn-offer-badge i { font-size: 0.7rem; color: var(--wn-accent); }
+        .wn-offer-badge.reported { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+        .wn-offer-badge.reported i { color: var(--wn-danger); }
+
+        .wn-offer-description { font-size: 0.8rem; color: var(--wn-text-muted); line-height: 1.55; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .wn-offer-stats { display: flex; gap: 16px; padding: 12px 0; border-top: 1px solid var(--wn-border); border-bottom: 1px solid var(--wn-border); }
+        .wn-offer-stat { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--wn-text-muted); }
+        .wn-offer-stat i { color: var(--wn-accent); font-size: 0.85rem; }
+        .wn-offer-stat strong { color: var(--wn-text); font-weight: 700; }
+
+        .wn-offer-actions { display: flex; gap: 6px; margin-top: auto; }
+        .wn-offer-action { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; text-decoration: none !important; transition: all 0.2s ease; cursor: pointer; border: none; font-family: inherit; white-space: nowrap; }
+        .wn-offer-action.primary { background-color: var(--wn-accent); color: #ffffff !important; }
+        .wn-offer-action.primary:hover { background-color: var(--wn-accent-hover); color: #ffffff !important; }
+        .wn-offer-action.secondary { background-color: transparent; color: var(--wn-text-muted) !important; border: 1px solid var(--wn-border); }
+        .wn-offer-action.secondary:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text) !important; }
+        .wn-offer-action.danger { background-color: transparent; color: var(--wn-danger) !important; border: 1px solid rgba(218, 54, 51, 0.3); }
+        .wn-offer-action.danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger) !important; border-color: var(--wn-danger); }
+        .wn-offer-action.icon-only { flex: 0 0 36px; padding: 8px; }
+
+        /* Paginación */
+        .wn-pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+        .wn-pagination-info { font-size: 0.8rem; color: var(--wn-text-muted); }
+        .wn-pagination-info strong { color: var(--wn-text); }
+        .wn-pagination-controls { display: flex; gap: 6px; }
+        .wn-page-btn { min-width: 36px; height: 36px; padding: 0 10px; border-radius: 8px; background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted); font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; }
+        .wn-page-btn:hover:not(:disabled) { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-page-btn.active { background-color: var(--wn-accent); border-color: var(--wn-accent); color: white; }
+        .wn-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Empty state */
+        .wn-empty { background-color: var(--wn-bg-dark); border: 1px dashed var(--wn-border); border-radius: 14px; padding: 60px 24px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+        .wn-empty-icon { width: 72px; height: 72px; border-radius: 50%; background-color: var(--wn-bg-elevated); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--wn-text-muted); }
+        .wn-empty h3 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+        .wn-empty p { color: var(--wn-text-muted); font-size: 0.85rem; margin: 0; max-width: 400px; }
+
+        /* Modal */
+        .wn-modal-backdrop { position: fixed; inset: 0; z-index: 1000; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 20px; }
+        .wn-modal-backdrop.show { display: flex; }
+        .wn-modal { background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); border-radius: 16px; padding: 28px; max-width: 460px; width: 100%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; gap: 18px; animation: modalIn 0.2s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .wn-modal-icon { width: 56px; height: 56px; border-radius: 50%; background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
+        .wn-modal h2 { font-size: 1.15rem; font-weight: 700; margin: 0; letter-spacing: -0.3px; }
+        .wn-modal p { font-size: 0.85rem; color: var(--wn-text-muted); margin: 0; line-height: 1.55; }
+        .wn-modal-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+        .btn-wn-danger { background-color: transparent; border: 1px solid rgba(218, 54, 51, 0.4); color: var(--wn-danger) !important; font-weight: 500; padding: 10px 20px; border-radius: 10px; font-size: 0.85rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger) !important; border-color: var(--wn-danger); }
+
+        /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .wn-filters { grid-template-columns: 1fr 1fr 1fr; }
+            .wn-filters .wn-filter-group:first-child { grid-column: 1 / -1; }
+            .wn-filters .wn-filter-clear { grid-column: 1 / -1; justify-self: end; }
+        }
+        @media (max-width: 992px) {
+            :root { --wn-navbar-width: 72px; }
+            .wn-navbar { width: var(--wn-navbar-width); padding: 16px 8px; }
+            .wn-navbar-brand span, .wn-navbar-menu a span, .wn-user-info > div:not(.wn-avatar) { display: none; }
+            .wn-navbar-menu a { justify-content: center; }
+            .wn-navbar-toggle { display: none; }
+            .wn-navbar.collapsed .wn-navbar-brand-left { box-shadow: none; animation: none; background: none; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 32px); padding: 24px 20px; }
+            .wn-user-chevron { display: none; }
+            .wn-user-info { justify-content: center; }
+        }
+        @media (max-width: 768px) {
+            :root { --wn-navbar-width: 60px; }
+            .wn-navbar { top: 12px; left: 12px; bottom: 12px; padding: 12px 6px; border-radius: 14px; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 24px); margin-right: 12px; margin-top: 12px; padding: 20px 16px; }
+            .wn-header { flex-direction: column; align-items: stretch; }
+            .wn-header-actions { width: 100%; }
+            .wn-header-actions .btn-wn-primary, .wn-header-actions .btn-wn-secondary { flex: 1; justify-content: center; }
+            .wn-filters { grid-template-columns: 1fr; }
+            .wn-filters .wn-filter-group:first-child { grid-column: auto; }
+            .wn-filters .wn-filter-clear { grid-column: auto; justify-self: stretch; }
+            .wn-offers-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            :root { --wn-navbar-width: 52px; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 16px); margin-right: 8px; margin-top: 8px; padding: 16px 12px; border-radius: 14px; }
+            .wn-header-left h1 { font-size: 1.4rem; }
+            .wn-stat-value { font-size: 1.25rem; }
+            .wn-stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .wn-stat-card { padding: 14px; gap: 12px; }
+            .wn-stat-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .wn-navbar.collapsed .wn-navbar-brand-left { animation: none; }
+            .wn-navbar, .wn-main, .wn-stat-card, .wn-offer-card { transition: none; }
+            .wn-modal { animation: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wn-bg"><div class="wn-bg-grid"></div></div>
+
+    <!-- NAVBAR ADMIN -->
+    <nav class="wn-navbar" id="navbar">
+        <div class="wn-navbar-brand">
+            <div class="wn-navbar-brand-left" id="navbarBrandTrigger">
+                <i class="bi bi-shield-lock-fill"></i>
+                <span>Work.net</span>
+            </div>
+            <button class="wn-navbar-toggle" id="navbarToggle" aria-label="Minimizar menú" type="button">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+        <ul class="wn-navbar-menu">
+            <li><a href="admin-dashboard.html" title="Panel"><i class="bi bi-speedometer2"></i> <span>Panel</span></a></li>
+            <li><a href="admin-usuarios.html" title="Usuarios"><i class="bi bi-people"></i> <span>Usuarios</span></a></li>
+            <li><a href="admin-ofertas.html" class="active" title="Ofertas"><i class="bi bi-briefcase"></i> <span>Ofertas</span></a></li>
+            <li><a href="admin-reportes.html" title="Reportes"><i class="bi bi-flag"></i> <span>Reportes</span> <span class="badge bg-danger" style="font-size:0.65rem;">2</span></a></li>
+            <li><a href="#" title="Configuración"><i class="bi bi-gear"></i> <span>Configuración</span></a></li>
+        </ul>
+        <div class="wn-navbar-footer">
+            <div class="wn-user-info" id="userInfoTrigger">
+                <div class="wn-avatar">AD</div>
+                <div class="wn-user-text">
+                    <div class="wn-user-name">Admin General</div>
+                    <div class="wn-user-role">Administrador</div>
+                </div>
+                <i class="bi bi-chevron-up wn-user-chevron"></i>
+            </div>
+            <div class="wn-user-dropdown" id="userDropdown">
+                <div class="wn-user-dropdown-header">
+                    <p class="wn-user-dropdown-name">Administrador del sistema</p>
+                    <p class="wn-user-dropdown-email">admin@work.net</p>
+                </div>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-gear"></i> Configuración</a>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-question-circle"></i> Ayuda</a>
+                <div class="wn-user-dropdown-divider"></div>
+                <a href="login.html" class="wn-user-dropdown-item danger"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="wn-main">
+
+        <header class="wn-header">
+            <div class="wn-header-left">
+                <h1>Ofertas <span class="wn-admin-badge">Supervisión</span></h1>
+                <p>Supervisá las ofertas publicadas. Tenés <strong>2 ofertas reportadas</strong> pendientes de revisión.</p>
+            </div>
+            <div class="wn-header-actions">
+                <a href="admin-reportes.html" class="btn-wn-secondary">
+                    <i class="bi bi-flag"></i> Ver reportes
+                </a>
+                <button type="button" class="btn-wn-primary">
+                    <i class="bi bi-download"></i> Exportar CSV
+                </button>
+            </div>
+        </header>
+
+        <!-- STATS -->
+        <section class="wn-stats" aria-label="Resumen de ofertas">
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon"><i class="bi bi-briefcase-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">87</div>
+                    <div class="wn-stat-label">Ofertas activas</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon danger"><i class="bi bi-flag-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">2</div>
+                    <div class="wn-stat-label">Reportadas</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon warning"><i class="bi bi-pause-circle-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">5</div>
+                    <div class="wn-stat-label">Pausadas</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon purple"><i class="bi bi-archive-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">134</div>
+                    <div class="wn-stat-label">Cerradas</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FILTROS -->
+        <section class="wn-filters" aria-label="Filtros de ofertas">
+            <div class="wn-filter-group wn-filter-search">
+                <label class="wn-filter-label" for="filterSearch">Buscar</label>
+                <i class="bi bi-search"></i>
+                <input type="text" id="filterSearch" class="wn-filter-input" placeholder="Título, empresa o descripción...">
+            </div>
+            <div class="wn-filter-group">
+                <label class="wn-filter-label" for="filterStatus">Estado</label>
+                <select id="filterStatus" class="wn-filter-select">
+                    <option value="">Todos</option>
+                    <option value="active">Activas</option>
+                    <option value="reported">Reportadas</option>
+                    <option value="paused">Pausadas</option>
+                    <option value="closed">Cerradas</option>
+                </select>
+            </div>
+            <div class="wn-filter-group">
+                <label class="wn-filter-label" for="filterCategory">Categoría</label>
+                <select id="filterCategory" class="wn-filter-select">
+                    <option value="">Todas</option>
+                    <option value="desarrollo">Desarrollo</option>
+                    <option value="analisis">Análisis</option>
+                    <option value="diseno">Diseño</option>
+                    <option value="soporte">Soporte</option>
+                    <option value="datos">Datos</option>
+                </select>
+            </div>
+            <div class="wn-filter-group">
+                <label class="wn-filter-label" for="filterDate">Publicación</label>
+                <select id="filterDate" class="wn-filter-select">
+                    <option value="">Cualquier fecha</option>
+                    <option value="today">Hoy</option>
+                    <option value="week">Esta semana</option>
+                    <option value="month">Este mes</option>
+                </select>
+            </div>
+            <button type="button" class="wn-filter-clear" id="filterClear">
+                <i class="bi bi-x-lg"></i> Limpiar
+            </button>
+        </section>
+
+        <!-- INFO + TABS -->
+        <div class="wn-results-info">
+            <div class="wn-results-count">
+                <strong id="resultsCount">8</strong> ofertas encontradas
+            </div>
+            <div class="wn-tabs" role="tablist" aria-label="Filtros rápidos">
+                <button type="button" class="wn-tab active" data-tab="">Todas</button>
+                <button type="button" class="wn-tab danger" data-tab="reported">Reportadas (2)</button>
+                <button type="button" class="wn-tab" data-tab="paused">Pausadas (5)</button>
+            </div>
+        </div>
+
+        <!-- GRID DE OFERTAS -->
+        <section class="wn-offers-grid" id="offersGrid" aria-label="Listado de ofertas">
+
+            <!-- Oferta 1: activa, normal -->
+            <article class="wn-offer-card status-active" data-status="active" data-category="desarrollo" data-date="2026-10-16" data-title="Desarrollador Laravel Senior" data-company="Tech Solutions S.A.">
+                <span class="wn-offer-status active">Activa</span>
+                <div class="wn-offer-card-header">
+                    <div class="wn-offer-logo">DL</div>
+                    <div class="wn-offer-info">
+                        <h3 class="wn-offer-title">Desarrollador Laravel Senior</h3>
+                        <p class="wn-offer-company"><i class="bi bi-building"></i> Tech Solutions S.A.</p>
+                    </div>
+                </div>
+                <div class="wn-offer-badges">
+                    <span class="wn-offer-badge"><i class="bi bi-geo-alt-fill"></i> Encarnación</span>
+                    <span class="wn-offer-badge"><i class="bi bi-laptop"></i> Híbrido</span>
+                    <span class="wn-offer-badge"><i class="bi bi-clock"></i> Tiempo completo</span>
+                </div>
+                <p class="wn-offer-description">Buscamos desarrollador con experiencia en PHP 8.3 y Laravel 12 para unirse a nuestro equipo de desarrollo.</p>
+                <div class="wn-offer-stats">
+                    <div class="wn-offer-stat"><i class="bi bi-inbox-fill"></i> <strong>12</strong> postulantes</div>
+                    <div class="wn-offer-stat"><i class="bi bi-eye-fill"></i> <strong>245</strong> vistas</div>
+                </div>
+                <div class="wn-offer-actions">
+                    <a href="admin-oferta-detalle.html" class="wn-offer-action primary"><i class="bi bi-eye"></i> Ver detalle</a>
+                    <button type="button" class="wn-offer-action secondary icon-only" title="Pausar" data-action="pause"><i class="bi bi-pause-fill"></i></button>
+                    <button type="button" class="wn-offer-action danger icon-only" title="Eliminar" data-action="delete"><i class="bi bi-trash"></i></button>
+                </div>
+            </article>
+
+            <!-- Oferta 2: reportada -->
+            <article class="wn-offer-card status-reported" data-status="reported" data-category="analisis" data-date="2026-10-15" data-title="Analista de Sistemas" data-company="DataCorp S.A.">
+                <span class="wn-offer-status reported">Reportada</span>
+                <div class="wn-offer-card-header">
+                    <div class="wn-offer-logo">AN</div>
+                    <div class="wn-offer-info">
+                        <h3 class="wn-offer-title">Analista de Sistemas</h3>
+                        <p class="wn-offer-company"><i class="bi bi-building"></i> DataCorp S.A.</p>
+                    </div>
+                </div>
+                <div class="wn-offer-badges">
+                    <span class="wn-offer-badge"><i class="bi bi-geo-alt-fill"></i> Encarnación</span>
+                    <span class="wn-offer-badge"><i class="bi bi-building"></i> Presencial</span>
+                    <span class="wn-offer-badge reported"><i class="bi bi-flag-fill"></i> 3 reportes</span>
+                </div>
+                <p class="wn-offer-description">Analista funcional para proyectos de transformación digital con metodologías ágiles.</p>
+                <div class="wn-offer-stats">
+                    <div class="wn-offer-stat"><i class="bi bi-inbox-fill"></i> <strong>8</strong> postulantes</div>
+                    <div class="wn-offer-stat"><i class="bi bi-eye-fill"></i> <strong>182</strong> vistas</div>
+                </div>
+                <div class="wn-offer-actions">
+                    <a href="admin-oferta-detalle.html" class="wn-offer-action primary"><i class="bi bi-eye"></i> Ver detalle</a>
+                    <button type="button" class="wn-offer-action secondary icon-only" title="Pausar" data-action="pause"><i class="bi bi-pause-fill"></i></button>
+                    <button type="button" class="wn-offer-action danger icon-only" title="Eliminar" data-action="delete"><i class="bi bi-trash"></i></button>
+                </div>
+            </article>
+
+            <!-- Oferta 3: reportada -->
+            <article class="wn-offer-card status-reported" data-status="reported" data-category="soporte" data-date="2026-10-14" data-title="Soporte Técnico IT" data-company="Tech Help Paraguay">
+                <span class="wn-offer-status reported">Reportada</span>
+                <div class="wn-offer-card-header">
+                    <div class="wn-offer-logo">ST</div>
+                    <div class="wn-offer-info">
+                        <h3 class="wn-offer-title">Soporte Técnico IT</h3>
+                        <p class="wn-offer-company"><i class="bi bi-building"></i> Tech Help Paraguay</p>
+                    </div>
+                </div>
+                <div class="wn-offer-badges">
+                    <span class="wn-offer-badge"><i class="bi bi-geo-alt-fill"></i> Encarnación</span>
+                    <span class="wn-offer-badge"><i class="bi bi-building"></i> Presencial</span>
+                    <span class="wn-offer-badge reported"><i class="bi bi-flag-fill"></i> 1 reporte</span>
+                </div>
+                <p class="wn-offer-description">Soporte técnico nivel 1 y 2 para clientes corporativos. Requiere disponibilidad para viajar.</p>
+                <div class="wn-offer-stats">
+                    <div class="wn-offer-stat"><i class="bi bi-inbox-fill"></i> <strong>3</strong> postulantes</div>
+                    <div class="wn-offer-stat"><i class="bi bi-eye-fill"></i> <strong>67</strong> vistas</div>
+                </div>
+                <div class="wn-offer-actions">
+                    <a href="admin-oferta-detalle.html" class="wn-offer-action primary"><i class="bi bi-eye"></i> Ver detalle</a>
+                    <button type="button" class="wn-offer-action secondary icon-only" title="Pausar" data-action="pause"><i class="bi bi-pause-fill"></i></button>
+                    <button type="button" class="wn-offer-action danger icon-only" title="Eliminar" data-action="delete"><i class="bi bi-trash"></i></button>
+                </div>
+            </article>
+
+            <!-- Oferta 4: pausada -->
+            <article class="wn-offer-card status-paused" data-status="paused" data-category="diseno" data-date="2026-10-10" data-title="Diseñador UX/UI" data-company="Creative Studio">
+                <span class="wn-offer-status paused">Pausada</span>
+                <div class="wn-offer-card-header">
+                    <div class="wn-offer-logo">UX</div>
+                    <div class="wn-offer-info">
+                        <h3 class="wn-offer-title">Diseñador UX/UI</h3>
+                        <p class="wn-offer-company"><i class="bi bi-building"></i> Creative Studio</p>
+                    </div>
+                </div>
+                <div class="wn-offer-badges">
+                    <span class="wn-offer-badge"><i class="bi bi-geo-alt-fill"></i> Encarnación</span>
+                    <span class="wn-offer-badge"><i class="bi bi-house"></i> Remoto</span>
+                    <span class="wn-offer-badge"><i class="bi bi-clock"></i> Freelance</span>
+                </div>
+                <p class="wn-offer-description">Diseñador UX/UI para proyectos de aplicaciones móviles y web. Portfolio requerido.</p>
+                <div class="wn-offer-stats">
+                    <div class="wn-offer-stat"><i class="bi bi-inbox-fill"></i> <strong>5</strong> postulantes</div>
+                    <div class="wn-offer-stat"><i class="bi bi-eye-fill"></i> <strong>98</strong> vistas</div>
+                </div>
+                <div class="wn-offer-actions">
+                    <a href="admin-oferta-detalle.html" class="wn-offer-action primary"><i class="bi bi-eye"></i> Ver detalle</a>
+                    <button type="button" class="wn-offer-action secondary icon-only" title="Reactivar" data-action="reactivate"><i class="bi bi-play-fill"></i></button>
+                    <button type="button" class="wn-offer-action danger icon-only" title="Eliminar" data-action="delete"><i class="bi bi-trash"></i></button>
+                </div>
+            </article>
+
+            <!-- Oferta 5: activa -->
+            <article class="wn-offer-card status-active" data-status="active" data-category="datos" data-date="2026-10-12" data-title="Administrador de Base de Datos" data-company="Banco Regional">
+                <span class="wn-offer-status active">Activa</span>
+                <div class="wn-offer-card-header">
+                    <div class="wn-offer-logo">DB</div>
+                    <div class="wn-offer-info">
+                        <h3 class="wn-offer-title">Administrador de Base de Datos</h3>
+                        <p class="wn-offer-company"><i class="bi bi-building"></i> Banco Regional</p>
+                    </div>
+                </div>
+                <div class="wn-offer-badges">
+                    <span class="wn-offer-badge"><i class="bi bi-geo-alt-fill"></i> Encarnación</span>
+                    <span class="wn-offer-badge"><i class="bi bi-building"></i> Presencial</span>
+                    <span class="wn-offer-badge"><i class="bi bi-clock"></i> Tiempo completo</span>
+                </div>
+                <p class="wn-offer-description">DBA con experiencia en PostgreSQL, replicación y alta disponibilidad para entorno bancario.</p>
+                <div class="wn-offer-stats">
+                    <div class="wn-offer-stat"><i class="bi bi-inbox-fill"></i> <strong>7</strong> postulantes</div>
+                    <div class="wn-offer-stat"><i class="bi bi-eye-fill"></i> <strong>156</strong> vistas</div>
+                </div>
+                <div class="wn-offer-actions">
+                    <a href="admin-oferta-detalle.html" class="wn-offer-action primary"><i class="bi bi-eye"></i> Ver detalle</a>
+                    <button type="button" class="wn-offer-action secondary icon-only" title="Pausar" data-action="pause"><i class="bi bi-pause-fill"></i></button>
+                    <button type="button" class="wn-offer-action danger icon-only" title="Eliminar" data-action="delete"><i class="bi bi-trash"></i></button>
+                </div>
+            </article>
+
+            <!-- Oferta 6: cerrada -->
+            <article class="wn-offer-card status-closed" data-status="closed" data-category="desarrollo" data-date="2026-10-01" data-title="Desarrollador Mobile Flutter" data-company="App Factory">
+                <span class="wn-offer-status closed">Cerrada</span>
+                <div class="wn-offer-card-header">
+                    <div class="wn-offer-logo">AF</div>
+                    <div class="wn-offer-info">
+                        <h3 class="wn-offer-title">Desarrollador Mobile Flutter</h3>
+                        <p class="wn-offer-company"><i class="bi bi-building"></i> App Factory</p>
+                    </div>
+                </div>
+                <div class="wn-offer-badges">
+                    <span class="wn-offer-badge"><i class="bi bi-geo-alt-fill"></i> Encarnación</span>
+                    <span class="wn-offer-badge"><i class="bi bi-house"></i> Remoto</span>
+                    <span class="wn-offer-badge"><i class="bi bi-clock"></i> Tiempo completo</span>
+                </div>
+                <p class="wn-offer-description">Desarrollo de apps móviles multiplataforma con Flutter y Firebase. Proyecto finalizado.</p>
+                <div class="wn-offer-stats">
+                    <div class="wn-offer-stat"><i class="bi bi-inbox-fill"></i> <strong>22</strong> postulantes</div>
+                    <div class="wn-offer-stat"><i class="bi bi-eye-fill"></i> <strong>412</strong> vistas</div>
+                </div>
+                <div class="wn-offer-actions">
+                    <a href="admin-oferta-detalle.html" class="wn-offer-action primary"><i class="bi bi-eye"></i> Ver detalle</a>
+                    <button type="button" class="wn-offer-action danger icon-only" title="Eliminar" data-action="delete"><i class="bi bi-trash"></i></button>
+                </div>
+            </article>
+
+            <!-- Oferta 7: activa -->
+            <article class="wn-offer-card status-active" data-status="active" data-category="desarrollo" data-date="2026-10-15" data-title="Desarrollador Full Stack Laravel" data-company="Concesionaria San Miguel">
+                <span class="wn-offer-status active">Activa</span>
+                <div class="wn-offer-card-header">
+                    <div class="wn-offer-logo">SM</div>
+                    <div class="wn-offer-info">
+                        <h3 class="wn-offer-title">Desarrollador Full Stack Laravel</h3>
+                        <p class="wn-offer-company"><i class="bi bi-building"></i> Concesionaria San Miguel</p>
+                    </div>
+                </div>
+                <div class="wn-offer-badges">
+                    <span class="wn-offer-badge"><i class="bi bi-geo-alt-fill"></i> Encarnación</span>
+                    <span class="wn-offer-badge"><i class="bi bi-building"></i> Presencial</span>
+                    <span class="wn-offer-badge"><i class="bi bi-clock"></i> Tiempo completo</span>
+                </div>
+                <p class="wn-offer-description">Buscamos desarrollador con experiencia en PHP 8.3 y Laravel 12 para unirse a nuestro equipo.</p>
+                <div class="wn-offer-stats">
+                    <div class="wn-offer-stat"><i class="bi bi-inbox-fill"></i> <strong>15</strong> postulantes</div>
+                    <div class="wn-offer-stat"><i class="bi bi-eye-fill"></i> <strong>287</strong> vistas</div>
+                </div>
+                <div class="wn-offer-actions">
+                    <a href="admin-oferta-detalle.html" class="wn-offer-action primary"><i class="bi bi-eye"></i> Ver detalle</a>
+                    <button type="button" class="wn-offer-action secondary icon-only" title="Pausar" data-action="pause"><i class="bi bi-pause-fill"></i></button>
+                    <button type="button" class="wn-offer-action danger icon-only" title="Eliminar" data-action="delete"><i class="bi bi-trash"></i></button>
+                </div>
+            </article>
+
+            <!-- Oferta 8: pausada -->
+            <article class="wn-offer-card status-paused" data-status="paused" data-category="analisis" data-date="2026-10-08" data-title="Analista Funcional" data-company="SoftSolutions">
+                <span class="wn-offer-status paused">Pausada</span>
+                <div class="wn-offer-card-header">
+                    <div class="wn-offer-logo">SF</div>
+                    <div class="wn-offer-info">
+                        <h3 class="wn-offer-title">Analista Funcional</h3>
+                        <p class="wn-offer-company"><i class="bi bi-building"></i> SoftSolutions</p>
+                    </div>
+                </div>
+                <div class="wn-offer-badges">
+                    <span class="wn-offer-badge"><i class="bi bi-geo-alt-fill"></i> Encarnación</span>
+                    <span class="wn-offer-badge"><i class="bi bi-laptop"></i> Híbrido</span>
+                    <span class="wn-offer-badge"><i class="bi bi-clock"></i> Tiempo completo</span>
+                </div>
+                <p class="wn-offer-description">Analista funcional para proyectos de transformación digital con metodologías ágiles.</p>
+                <div class="wn-offer-stats">
+                    <div class="wn-offer-stat"><i class="bi bi-inbox-fill"></i> <strong>4</strong> postulantes</div>
+                    <div class="wn-offer-stat"><i class="bi bi-eye-fill"></i> <strong>89</strong> vistas</div>
+                </div>
+                <div class="wn-offer-actions">
+                    <a href="admin-oferta-detalle.html" class="wn-offer-action primary"><i class="bi bi-eye"></i> Ver detalle</a>
+                    <button type="button" class="wn-offer-action secondary icon-only" title="Reactivar" data-action="reactivate"><i class="bi bi-play-fill"></i></button>
+                    <button type="button" class="wn-offer-action danger icon-only" title="Eliminar" data-action="delete"><i class="bi bi-trash"></i></button>
+                </div>
+            </article>
+
+        </section>
+
+        <!-- EMPTY STATE -->
+        <div class="wn-empty" id="emptyState" style="display: none;">
+            <div class="wn-empty-icon"><i class="bi bi-briefcase"></i></div>
+            <h3>No encontramos ofertas</h3>
+            <p>Probá ajustar los filtros de búsqueda o el estado seleccionado.</p>
+        </div>
+
+        <!-- PAGINACIÓN -->
+        <div class="wn-pagination">
+            <div class="wn-pagination-info">
+                Mostrando <strong>1-8</strong> de <strong>228</strong> ofertas
+            </div>
+            <div class="wn-pagination-controls">
+                <button type="button" class="wn-page-btn" disabled><i class="bi bi-chevron-left"></i></button>
+                <button type="button" class="wn-page-btn active">1</button>
+                <button type="button" class="wn-page-btn">2</button>
+                <button type="button" class="wn-page-btn">3</button>
+                <button type="button" class="wn-page-btn">...</button>
+                <button type="button" class="wn-page-btn">29</button>
+                <button type="button" class="wn-page-btn"><i class="bi bi-chevron-right"></i></button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL ACCIÓN -->
+    <div class="wn-modal-backdrop" id="actionModal" role="dialog" aria-modal="true" aria-labelledby="actionModalTitle">
+        <div class="wn-modal">
+            <div class="wn-modal-icon" id="actionModalIcon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div>
+                <h2 id="actionModalTitle">¿Confirmar acción?</h2>
+                <p id="actionModalText">Esta acción se aplicará a la oferta seleccionada.</p>
+            </div>
+            <div class="wn-modal-actions">
+                <button type="button" class="btn-wn-secondary" id="actionModalNo">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </button>
+                <button type="button" class="btn-wn-danger" id="actionModalYes">
+                    <i class="bi bi-check-lg"></i> Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const navbar = document.getElementById('navbar');
+        const navbarToggle = document.getElementById('navbarToggle');
+        const navbarBrandTrigger = document.getElementById('navbarBrandTrigger');
+        const userInfoTrigger = document.getElementById('userInfoTrigger');
+        const userDropdown = document.getElementById('userDropdown');
+
+        navbarToggle.addEventListener('click', () => { navbar.classList.add('collapsed'); document.body.classList.add('navbar-collapsed'); });
+        navbarBrandTrigger.addEventListener('click', () => { if (navbar.classList.contains('collapsed')) { navbar.classList.remove('collapsed'); document.body.classList.remove('navbar-collapsed'); } });
+        userInfoTrigger.addEventListener('click', (e) => { e.stopPropagation(); userInfoTrigger.classList.toggle('open'); userDropdown.classList.toggle('show'); });
+        document.addEventListener('click', (e) => { if (!userInfoTrigger.contains(e.target) && !userDropdown.contains(e.target)) { userInfoTrigger.classList.remove('open'); userDropdown.classList.remove('show'); } });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { userInfoTrigger.classList.remove('open'); userDropdown.classList.remove('show'); closeActionModal(); } });
+
+        /* ===== FILTROS ===== */
+        const filterSearch = document.getElementById('filterSearch');
+        const filterStatus = document.getElementById('filterStatus');
+        const filterCategory = document.getElementById('filterCategory');
+        const filterDate = document.getElementById('filterDate');
+        const filterClear = document.getElementById('filterClear');
+        const resultsCount = document.getElementById('resultsCount');
+        const offersGrid = document.getElementById('offersGrid');
+        const emptyState = document.getElementById('emptyState');
+        const allCards = Array.from(offersGrid.querySelectorAll('.wn-offer-card'));
+        const tabs = document.querySelectorAll('.wn-tab');
+
+        let activeTab = '';
+
+        function applyFilters() {
+            const q = (filterSearch.value || '').toLowerCase().trim();
+            const status = activeTab || filterStatus.value;
+            const category = filterCategory.value;
+            const dateFilter = filterDate.value;
+
+            const today = new Date('2026-10-16');
+            const weekStart = new Date(today); weekStart.setDate(today.getDate() - 7);
+            const monthStart = new Date(today); monthStart.setMonth(today.getMonth() - 1);
+
+            let visible = 0;
+            allCards.forEach(card => {
+                const title = (card.dataset.title || '').toLowerCase();
+                const company = (card.dataset.company || '').toLowerCase();
+                const cardStatus = card.dataset.status;
+                const cardCategory = card.dataset.category;
+                const cardDate = new Date(card.dataset.date);
+
+                let match = true;
+                if (q && !title.includes(q) && !company.includes(q)) match = false;
+                if (status && cardStatus !== status) match = false;
+                if (category && cardCategory !== category) match = false;
+                if (dateFilter === 'today') {
+                    if (cardDate.toDateString() !== today.toDateString()) match = false;
+                } else if (dateFilter === 'week') {
+                    if (cardDate < weekStart) match = false;
+                } else if (dateFilter === 'month') {
+                    if (cardDate < monthStart) match = false;
+                }
+
+                card.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+
+            resultsCount.textContent = visible;
+            emptyState.style.display = visible === 0 ? 'flex' : 'none';
+            offersGrid.style.display = visible === 0 ? 'none' : '';
+        }
+
+        [filterSearch, filterStatus, filterCategory, filterDate].forEach(el => {
+            el.addEventListener('input', applyFilters);
+            el.addEventListener('change', applyFilters);
+        });
+
+        filterClear.addEventListener('click', () => {
+            filterSearch.value = '';
+            filterStatus.value = '';
+            filterCategory.value = '';
+            filterDate.value = '';
+            activeTab = '';
+            tabs.forEach(t => t.classList.remove('active'));
+            tabs[0].classList.add('active');
+            applyFilters();
+        });
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                activeTab = tab.dataset.tab;
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                filterStatus.value = '';
+                applyFilters();
+            });
+        });
+
+        /* ===== MODAL ACCIONES ===== */
+        const actionModal = document.getElementById('actionModal');
+        const actionModalTitle = document.getElementById('actionModalTitle');
+        const actionModalText = document.getElementById('actionModalText');
+        const actionModalIcon = document.getElementById('actionModalIcon');
+        const actionModalNo = document.getElementById('actionModalNo');
+        const actionModalYes = document.getElementById('actionModalYes');
+        let pendingCard = null;
+        let pendingAction = '';
+
+        const actionConfig = {
+            pause: { title: '¿Pausar oferta?', text: 'La oferta dejará de ser visible para los candidatos hasta que sea reactivada.', icon: 'bi-pause-fill', color: 'warning' },
+            reactivate: { title: '¿Reactivar oferta?', text: 'La oferta volverá a ser visible para los candidatos.', icon: 'bi-play-fill', color: 'success' },
+            delete: { title: '¿Eliminar oferta?', text: 'Esta acción es permanente. Se eliminarán todos los datos de la oferta y sus postulaciones.', icon: 'bi-trash', color: 'danger' }
+        };
+
+        function openActionModal(card, action, title) {
+            pendingCard = card;
+            pendingAction = action;
+            const cfg = actionConfig[action];
+            actionModalTitle.textContent = cfg.title;
+            actionModalText.textContent = `${cfg.text} Oferta: ${title}.`;
+            actionModalIcon.innerHTML = `<i class="bi ${cfg.icon}"></i>`;
+            if (cfg.color === 'danger') {
+                actionModalIcon.style.backgroundColor = 'rgba(218, 54, 51, 0.15)';
+                actionModalIcon.style.color = 'var(--wn-danger)';
+            } else if (cfg.color === 'warning') {
+                actionModalIcon.style.backgroundColor = 'rgba(210, 153, 34, 0.15)';
+                actionModalIcon.style.color = 'var(--wn-warning)';
+            } else {
+                actionModalIcon.style.backgroundColor = 'rgba(35, 134, 54, 0.15)';
+                actionModalIcon.style.color = 'var(--wn-success)';
+            }
+            actionModal.classList.add('show');
+        }
+        function closeActionModal() {
+            actionModal.classList.remove('show');
+            pendingCard = null;
+            pendingAction = '';
+        }
+
+        document.querySelectorAll('[data-action]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const card = btn.closest('.wn-offer-card');
+                openActionModal(card, btn.dataset.action, card.dataset.title);
+            });
+        });
+
+        actionModalNo.addEventListener('click', closeActionModal);
+        actionModalYes.addEventListener('click', () => {
+            if (pendingCard && pendingAction) {
+                const statusEl = pendingCard.querySelector('.wn-offer-status');
+                if (pendingAction === 'pause') {
+                    pendingCard.dataset.status = 'paused';
+                    pendingCard.className = 'wn-offer-card status-paused';
+                    statusEl.className = 'wn-offer-status paused';
+                    statusEl.textContent = 'Pausada';
+                } else if (pendingAction === 'reactivate') {
+                    pendingCard.dataset.status = 'active';
+                    pendingCard.className = 'wn-offer-card status-active';
+                    statusEl.className = 'wn-offer-status active';
+                    statusEl.textContent = 'Activa';
+                } else if (pendingAction === 'delete') {
+                    pendingCard.remove();
+                    allCards.splice(allCards.indexOf(pendingCard), 1);
+                }
+            }
+            closeActionModal();
+            applyFilters();
+        });
+        actionModal.addEventListener('click', (e) => { if (e.target === actionModal) closeActionModal(); });
+
+        applyFilters();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Work.net - Reportes</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --wn-bg-dark: #0D1117; --wn-bg-panel: #161B22; --wn-bg-elevated: #21262D;
+            --wn-border: #30363D; --wn-text: #E6EDF3; --wn-text-muted: #8B949E;
+            --wn-accent: #1F6FEB; --wn-accent-hover: #388BFD;
+            --wn-success: #238636; --wn-danger: #DA3633; --wn-warning: #D29922; --wn-purple: #6E40C9;
+            --wn-navbar-width: 240px; --wn-navbar-width-mini: 72px;
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--wn-bg-dark); color: var(--wn-text); overflow-x: hidden; }
+        .wn-bg { position: fixed; inset: 0; z-index: 0; background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%); pointer-events: none; }
+        .wn-bg-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px); background-size: 40px 40px; mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%); -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%); }
+
+        /* NAVBAR (igual) */
+        .wn-navbar { position: fixed; top: 16px; left: 16px; bottom: 16px; width: var(--wn-navbar-width); background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); border-radius: 16px; padding: 20px 16px; display: flex; flex-direction: column; z-index: 100; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .wn-navbar.collapsed { width: var(--wn-navbar-width-mini); padding: 20px 8px; }
+        .wn-navbar-brand { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--wn-border); margin-bottom: 16px; }
+        .wn-navbar-brand-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; padding: 6px 8px; border-radius: 10px; transition: background-color 0.2s ease, box-shadow 0.2s ease; user-select: none; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { cursor: pointer; background-color: rgba(31, 111, 235, 0.15); box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); animation: glowPulse 2s ease-in-out infinite; }
+        .wn-navbar.collapsed .wn-navbar-brand-left i { color: var(--wn-accent-hover); filter: drop-shadow(0 0 8px rgba(31, 111, 235, 0.8)); }
+        @keyframes glowPulse { 0%, 100% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); } 50% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.6), 0 0 28px rgba(31, 111, 235, 0.55); } }
+        .wn-navbar-brand i { color: var(--wn-accent); font-size: 1.5rem; flex-shrink: 0; transition: color 0.2s ease, filter 0.2s ease; }
+        .wn-navbar-brand span { font-weight: 700; font-size: 1.1rem; letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; }
+        .wn-navbar-toggle { background: none; border: none; color: var(--wn-text-muted); cursor: pointer; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.2s ease; flex-shrink: 0; }
+        .wn-navbar-toggle:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar.collapsed .wn-navbar-brand { justify-content: center; padding-bottom: 12px; margin-bottom: 12px; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { justify-content: center; flex: none; }
+        .wn-navbar.collapsed .wn-navbar-brand span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-toggle { display: none; }
+        .wn-navbar-menu { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .wn-navbar-menu li { margin-bottom: 4px; }
+        .wn-navbar-menu a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--wn-text-muted); text-decoration: none; border-radius: 8px; font-size: 0.9rem; transition: all 0.2s ease; position: relative; white-space: nowrap; }
+        .wn-navbar-menu a:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar-menu a.active { background-color: var(--wn-accent); color: white; font-weight: 500; }
+        .wn-navbar-menu a i { font-size: 1.1rem; flex-shrink: 0; width: 20px; text-align: center; }
+        .wn-navbar.collapsed .wn-navbar-menu a { justify-content: center; padding: 12px 8px; }
+        .wn-navbar.collapsed .wn-navbar-menu a span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-menu a .badge { position: absolute; top: 4px; right: 4px; font-size: 0.6rem; padding: 2px 5px; }
+        .wn-navbar-footer { padding-top: 16px; border-top: 1px solid var(--wn-border); position: relative; }
+        .wn-user-info { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; cursor: pointer; transition: background-color 0.2s ease; user-select: none; }
+        .wn-user-info:hover { background-color: var(--wn-bg-elevated); }
+        .wn-user-text { flex: 1; min-width: 0; }
+        .wn-user-chevron { color: var(--wn-text-muted); font-size: 0.75rem; transition: transform 0.2s ease; flex-shrink: 0; }
+        .wn-user-info.open .wn-user-chevron { transform: rotate(180deg); }
+        .wn-navbar.collapsed .wn-user-info { justify-content: center; padding: 8px 4px; }
+        .wn-navbar.collapsed .wn-user-info > div:not(.wn-avatar) { display: none; }
+        .wn-navbar.collapsed .wn-user-chevron { display: none; }
+        .wn-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--wn-danger), var(--wn-purple)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+        .wn-user-name { font-size: 0.85rem; font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-user-role { font-size: 0.7rem; color: var(--wn-text-muted); text-transform: capitalize; }
+        .wn-user-dropdown { position: absolute; bottom: calc(100% + 8px); left: 0; right: 0; background-color: var(--wn-bg-elevated); border: 1px solid var(--wn-border); border-radius: 12px; padding: 6px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6); opacity: 0; visibility: hidden; transform: translateY(8px); transition: all 0.2s ease; z-index: 200; }
+        .wn-navbar.collapsed .wn-user-dropdown { left: 100%; bottom: 0; width: 220px; margin-left: 8px; }
+        .wn-user-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .wn-user-dropdown-header { padding: 10px 12px 8px; border-bottom: 1px solid var(--wn-border); margin-bottom: 6px; }
+        .wn-user-dropdown-name { font-size: 0.85rem; font-weight: 600; margin: 0 0 2px 0; }
+        .wn-user-dropdown-email { font-size: 0.7rem; color: var(--wn-text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-user-dropdown-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; color: var(--wn-text-muted); text-decoration: none; border-radius: 8px; font-size: 0.82rem; transition: all 0.2s ease; cursor: pointer; border: none; background: none; width: 100%; text-align: left; font-family: inherit; }
+        .wn-user-dropdown-item:hover { background-color: var(--wn-bg-panel); color: var(--wn-text); }
+        .wn-user-dropdown-item.danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+        .wn-user-dropdown-item i { font-size: 0.95rem; flex-shrink: 0; }
+        .wn-user-dropdown-divider { height: 1px; background-color: var(--wn-border); margin: 6px 0; }
+
+        /* MAIN */
+        .wn-main { margin-left: calc(var(--wn-navbar-width) + 32px); margin-right: 16px; margin-top: 16px; margin-bottom: 16px; padding: 32px 40px; min-height: calc(100vh - 32px); background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); position: relative; z-index: 1; transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        body.navbar-collapsed .wn-main { margin-left: calc(var(--wn-navbar-width-mini) + 32px); }
+
+        /* HEADER */
+        .wn-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--wn-border); flex-wrap: wrap; }
+        .wn-header-left h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 4px 0; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
+        .wn-header-left h1 .wn-admin-badge { font-size: 0.65rem; padding: 3px 8px; background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+        .wn-header-left p { color: var(--wn-text-muted); margin: 0; font-size: 0.9rem; }
+        .wn-header-left p strong { color: var(--wn-text); font-weight: 600; }
+        .wn-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        /* Botones */
+        .btn-wn-primary { background-color: var(--wn-accent); border: none; color: #ffffff !important; font-weight: 600; padding: 10px 20px; border-radius: 10px; font-size: 0.85rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-primary:hover { background-color: var(--wn-accent-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35); color: #ffffff !important; }
+        .btn-wn-secondary { background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted) !important; font-weight: 500; padding: 10px 20px; border-radius: 10px; font-size: 0.85rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-secondary:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text) !important; border-color: var(--wn-text-muted); }
+        .btn-wn-danger { background-color: transparent; border: 1px solid rgba(218, 54, 51, 0.4); color: var(--wn-danger) !important; font-weight: 500; padding: 10px 20px; border-radius: 10px; font-size: 0.85rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger) !important; border-color: var(--wn-danger); }
+        .btn-wn-success { background-color: transparent; border: 1px solid rgba(35, 134, 54, 0.4); color: var(--wn-success) !important; font-weight: 500; padding: 10px 20px; border-radius: 10px; font-size: 0.85rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-success:hover { background-color: rgba(35, 134, 54, 0.15); color: var(--wn-success) !important; border-color: var(--wn-success); }
+
+        /* Stats */
+        .wn-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .wn-stat-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 12px; padding: 18px 20px; display: flex; align-items: center; gap: 16px; transition: all 0.2s ease; }
+        .wn-stat-card:hover { border-color: var(--wn-accent); transform: translateY(-2px); }
+        .wn-stat-icon { width: 48px; height: 48px; border-radius: 12px; background-color: rgba(31, 111, 235, 0.12); color: var(--wn-accent); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+        .wn-stat-icon.success { background-color: rgba(35, 134, 54, 0.12); color: var(--wn-success); }
+        .wn-stat-icon.warning { background-color: rgba(210, 153, 34, 0.12); color: var(--wn-warning); }
+        .wn-stat-icon.purple { background-color: rgba(110, 64, 201, 0.12); color: var(--wn-purple); }
+        .wn-stat-icon.danger { background-color: rgba(218, 54, 51, 0.12); color: var(--wn-danger); }
+        .wn-stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 4px; letter-spacing: -0.5px; }
+        .wn-stat-label { font-size: 0.75rem; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+
+        /* Filtros */
+        .wn-filters { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 18px; margin-bottom: 24px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
+        .wn-filter-group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+        .wn-filter-label { font-size: 0.72rem; font-weight: 600; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .wn-filter-input, .wn-filter-select { width: 100%; background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); color: var(--wn-text); border-radius: 10px; padding: 10px 12px; font-size: 0.85rem; font-family: inherit; transition: all 0.2s ease; }
+        .wn-filter-input:focus, .wn-filter-select:focus { outline: none; border-color: var(--wn-accent); box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15); }
+        .wn-filter-input::placeholder { color: var(--wn-text-muted); opacity: 0.5; }
+        .wn-filter-search { position: relative; }
+        .wn-filter-search i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--wn-text-muted); font-size: 0.9rem; pointer-events: none; }
+        .wn-filter-search .wn-filter-input { padding-left: 34px; }
+        .wn-filter-clear { background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted); padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; white-space: nowrap; }
+        .wn-filter-clear:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+
+        /* Results info + tabs */
+        .wn-results-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+        .wn-results-count { font-size: 0.85rem; color: var(--wn-text-muted); }
+        .wn-results-count strong { color: var(--wn-text); font-weight: 700; }
+        .wn-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+        .wn-tab { padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background-color: transparent; color: var(--wn-text-muted); border: 1px solid var(--wn-border); cursor: pointer; transition: all 0.2s ease; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; text-decoration: none !important; }
+        .wn-tab:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-tab.active { background-color: var(--wn-accent); border-color: var(--wn-accent); color: white; }
+        .wn-tab.danger.active { background-color: var(--wn-danger); border-color: var(--wn-danger); }
+
+        /* Lista de reportes */
+        .wn-reports-list { display: flex; flex-direction: column; gap: 14px; }
+        .wn-report-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px; transition: all 0.2s ease; position: relative; overflow: hidden; }
+        .wn-report-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: var(--wn-warning); }
+        .wn-report-card.severity-high::before { background-color: var(--wn-danger); }
+        .wn-report-card.severity-medium::before { background-color: var(--wn-warning); }
+        .wn-report-card.severity-low::before { background-color: var(--wn-text-muted); }
+        .wn-report-card:hover { border-color: var(--wn-accent); }
+        .wn-report-card.resolved { opacity: 0.7; }
+        .wn-report-card.resolved::before { background-color: var(--wn-success); }
+
+        .wn-report-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+        .wn-report-header-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+        .wn-report-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--wn-danger), var(--wn-purple)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+        .wn-report-info { min-width: 0; flex: 1; }
+        .wn-report-title { font-size: 0.95rem; font-weight: 700; margin: 0 0 2px 0; letter-spacing: -0.2px; }
+        .wn-report-subtitle { font-size: 0.78rem; color: var(--wn-text-muted); margin: 0; }
+        .wn-report-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+        .wn-report-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .wn-report-badge.high { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+        .wn-report-badge.medium { background-color: rgba(210, 153, 34, 0.15); color: var(--wn-warning); }
+        .wn-report-badge.low { background-color: rgba(139, 148, 158, 0.15); color: var(--wn-text-muted); }
+        .wn-report-badge.resolved { background-color: rgba(35, 134, 54, 0.15); color: var(--wn-success); }
+        .wn-report-badge.reason { background-color: rgba(31, 111, 235, 0.15); color: var(--wn-accent-hover); }
+
+        .wn-report-body { font-size: 0.85rem; line-height: 1.55; color: var(--wn-text); padding: 12px 14px; background-color: var(--wn-bg-elevated); border-radius: 10px; }
+        .wn-report-body strong { color: var(--wn-text); font-weight: 600; }
+
+        .wn-report-meta { display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.78rem; color: var(--wn-text-muted); }
+        .wn-report-meta-item { display: inline-flex; align-items: center; gap: 6px; }
+        .wn-report-meta-item i { color: var(--wn-accent); font-size: 0.85rem; }
+        .wn-report-meta-item strong { color: var(--wn-text); font-weight: 600; }
+
+        .wn-report-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; padding-top: 4px; }
+        .wn-report-action { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 8px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; text-decoration: none !important; transition: all 0.2s ease; cursor: pointer; border: none; font-family: inherit; white-space: nowrap; }
+        .wn-report-action.primary { background-color: var(--wn-accent); color: #ffffff !important; }
+        .wn-report-action.primary:hover { background-color: var(--wn-accent-hover); color: #ffffff !important; }
+        .wn-report-action.secondary { background-color: transparent; color: var(--wn-text-muted) !important; border: 1px solid var(--wn-border); }
+        .wn-report-action.secondary:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text) !important; }
+        .wn-report-action.success { background-color: var(--wn-success); color: #ffffff !important; }
+        .wn-report-action.success:hover { background-color: #2ea043; color: #ffffff !important; }
+        .wn-report-action.danger { background-color: transparent; color: var(--wn-danger) !important; border: 1px solid rgba(218, 54, 51, 0.3); }
+        .wn-report-action.danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger) !important; border-color: var(--wn-danger); }
+
+        /* Empty state */
+        .wn-empty { background-color: var(--wn-bg-dark); border: 1px dashed var(--wn-border); border-radius: 14px; padding: 60px 24px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+        .wn-empty-icon { width: 72px; height: 72px; border-radius: 50%; background-color: var(--wn-bg-elevated); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--wn-text-muted); }
+        .wn-empty h3 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+        .wn-empty p { color: var(--wn-text-muted); font-size: 0.85rem; margin: 0; max-width: 400px; }
+
+        /* Paginación */
+        .wn-pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+        .wn-pagination-info { font-size: 0.8rem; color: var(--wn-text-muted); }
+        .wn-pagination-info strong { color: var(--wn-text); }
+        .wn-pagination-controls { display: flex; gap: 6px; }
+        .wn-page-btn { min-width: 36px; height: 36px; padding: 0 10px; border-radius: 8px; background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted); font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; }
+        .wn-page-btn:hover:not(:disabled) { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-page-btn.active { background-color: var(--wn-accent); border-color: var(--wn-accent); color: white; }
+        .wn-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Modal */
+        .wn-modal-backdrop { position: fixed; inset: 0; z-index: 1000; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 20px; }
+        .wn-modal-backdrop.show { display: flex; }
+        .wn-modal { background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); border-radius: 16px; padding: 28px; max-width: 460px; width: 100%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; gap: 18px; animation: modalIn 0.2s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .wn-modal-icon { width: 56px; height: 56px; border-radius: 50%; background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
+        .wn-modal h2 { font-size: 1.15rem; font-weight: 700; margin: 0; letter-spacing: -0.3px; }
+        .wn-modal p { font-size: 0.85rem; color: var(--wn-text-muted); margin: 0; line-height: 1.55; }
+        .wn-modal-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+
+        /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .wn-filters { grid-template-columns: 1fr 1fr 1fr; }
+            .wn-filters .wn-filter-group:first-child { grid-column: 1 / -1; }
+            .wn-filters .wn-filter-clear { grid-column: 1 / -1; justify-self: end; }
+        }
+        @media (max-width: 992px) {
+            :root { --wn-navbar-width: 72px; }
+            .wn-navbar { width: var(--wn-navbar-width); padding: 16px 8px; }
+            .wn-navbar-brand span, .wn-navbar-menu a span, .wn-user-info > div:not(.wn-avatar) { display: none; }
+            .wn-navbar-menu a { justify-content: center; }
+            .wn-navbar-toggle { display: none; }
+            .wn-navbar.collapsed .wn-navbar-brand-left { box-shadow: none; animation: none; background: none; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 32px); padding: 24px 20px; }
+            .wn-user-chevron { display: none; }
+            .wn-user-info { justify-content: center; }
+        }
+        @media (max-width: 768px) {
+            :root { --wn-navbar-width: 60px; }
+            .wn-navbar { top: 12px; left: 12px; bottom: 12px; padding: 12px 6px; border-radius: 14px; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 24px); margin-right: 12px; margin-top: 12px; padding: 20px 16px; }
+            .wn-header { flex-direction: column; align-items: stretch; }
+            .wn-header-actions { width: 100%; }
+            .wn-header-actions .btn-wn-primary, .wn-header-actions .btn-wn-secondary { flex: 1; justify-content: center; }
+            .wn-filters { grid-template-columns: 1fr; }
+            .wn-filters .wn-filter-group:first-child { grid-column: auto; }
+            .wn-filters .wn-filter-clear { grid-column: auto; justify-self: stretch; }
+            .wn-report-header { flex-direction: column; align-items: flex-start; }
+        }
+        @media (max-width: 480px) {
+            :root { --wn-navbar-width: 52px; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 16px); margin-right: 8px; margin-top: 8px; padding: 16px 12px; border-radius: 14px; }
+            .wn-header-left h1 { font-size: 1.4rem; }
+            .wn-stat-value { font-size: 1.25rem; }
+            .wn-stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .wn-stat-card { padding: 14px; gap: 12px; }
+            .wn-stat-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+            .wn-report-actions { flex-direction: column; }
+            .wn-report-action { width: 100%; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .wn-navbar.collapsed .wn-navbar-brand-left { animation: none; }
+            .wn-navbar, .wn-main, .wn-stat-card, .wn-report-card { transition: none; }
+            .wn-modal { animation: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wn-bg"><div class="wn-bg-grid"></div></div>
+
+    <!-- NAVBAR ADMIN -->
+    <nav class="wn-navbar" id="navbar">
+        <div class="wn-navbar-brand">
+            <div class="wn-navbar-brand-left" id="navbarBrandTrigger">
+                <i class="bi bi-shield-lock-fill"></i>
+                <span>Work.net</span>
+            </div>
+            <button class="wn-navbar-toggle" id="navbarToggle" aria-label="Minimizar menú" type="button">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+        <ul class="wn-navbar-menu">
+            <li><a href="admin-dashboard.html" title="Panel"><i class="bi bi-speedometer2"></i> <span>Panel</span></a></li>
+            <li><a href="admin-usuarios.html" title="Usuarios"><i class="bi bi-people"></i> <span>Usuarios</span></a></li>
+            <li><a href="admin-ofertas.html" title="Ofertas"><i class="bi bi-briefcase"></i> <span>Ofertas</span></a></li>
+            <li><a href="admin-reportes.html" class="active" title="Reportes"><i class="bi bi-flag"></i> <span>Reportes</span> <span class="badge bg-danger" style="font-size:0.65rem;">2</span></a></li>
+            <li><a href="#" title="Configuración"><i class="bi bi-gear"></i> <span>Configuración</span></a></li>
+        </ul>
+        <div class="wn-navbar-footer">
+            <div class="wn-user-info" id="userInfoTrigger">
+                <div class="wn-avatar">AD</div>
+                <div class="wn-user-text">
+                    <div class="wn-user-name">Admin General</div>
+                    <div class="wn-user-role">Administrador</div>
+                </div>
+                <i class="bi bi-chevron-up wn-user-chevron"></i>
+            </div>
+            <div class="wn-user-dropdown" id="userDropdown">
+                <div class="wn-user-dropdown-header">
+                    <p class="wn-user-dropdown-name">Administrador del sistema</p>
+                    <p class="wn-user-dropdown-email">admin@work.net</p>
+                </div>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-gear"></i> Configuración</a>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-question-circle"></i> Ayuda</a>
+                <div class="wn-user-dropdown-divider"></div>
+                <a href="login.html" class="wn-user-dropdown-item danger"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="wn-main">
+
+        <header class="wn-header">
+            <div class="wn-header-left">
+                <h1>Reportes <span class="wn-admin-badge">Moderación</span></h1>
+                <p>Revisá los reportes enviados por los usuarios. Tenés <strong>2 pendientes</strong> de resolución.</p>
+            </div>
+            <div class="wn-header-actions">
+                <a href="admin-dashboard.html" class="btn-wn-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver al panel
+                </a>
+                <button type="button" class="btn-wn-primary">
+                    <i class="bi bi-download"></i> Exportar CSV
+                </button>
+            </div>
+        </header>
+
+        <!-- STATS -->
+        <section class="wn-stats" aria-label="Resumen de reportes">
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon danger"><i class="bi bi-flag-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">2</div>
+                    <div class="wn-stat-label">Pendientes</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon warning"><i class="bi bi-clock-history"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">5</div>
+                    <div class="wn-stat-label">En revisión</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon success"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">142</div>
+                    <div class="wn-stat-label">Resueltos</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon purple"><i class="bi bi-archive-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">23</div>
+                    <div class="wn-stat-label">Archivados</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FILTROS -->
+        <section class="wn-filters" aria-label="Filtros de reportes">
+            <div class="wn-filter-group wn-filter-search">
+                <label class="wn-filter-label" for="filterSearch">Buscar</label>
+                <i class="bi bi-search"></i>
+                <input type="text" id="filterSearch" class="wn-filter-input" placeholder="Motivo, usuario u oferta...">
+            </div>
+            <div class="wn-filter-group">
+                <label class="wn-filter-label" for="filterSeverity">Severidad</label>
+                <select id="filterSeverity" class="wn-filter-select">
+                    <option value="">Todas</option>
+                    <option value="high">Alta</option>
+                    <option value="medium">Media</option>
+                    <option value="low">Baja</option>
+                </select>
+            </div>
+            <div class="wn-filter-group">
+                <label class="wn-filter-label" for="filterStatus">Estado</label>
+                <select id="filterStatus" class="wn-filter-select">
+                    <option value="">Todos</option>
+                    <option value="pending">Pendientes</option>
+                    <option value="review">En revisión</option>
+                    <option value="resolved">Resueltos</option>
+                </select>
+            </div>
+            <div class="wn-filter-group">
+                <label class="wn-filter-label" for="filterReason">Motivo</label>
+                <select id="filterReason" class="wn-filter-select">
+                    <option value="">Todos</option>
+                    <option value="spam">Spam</option>
+                    <option value="fraud">Estafa</option>
+                    <option value="inappropriate">Contenido inapropiado</option>
+                    <option value="misleading">Información engañosa</option>
+                    <option value="other">Otro</option>
+                </select>
+            </div>
+            <button type="button" class="wn-filter-clear" id="filterClear">
+                <i class="bi bi-x-lg"></i> Limpiar
+            </button>
+        </section>
+
+        <!-- INFO + TABS -->
+        <div class="wn-results-info">
+            <div class="wn-results-count">
+                <strong id="resultsCount">6</strong> reportes encontrados
+            </div>
+            <div class="wn-tabs" role="tablist" aria-label="Filtros rápidos">
+                <button type="button" class="wn-tab active" data-tab="">Todos</button>
+                <button type="button" class="wn-tab danger" data-tab="pending">Pendientes (2)</button>
+                <button type="button" class="wn-tab" data-tab="review">En revisión (5)</button>
+                <button type="button" class="wn-tab" data-tab="resolved">Resueltos (142)</button>
+            </div>
+        </div>
+
+        <!-- LISTA DE REPORTES -->
+        <section class="wn-reports-list" id="reportsList" aria-label="Listado de reportes">
+
+            <!-- Reporte 1: Pendiente, severidad alta -->
+            <article class="wn-report-card severity-high" data-status="pending" data-severity="high" data-reason="fraud" data-name="María González" data-offer="Analista de Sistemas">
+                <div class="wn-report-header">
+                    <div class="wn-report-header-left">
+                        <div class="wn-report-avatar">MG</div>
+                        <div class="wn-report-info">
+                            <h3 class="wn-report-title">Posible estafa en oferta</h3>
+                            <p class="wn-report-subtitle">Reportado por María González · Hace 3 horas</p>
+                        </div>
+                    </div>
+                    <div class="wn-report-badges">
+                        <span class="wn-report-badge high"><i class="bi bi-exclamation-triangle-fill"></i> Alta</span>
+                        <span class="wn-report-badge reason"><i class="bi bi-flag-fill"></i> Estafa</span>
+                        <span class="wn-report-badge" style="background-color: rgba(210, 153, 34, 0.15); color: var(--wn-warning);"><i class="bi bi-hourglass-split"></i> Pendiente</span>
+                    </div>
+                </div>
+                <div class="wn-report-body">
+                    <strong>Descripción:</strong> El empleador pide un pago por "capacitación" antes de la entrevista. Me contactaron por WhatsApp y me pidieron transferir Gs. 200.000 para "reservar el puesto". La oferta parece legítima pero el proceso es sospechoso.
+                </div>
+                <div class="wn-report-meta">
+                    <span class="wn-report-meta-item"><i class="bi bi-briefcase-fill"></i> Oferta: <strong>Analista de Sistemas</strong></span>
+                    <span class="wn-report-meta-item"><i class="bi bi-building"></i> Empresa: <strong>DataCorp S.A.</strong></span>
+                    <span class="wn-report-meta-item"><i class="bi bi-hash"></i> <strong>#RPT-000145</strong></span>
+                </div>
+                <div class="wn-report-actions">
+                    <a href="admin-oferta-detalle.html" class="wn-report-action primary">
+                        <i class="bi bi-eye"></i> Ver oferta
+                    </a>
+                    <button type="button" class="wn-report-action secondary" data-action="review">
+                        <i class="bi bi-search"></i> Marcar en revisión
+                    </button>
+                    <button type="button" class="wn-report-action success" data-action="resolve">
+                        <i class="bi bi-check-lg"></i> Resolver
+                    </button>
+                    <button type="button" class="wn-report-action danger" data-action="dismiss">
+                        <i class="bi bi-x-lg"></i> Desestimar
+                    </button>
+                </div>
+            </article>
+
+            <!-- Reporte 2: Pendiente, severidad alta -->
+            <article class="wn-report-card severity-high" data-status="pending" data-severity="high" data-reason="inappropriate" data-name="Carlos Ramírez" data-offer="Soporte Técnico IT">
+                <div class="wn-report-header">
+                    <div class="wn-report-header-left">
+                        <div class="wn-report-avatar">CR</div>
+                        <div class="wn-report-info">
+                            <h3 class="wn-report-title">Contenido inapropiado</h3>
+                            <p class="wn-report-subtitle">Reportado por Carlos Ramírez · Hace 6 horas</p>
+                        </div>
+                    </div>
+                    <div class="wn-report-badges">
+                        <span class="wn-report-badge high"><i class="bi bi-exclamation-triangle-fill"></i> Alta</span>
+                        <span class="wn-report-badge reason"><i class="bi bi-flag-fill"></i> Contenido inapropiado</span>
+                        <span class="wn-report-badge" style="background-color: rgba(210, 153, 34, 0.15); color: var(--wn-warning);"><i class="bi bi-hourglass-split"></i> Pendiente</span>
+                    </div>
+                </div>
+                <div class="wn-report-body">
+                    <strong>Descripción:</strong> La descripción de la oferta utiliza lenguaje ofensivo y discriminatorio hacia ciertos grupos. Adjunto captura de pantalla como evidencia.
+                </div>
+                <div class="wn-report-meta">
+                    <span class="wn-report-meta-item"><i class="bi bi-briefcase-fill"></i> Oferta: <strong>Soporte Técnico IT</strong></span>
+                    <span class="wn-report-meta-item"><i class="bi bi-building"></i> Empresa: <strong>Tech Help Paraguay</strong></span>
+                    <span class="wn-report-meta-item"><i class="bi bi-hash"></i> <strong>#RPT-000146</strong></span>
+                </div>
+                <div class="wn-report-actions">
+                    <a href="admin-oferta-detalle.html" class="wn-report-action primary">
+                        <i class="bi bi-eye"></i> Ver oferta
+                    </a>
+                    <button type="button" class="wn-report-action secondary" data-action="review">
+                        <i class="bi bi-search"></i> Marcar en revisión
+                    </button>
+                    <button type="button" class="wn-report-action success" data-action="resolve">
+                        <i class="bi bi-check-lg"></i> Resolver
+                    </button>
+                    <button type="button" class="wn-report-action danger" data-action="dismiss">
+                        <i class="bi bi-x-lg"></i> Desestimar
+                    </button>
+                </div>
+            </article>
+
+            <!-- Reporte 3: En revisión, severidad media -->
+            <article class="wn-report-card severity-medium" data-status="review" data-severity="medium" data-reason="misleading" data-name="Lucía Benítez" data-offer="Desarrollador Full Stack Laravel">
+                <div class="wn-report-header">
+                    <div class="wn-report-header-left">
+                        <div class="wn-report-avatar">LB</div>
+                        <div class="wn-report-info">
+                            <h3 class="wn-report-title">Información engañosa</h3>
+                            <p class="wn-report-subtitle">Reportado por Lucía Benítez · Hace 1 día</p>
+                        </div>
+                    </div>
+                    <div class="wn-report-badges">
+                        <span class="wn-report-badge medium"><i class="bi bi-exclamation-circle-fill"></i> Media</span>
+                        <span class="wn-report-badge reason"><i class="bi bi-flag-fill"></i> Información engañosa</span>
+                        <span class="wn-report-badge" style="background-color: rgba(31, 111, 235, 0.15); color: var(--wn-accent-hover);"><i class="bi bi-search"></i> En revisión</span>
+                    </div>
+                </div>
+                <div class="wn-report-body">
+                    <strong>Descripción:</strong> El salario publicado no coincide con el que se menciona en la entrevista. Publican Gs. 7-9M pero en la entrevista ofrecen Gs. 5M.
+                </div>
+                <div class="wn-report-meta">
+                    <span class="wn-report-meta-item"><i class="bi bi-briefcase-fill"></i> Oferta: <strong>Desarrollador Full Stack Laravel</strong></span>
+                    <span class="wn-report-meta-item"><i class="bi bi-building"></i> Empresa: <strong>Concesionaria San Miguel</strong></span>
+                    <span class="wn-report-meta-item"><i class="bi bi-hash"></i> <strong>#RPT-000144</strong></span>
+                </div>
+                <div class="wn-report-actions">
+                    <a href="admin-oferta-detalle.html" class="wn-report-action primary">
+                        <i class="bi bi-eye"></i> Ver oferta
+                    </a>
+                    <button type="button" class="wn-report-action success" data-action="resolve">
+                        <i class="bi bi-check-lg"></i> Resolver
+                    </button>
+                    <button type="button" class="wn-report-action danger" data-action="dismiss">
+                        <i class="bi bi-x-lg"></i> Desestimar
+                    </button>
+                </div>
+            </article>
+
+            <!-- Reporte 4: En revisión, severidad baja -->
+            <article class="wn-report-card severity-low" data-status="review" data-severity="low" data-reason="spam" data-name="Pedro Acosta" data-offer="Diseñador UX/UI">
+                <div class="wn-report-header">
+                    <div class="wn-report-header-left">
+                        <div class="wn-report-avatar">PA</div>
+                        <div class="wn-report-info">
+                            <h3 class="wn-report-title">Spam o duplicado</h3>
+                            <p class="wn-report-subtitle">Reportado por Pedro Acosta · Hace 2 días</p>
+                        </div>
+                    </div>
+                    <div class="wn-report-badges">
+                        <span class="wn-report-badge low"><i class="bi bi-info-circle-fill"></i> Baja</span>
+                        <span class="wn-report-badge reason"><i class="bi bi-flag-fill"></i> Spam</span>
+                        <span class="wn-report-badge" style="background-color: rgba(31, 111, 235, 0.15); color: var(--wn-accent-hover);"><i class="bi bi-search"></i> En revisión</span>
+                    </div>
+                </div>
+                <div class="wn-report-body">
+                    <strong>Descripción:</strong> Esta oferta es idéntica a otra publicada por la misma empresa hace una semana. Parece ser un duplicado.
+                </div>
+                <div class="wn-report-meta">
+                    <span class="wn-report-meta-item"><i class="bi bi-briefcase-fill"></i> Oferta: <strong>Diseñador UX/UI</strong></span>
+                    <span class="wn-report-meta-item"><i class="bi bi-building"></i> Empresa: <strong>Creative Studio</strong></span>
+                    <span class="wn-report-meta-item"><i class="bi bi-hash"></i> <strong>#RPT-000143</strong></span>
+                </div>
+                <div class="wn-report-actions">
+                    <a href="admin-oferta-detalle.html" class="wn-report-action primary">
+                        <i class="bi bi-eye"></i> Ver oferta
+                    </a>
+                    <button type="button" class="wn-report-action success" data-action="resolve">
+                        <i class="bi bi-check-lg"></i> Resolver
+                    </button>
+                    <button type="button" class="wn-report-action danger" data-action="dismiss">
+                        <i class="bi bi-x-lg"></i> Desestimar
+                    </button>
+                </div>
+            </article>
+
+            <!-- Reporte 5: Resuelto -->
+            <article class="wn-report-card severity-high resolved" data-status="resolved" data-severity="high" data-reason="fraud" data-name="Ana Martínez" data-offer="Asistente Administrativo">
+                <div class="wn-report-header">
+                    <div class="wn-report-header-left">
+                        <div class="wn-report-avatar">AM</div>
+                        <div class="wn-report-info">
+                            <h3 class="wn-report-title">Posible estafa en oferta</h3>
+                            <p class="wn-report-subtitle">Reportado por Ana Martínez · Hace 5 días</p>
+                        </div>
+                    </div>
+                    <div class="wn-report-badges">
+                        <span class="wn-report-badge high"><i class="bi bi-exclamation-triangle-fill"></i> Alta</span>
+                        <span class="wn-report-badge reason"><i class="bi bi-flag-fill"></i> Estafa</span>
+                        <span class="wn-report-badge resolved"><i class="bi bi-check-circle-fill"></i> Resuelto</span>
+                    </div>
+                </div>
+                <div class="wn-report-body">
+                    <strong>Descripción:</strong> La empresa pidió datos bancarios antes de la entrevista. Se verificó y la oferta fue eliminada por incumplir las normas.
+                </div>
+                <div class="wn-report-meta">
+                    <span class="wn-report-meta-item"><i class="bi bi-briefcase-fill"></i> Oferta: <strong>Asistente Administrativo</strong></span>
+                    <span class="wn-report-meta-item"><i class="bi bi-building"></i> Empresa: <strong>Global Services</strong></span>
+                    <span class="wn-report-meta-item"><i class="bi bi-hash"></i> <strong>#RPT-000142</strong></span>
+                    <span class="wn-report-meta-item"><i class="bi bi-check-circle-fill" style="color: var(--wn-success);"></i> Resuelto por <strong>Admin General</strong></span>
+                </div>
+                <div class="wn-report-actions">
+                    <a href="#" class="wn-report-action secondary">
+                        <i class="bi bi-eye"></i> Ver detalle de resolución
+                    </a>
+                </div>
+            </article>
+
+            <!-- Reporte 6: Resuelto -->
+            <article class="wn-report-card severity-medium resolved" data-status="resolved" data-severity="medium" data-reason="misleading" data-name="Diego López" data-offer="Vendedor Senior">
+                <div class="wn-report-header">
+                    <div class="wn-report-header-left">
+                        <div class="wn-report-avatar">DL</div>
+                        <div class="wn-report-info">
+                            <h3 class="wn-report-title">Información engañosa</h3>
+                            <p class="wn-report-subtitle">Reportado por Diego López · Hace 1 semana</p>
+                        </div>
+                    </div>
+                    <div class="wn-report-badges">
+                        <span class="wn-report-badge medium"><i class="bi bi-exclamation-circle-fill"></i> Media</span>
+                        <span class="wn-report-badge reason"><i class="bi bi-flag-fill"></i> Información engañosa</span>
+                        <span class="wn-report-badge resolved"><i class="bi bi-check-circle-fill"></i> Resuelto</span>
+                    </div>
+                </div>
+                <div class="wn-report-body">
+                    <strong>Descripción:</strong> El horario publicado no coincide con el real. Se contactó al empleador y se corrigió la oferta.
+                </div>
+                <div class="wn-report-meta">
+                    <span class="wn-report-meta-item"><i class="bi bi-briefcase-fill"></i> Oferta: <strong>Vendedor Senior</strong></span>
+                    <span class="wn-report-meta-item"><i class="bi bi-building"></i> Empresa: <strong>Comercial del Sur</strong></span>
+                    <span class="wn-report-meta-item"><i class="bi bi-hash"></i> <strong>#RPT-000141</strong></span>
+                    <span class="wn-report-meta-item"><i class="bi bi-check-circle-fill" style="color: var(--wn-success);"></i> Resuelto por <strong>Admin General</strong></span>
+                </div>
+                <div class="wn-report-actions">
+                    <a href="#" class="wn-report-action secondary">
+                        <i class="bi bi-eye"></i> Ver detalle de resolución
+                    </a>
+                </div>
+            </article>
+
+        </section>
+
+        <!-- EMPTY STATE -->
+        <div class="wn-empty" id="emptyState" style="display: none;">
+            <div class="wn-empty-icon"><i class="bi bi-flag"></i></div>
+            <h3>No encontramos reportes</h3>
+            <p>Probá ajustar los filtros o el estado seleccionado.</p>
+        </div>
+
+        <!-- PAGINACIÓN -->
+        <div class="wn-pagination">
+            <div class="wn-pagination-info">
+                Mostrando <strong>1-6</strong> de <strong>172</strong> reportes
+            </div>
+            <div class="wn-pagination-controls">
+                <button type="button" class="wn-page-btn" disabled><i class="bi bi-chevron-left"></i></button>
+                <button type="button" class="wn-page-btn active">1</button>
+                <button type="button" class="wn-page-btn">2</button>
+                <button type="button" class="wn-page-btn">3</button>
+                <button type="button" class="wn-page-btn">...</button>
+                <button type="button" class="wn-page-btn">22</button>
+                <button type="button" class="wn-page-btn"><i class="bi bi-chevron-right"></i></button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL ACCIÓN -->
+    <div class="wn-modal-backdrop" id="actionModal" role="dialog" aria-modal="true" aria-labelledby="actionModalTitle">
+        <div class="wn-modal">
+            <div class="wn-modal-icon" id="actionModalIcon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div>
+                <h2 id="actionModalTitle">¿Confirmar acción?</h2>
+                <p id="actionModalText">Esta acción se aplicará al reporte seleccionado.</p>
+            </div>
+            <div class="wn-modal-actions">
+                <button type="button" class="btn-wn-secondary" id="actionModalNo">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </button>
+                <button type="button" class="btn-wn-primary" id="actionModalYes">
+                    <i class="bi bi-check-lg"></i> Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const navbar = document.getElementById('navbar');
+        const navbarToggle = document.getElementById('navbarToggle');
+        const navbarBrandTrigger = document.getElementById('navbarBrandTrigger');
+        const userInfoTrigger = document.getElementById('userInfoTrigger');
+        const userDropdown = document.getElementById('userDropdown');
+
+        navbarToggle.addEventListener('click', () => { navbar.classList.add('collapsed'); document.body.classList.add('navbar-collapsed'); });
+        navbarBrandTrigger.addEventListener('click', () => { if (navbar.classList.contains('collapsed')) { navbar.classList.remove('collapsed'); document.body.classList.remove('navbar-collapsed'); } });
+        userInfoTrigger.addEventListener('click', (e) => { e.stopPropagation(); userInfoTrigger.classList.toggle('open'); userDropdown.classList.toggle('show'); });
+        document.addEventListener('click', (e) => { if (!userInfoTrigger.contains(e.target) && !userDropdown.contains(e.target)) { userInfoTrigger.classList.remove('open'); userDropdown.classList.remove('show'); } });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { userInfoTrigger.classList.remove('open'); userDropdown.classList.remove('show'); closeActionModal(); } });
+
+        /* ===== FILTROS ===== */
+        const filterSearch = document.getElementById('filterSearch');
+        const filterSeverity = document.getElementById('filterSeverity');
+        const filterStatus = document.getElementById('filterStatus');
+        const filterReason = document.getElementById('filterReason');
+        const filterClear = document.getElementById('filterClear');
+        const resultsCount = document.getElementById('resultsCount');
+        const reportsList = document.getElementById('reportsList');
+        const emptyState = document.getElementById('emptyState');
+        const allCards = Array.from(reportsList.querySelectorAll('.wn-report-card'));
+        const tabs = document.querySelectorAll('.wn-tab');
+
+        let activeTab = '';
+
+        function applyFilters() {
+            const q = (filterSearch.value || '').toLowerCase().trim();
+            const severity = filterSeverity.value;
+            const status = activeTab || filterStatus.value;
+            const reason = filterReason.value;
+
+            let visible = 0;
+            allCards.forEach(card => {
+                const name = (card.dataset.name || '').toLowerCase();
+                const offer = (card.dataset.offer || '').toLowerCase();
+                const cardSeverity = card.dataset.severity;
+                const cardStatus = card.dataset.status;
+                const cardReason = card.dataset.reason;
+
+                let match = true;
+                if (q && !name.includes(q) && !offer.includes(q)) match = false;
+                if (severity && cardSeverity !== severity) match = false;
+                if (status && cardStatus !== status) match = false;
+                if (reason && cardReason !== reason) match = false;
+
+                card.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+
+            resultsCount.textContent = visible;
+            emptyState.style.display = visible === 0 ? 'flex' : 'none';
+            reportsList.style.display = visible === 0 ? 'none' : '';
+        }
+
+        [filterSearch, filterSeverity, filterStatus, filterReason].forEach(el => {
+            el.addEventListener('input', applyFilters);
+            el.addEventListener('change', applyFilters);
+        });
+
+        filterClear.addEventListener('click', () => {
+            filterSearch.value = '';
+            filterSeverity.value = '';
+            filterStatus.value = '';
+            filterReason.value = '';
+            activeTab = '';
+            tabs.forEach(t => t.classList.remove('active'));
+            tabs[0].classList.add('active');
+            applyFilters();
+        });
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                activeTab = tab.dataset.tab;
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                filterStatus.value = '';
+                applyFilters();
+            });
+        });
+
+        /* ===== MODAL ACCIONES ===== */
+        const actionModal = document.getElementById('actionModal');
+        const actionModalTitle = document.getElementById('actionModalTitle');
+        const actionModalText = document.getElementById('actionModalText');
+        const actionModalIcon = document.getElementById('actionModalIcon');
+        const actionModalNo = document.getElementById('actionModalNo');
+        const actionModalYes = document.getElementById('actionModalYes');
+        let pendingCard = null;
+        let pendingAction = '';
+
+        const actionConfig = {
+            review: { title: '¿Marcar en revisión?', text: 'El reporte quedará marcado como "en revisión" para su posterior análisis.', icon: 'bi-search', color: 'info' },
+            resolve: { title: '¿Resolver reporte?', text: 'El reporte quedará marcado como resuelto. Se notificará al usuario que lo envió.', icon: 'bi-check-circle-fill', color: 'success' },
+            dismiss: { title: '¿Desestimar reporte?', text: 'El reporte será archivado sin acción adicional. Se notificará al usuario que lo envió.', icon: 'bi-x-circle-fill', color: 'danger' }
+        };
+
+        function openActionModal(card, action) {
+            pendingCard = card;
+            pendingAction = action;
+            const cfg = actionConfig[action];
+            actionModalTitle.textContent = cfg.title;
+            actionModalText.textContent = cfg.text;
+            actionModalIcon.innerHTML = `<i class="bi ${cfg.icon}"></i>`;
+            if (cfg.color === 'info') {
+                actionModalIcon.style.backgroundColor = 'rgba(31, 111, 235, 0.15)';
+                actionModalIcon.style.color = 'var(--wn-accent)';
+            } else if (cfg.color === 'success') {
+                actionModalIcon.style.backgroundColor = 'rgba(35, 134, 54, 0.15)';
+                actionModalIcon.style.color = 'var(--wn-success)';
+            } else {
+                actionModalIcon.style.backgroundColor = 'rgba(218, 54, 51, 0.15)';
+                actionModalIcon.style.color = 'var(--wn-danger)';
+            }
+            actionModal.classList.add('show');
+        }
+        function closeActionModal() {
+            actionModal.classList.remove('show');
+            pendingCard = null;
+            pendingAction = '';
+        }
+
+        document.querySelectorAll('[data-action]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const card = btn.closest('.wn-report-card');
+                openActionModal(card, btn.dataset.action);
+            });
+        });
+
+        actionModalNo.addEventListener('click', closeActionModal);
+        actionModalYes.addEventListener('click', () => {
+            if (pendingCard && pendingAction) {
+                const badges = pendingCard.querySelector('.wn-report-badges');
+                if (pendingAction === 'review') {
+                    pendingCard.dataset.status = 'review';
+                    const statusBadge = Array.from(badges.children).find(b => b.textContent.includes('Pendiente') || b.textContent.includes('En revisión'));
+                    if (statusBadge) {
+                        statusBadge.className = 'wn-report-badge';
+                        statusBadge.style.backgroundColor = 'rgba(31, 111, 235, 0.15)';
+                        statusBadge.style.color = 'var(--wn-accent-hover)';
+                        statusBadge.innerHTML = '<i class="bi bi-search"></i> En revisión';
+                    }
+                } else if (pendingAction === 'resolve') {
+                    pendingCard.dataset.status = 'resolved';
+                    pendingCard.classList.add('resolved');
+                    const statusBadge = Array.from(badges.children).find(b => b.textContent.includes('Pendiente') || b.textContent.includes('En revisión'));
+                    if (statusBadge) {
+                        statusBadge.className = 'wn-report-badge resolved';
+                        statusBadge.style.backgroundColor = '';
+                        statusBadge.style.color = '';
+                        statusBadge.innerHTML = '<i class="bi bi-check-circle-fill"></i> Resuelto';
+                    }
+                } else if (pendingAction === 'dismiss') {
+                    pendingCard.dataset.status = 'resolved';
+                    pendingCard.classList.add('resolved');
+                    const statusBadge = Array.from(badges.children).find(b => b.textContent.includes('Pendiente') || b.textContent.includes('En revisión'));
+                    if (statusBadge) {
+                        statusBadge.className = 'wn-report-badge';
+                        statusBadge.style.backgroundColor = 'rgba(139, 148, 158, 0.15)';
+                        statusBadge.style.color = 'var(--wn-text-muted)';
+                        statusBadge.innerHTML = '<i class="bi bi-archive-fill"></i> Archivado';
+                    }
+                }
+            }
+            closeActionModal();
+            applyFilters();
+        });
+        actionModal.addEventListener('click', (e) => { if (e.target === actionModal) closeActionModal(); });
+
+        applyFilters();
+    </script>
+
+</body>
+</html>

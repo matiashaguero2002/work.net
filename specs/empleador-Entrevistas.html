@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Work.net - Entrevistas</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --wn-bg-dark:       #0D1117;
+            --wn-bg-panel:      #161B22;
+            --wn-bg-elevated:   #21262D;
+            --wn-border:        #30363D;
+            --wn-text:          #E6EDF3;
+            --wn-text-muted:    #8B949E;
+            --wn-accent:        #1F6FEB;
+            --wn-accent-hover:  #388BFD;
+            --wn-success:       #238636;
+            --wn-danger:        #DA3633;
+            --wn-warning:       #D29922;
+            --wn-purple:        #6E40C9;
+            --wn-navbar-width: 240px;
+            --wn-navbar-width-mini: 72px;
+        }
+
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--wn-bg-dark);
+            color: var(--wn-text);
+            overflow-x: hidden;
+        }
+
+        .wn-bg {
+            position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%);
+            pointer-events: none;
+        }
+        .wn-bg-grid {
+            position: absolute; inset: 0;
+            background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+            -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+        }
+
+        /* ===== NAVBAR (idéntico al resto) ===== */
+        .wn-navbar {
+            position: fixed; top: 16px; left: 16px; bottom: 16px;
+            width: var(--wn-navbar-width);
+            background-color: var(--wn-bg-panel);
+            border: 1px solid var(--wn-border);
+            border-radius: 16px; padding: 20px 16px;
+            display: flex; flex-direction: column;
+            z-index: 100; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                        padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .wn-navbar.collapsed { width: var(--wn-navbar-width-mini); padding: 20px 8px; }
+        .wn-navbar-brand {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 10px; padding-bottom: 16px;
+            border-bottom: 1px solid var(--wn-border); margin-bottom: 16px;
+        }
+        .wn-navbar-brand-left {
+            display: flex; align-items: center; gap: 10px;
+            min-width: 0; flex: 1; padding: 6px 8px; border-radius: 10px;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            user-select: none;
+        }
+        .wn-navbar.collapsed .wn-navbar-brand-left {
+            cursor: pointer;
+            background-color: rgba(31, 111, 235, 0.15);
+            box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35);
+            animation: glowPulse 2s ease-in-out infinite;
+        }
+        .wn-navbar.collapsed .wn-navbar-brand-left i {
+            color: var(--wn-accent-hover);
+            filter: drop-shadow(0 0 8px rgba(31, 111, 235, 0.8));
+        }
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); }
+            50% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.6), 0 0 28px rgba(31, 111, 235, 0.55); }
+        }
+        .wn-navbar-brand i { color: var(--wn-accent); font-size: 1.5rem; flex-shrink: 0; transition: color 0.2s ease, filter 0.2s ease; }
+        .wn-navbar-brand span { font-weight: 700; font-size: 1.1rem; letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; }
+        .wn-navbar-toggle {
+            background: none; border: none; color: var(--wn-text-muted);
+            cursor: pointer; padding: 6px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; transition: all 0.2s ease; flex-shrink: 0;
+        }
+        .wn-navbar-toggle:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar.collapsed .wn-navbar-brand { justify-content: center; padding-bottom: 12px; margin-bottom: 12px; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { justify-content: center; flex: none; }
+        .wn-navbar.collapsed .wn-navbar-brand span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-toggle { display: none; }
+
+        .wn-navbar-menu { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .wn-navbar-menu li { margin-bottom: 4px; }
+        .wn-navbar-menu a {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px; color: var(--wn-text-muted);
+            text-decoration: none; border-radius: 8px;
+            font-size: 0.9rem; transition: all 0.2s ease;
+            position: relative; white-space: nowrap;
+        }
+        .wn-navbar-menu a:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar-menu a.active { background-color: var(--wn-accent); color: white; font-weight: 500; }
+        .wn-navbar-menu a i { font-size: 1.1rem; flex-shrink: 0; width: 20px; text-align: center; }
+        .wn-navbar.collapsed .wn-navbar-menu a { justify-content: center; padding: 12px 8px; }
+        .wn-navbar.collapsed .wn-navbar-menu a span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-menu a .badge { position: absolute; top: 4px; right: 4px; font-size: 0.6rem; padding: 2px 5px; }
+
+        .wn-navbar-footer { padding-top: 16px; border-top: 1px solid var(--wn-border); position: relative; }
+        .wn-user-info {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px; border-radius: 10px;
+            cursor: pointer; transition: background-color 0.2s ease;
+            user-select: none;
+        }
+        .wn-user-info:hover { background-color: var(--wn-bg-elevated); }
+        .wn-user-text { flex: 1; min-width: 0; }
+        .wn-user-chevron { color: var(--wn-text-muted); font-size: 0.75rem; transition: transform 0.2s ease; flex-shrink: 0; }
+        .wn-user-info.open .wn-user-chevron { transform: rotate(180deg); }
+        .wn-navbar.collapsed .wn-user-info { justify-content: center; padding: 8px 4px; }
+        .wn-navbar.collapsed .wn-user-info > div:not(.wn-avatar) { display: none; }
+        .wn-navbar.collapsed .wn-user-chevron { display: none; }
+        .wn-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple));
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+        }
+        .wn-user-name { font-size: 0.85rem; font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-user-role { font-size: 0.7rem; color: var(--wn-text-muted); text-transform: capitalize; }
+
+        .wn-user-dropdown {
+            position: absolute; bottom: calc(100% + 8px); left: 0; right: 0;
+            background-color: var(--wn-bg-elevated);
+            border: 1px solid var(--wn-border); border-radius: 12px;
+            padding: 6px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+            opacity: 0; visibility: hidden; transform: translateY(8px);
+            transition: all 0.2s ease; z-index: 200;
+        }
+        .wn-navbar.collapsed .wn-user-dropdown { left: 100%; bottom: 0; width: 220px; margin-left: 8px; }
+        .wn-user-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .wn-user-dropdown-header { padding: 10px 12px 8px; border-bottom: 1px solid var(--wn-border); margin-bottom: 6px; }
+        .wn-user-dropdown-name { font-size: 0.85rem; font-weight: 600; margin: 0 0 2px 0; }
+        .wn-user-dropdown-email { font-size: 0.7rem; color: var(--wn-text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-user-dropdown-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 12px; color: var(--wn-text-muted);
+            text-decoration: none; border-radius: 8px;
+            font-size: 0.82rem; transition: all 0.2s ease;
+            cursor: pointer; border: none; background: none;
+            width: 100%; text-align: left; font-family: inherit;
+        }
+        .wn-user-dropdown-item:hover { background-color: var(--wn-bg-panel); color: var(--wn-text); }
+        .wn-user-dropdown-item.danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+        .wn-user-dropdown-item i { font-size: 0.95rem; flex-shrink: 0; }
+        .wn-user-dropdown-divider { height: 1px; background-color: var(--wn-border); margin: 6px 0; }
+
+        /* ===== MAIN ===== */
+        .wn-main {
+            margin-left: calc(var(--wn-navbar-width) + 32px);
+            margin-right: 16px; margin-top: 16px; margin-bottom: 16px;
+            padding: 32px 40px;
+            min-height: calc(100vh - 32px);
+            background-color: var(--wn-bg-panel);
+            border: 1px solid var(--wn-border); border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            position: relative; z-index: 1;
+            transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        body.navbar-collapsed .wn-main { margin-left: calc(var(--wn-navbar-width-mini) + 32px); }
+
+        /* ===== HEADER ===== */
+        .wn-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            gap: 16px; margin-bottom: 32px; padding-bottom: 24px;
+            border-bottom: 1px solid var(--wn-border); flex-wrap: wrap;
+        }
+        .wn-header-left h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 4px 0; letter-spacing: -0.5px; }
+        .wn-header-left p { color: var(--wn-text-muted); margin: 0; font-size: 0.9rem; }
+        .wn-header-left p strong { color: var(--wn-text); font-weight: 600; }
+        .wn-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        /* ===== BOTONES ===== */
+        .btn-wn-primary {
+            background-color: var(--wn-accent); border: none; color: #ffffff !important;
+            font-weight: 600; padding: 10px 20px; border-radius: 10px;
+            font-size: 0.85rem; transition: all 0.2s ease;
+            cursor: pointer; font-family: inherit;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px; text-decoration: none !important; white-space: nowrap;
+        }
+        .btn-wn-primary:hover {
+            background-color: var(--wn-accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35);
+            color: #ffffff !important;
+        }
+        .btn-wn-secondary {
+            background-color: transparent; border: 1px solid var(--wn-border);
+            color: var(--wn-text-muted) !important; font-weight: 500;
+            padding: 10px 20px; border-radius: 10px; font-size: 0.85rem;
+            transition: all 0.2s ease; cursor: pointer; font-family: inherit;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px; text-decoration: none !important; white-space: nowrap;
+        }
+        .btn-wn-secondary:hover {
+            background-color: var(--wn-bg-elevated);
+            color: var(--wn-text) !important;
+            border-color: var(--wn-text-muted);
+        }
+        .btn-wn-danger {
+            background-color: transparent; border: 1px solid rgba(218, 54, 51, 0.4);
+            color: var(--wn-danger) !important; font-weight: 500;
+            padding: 10px 20px; border-radius: 10px; font-size: 0.85rem;
+            transition: all 0.2s ease; cursor: pointer; font-family: inherit;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px; text-decoration: none !important; white-space: nowrap;
+        }
+        .btn-wn-danger:hover {
+            background-color: rgba(218, 54, 51, 0.15);
+            color: var(--wn-danger) !important;
+            border-color: var(--wn-danger);
+        }
+
+        /* ===== STATS ===== */
+        .wn-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px; margin-bottom: 28px;
+        }
+        .wn-stat-card {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 12px; padding: 18px 20px;
+            display: flex; align-items: center; gap: 16px;
+            transition: all 0.2s ease;
+        }
+        .wn-stat-card:hover { border-color: var(--wn-accent); transform: translateY(-2px); }
+        .wn-stat-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            background-color: rgba(31, 111, 235, 0.12);
+            color: var(--wn-accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; flex-shrink: 0;
+        }
+        .wn-stat-icon.success { background-color: rgba(35, 134, 54, 0.12); color: var(--wn-success); }
+        .wn-stat-icon.warning { background-color: rgba(210, 153, 34, 0.12); color: var(--wn-warning); }
+        .wn-stat-icon.purple { background-color: rgba(110, 64, 201, 0.12); color: var(--wn-purple); }
+        .wn-stat-icon.danger { background-color: rgba(218, 54, 51, 0.12); color: var(--wn-danger); }
+        .wn-stat-info { min-width: 0; }
+        .wn-stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 4px; letter-spacing: -0.5px; }
+        .wn-stat-label { font-size: 0.75rem; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+
+        /* ===== FILTROS ===== */
+        .wn-filters {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 14px; padding: 18px;
+            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+        }
+        .wn-filter-group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+        .wn-filter-label {
+            font-size: 0.72rem; font-weight: 600;
+            color: var(--wn-text-muted);
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .wn-filter-input, .wn-filter-select {
+            width: 100%; background-color: var(--wn-bg-panel);
+            border: 1px solid var(--wn-border); color: var(--wn-text);
+            border-radius: 10px; padding: 10px 12px;
+            font-size: 0.85rem; font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .wn-filter-input:focus, .wn-filter-select:focus {
+            outline: none; border-color: var(--wn-accent);
+            box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15);
+        }
+        .wn-filter-input::placeholder { color: var(--wn-text-muted); opacity: 0.5; }
+        .wn-filter-search { position: relative; }
+        .wn-filter-search i {
+            position: absolute; left: 12px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--wn-text-muted); font-size: 0.9rem;
+            pointer-events: none;
+        }
+        .wn-filter-search .wn-filter-input { padding-left: 34px; }
+        .wn-filter-clear {
+            background-color: transparent; border: 1px solid var(--wn-border);
+            color: var(--wn-text-muted); padding: 10px 14px;
+            border-radius: 10px; font-size: 0.85rem;
+            cursor: pointer; font-family: inherit;
+            display: inline-flex; align-items: center; gap: 6px;
+            transition: all 0.2s ease; white-space: nowrap;
+        }
+        .wn-filter-clear:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+
+        /* ===== RESULTADOS BADGE ===== */
+        .wn-results-info {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+        }
+        .wn-results-count { font-size: 0.85rem; color: var(--wn-text-muted); }
+        .wn-results-count strong { color: var(--wn-text); font-weight: 700; }
+        .wn-results-sort {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.82rem; color: var(--wn-text-muted);
+        }
+        .wn-results-sort select {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            color: var(--wn-text); border-radius: 8px;
+            padding: 6px 10px; font-size: 0.82rem;
+            font-family: inherit; cursor: pointer;
+        }
+
+        /* ===== LISTA DE ENTREVISTAS ===== */
+        .wn-interviews-list { display: flex; flex-direction: column; gap: 14px; }
+
+        .wn-interview-card {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 14px; padding: 20px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 20px;
+            align-items: center;
+            transition: all 0.2s ease;
+            position: relative; overflow: hidden;
+        }
+        .wn-interview-card::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+            width: 4px; background-color: var(--wn-accent);
+            transition: background-color 0.2s ease;
+        }
+        .wn-interview-card.status-pending::before { background-color: var(--wn-warning); }
+        .wn-interview-card.status-confirmed::before { background-color: var(--wn-accent); }
+        .wn-interview-card.status-completed::before { background-color: var(--wn-success); }
+        .wn-interview-card.status-cancelled::before { background-color: var(--wn-danger); }
+        .wn-interview-card:hover {
+            border-color: var(--wn-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(31, 111, 235, 0.15);
+        }
+        .wn-interview-card.status-cancelled { opacity: 0.7; }
+        .wn-interview-card.status-cancelled:hover { opacity: 1; }
+
+        /* Fecha grande a la izquierda */
+        .wn-interview-date-block {
+            width: 72px; height: 72px; border-radius: 14px;
+            background-color: var(--wn-bg-elevated);
+            border: 1px solid var(--wn-border);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            font-weight: 700; flex-shrink: 0; line-height: 1;
+            color: var(--wn-text);
+        }
+        .wn-interview-date-block .day { font-size: 1.6rem; letter-spacing: -1px; }
+        .wn-interview-date-block .month {
+            font-size: 0.7rem; text-transform: uppercase;
+            color: var(--wn-text-muted); letter-spacing: 1px;
+            margin-top: 2px; font-weight: 600;
+        }
+        .wn-interview-date-block.today {
+            background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple));
+            border-color: transparent; color: white;
+        }
+        .wn-interview-date-block.today .month { color: rgba(255,255,255,0.85); }
+
+        /* Info central */
+        .wn-interview-main { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+        .wn-interview-top {
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        }
+        .wn-interview-candidate {
+            display: flex; align-items: center; gap: 10px;
+            min-width: 0;
+        }
+        .wn-interview-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple));
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .wn-interview-name {
+            font-size: 0.95rem; font-weight: 700;
+            margin: 0 0 2px 0; letter-spacing: -0.2px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .wn-interview-position {
+            font-size: 0.78rem; color: var(--wn-text-muted);
+            margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .wn-interview-status {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: 20px;
+            font-size: 0.7rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .wn-status-pending { background-color: rgba(210, 153, 34, 0.15); color: var(--wn-warning); }
+        .wn-status-confirmed { background-color: rgba(31, 111, 235, 0.15); color: var(--wn-accent-hover); }
+        .wn-status-completed { background-color: rgba(35, 134, 54, 0.15); color: var(--wn-success); }
+        .wn-status-cancelled { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+
+        /* Meta (fecha, hora, modalidad, ubicación) */
+        .wn-interview-meta {
+            display: flex; flex-wrap: wrap; gap: 8px 16px;
+            font-size: 0.8rem; color: var(--wn-text-muted);
+        }
+        .wn-interview-meta-item {
+            display: inline-flex; align-items: center; gap: 6px;
+            white-space: nowrap;
+        }
+        .wn-interview-meta-item i { color: var(--wn-accent); font-size: 0.9rem; }
+        .wn-interview-meta-item strong { color: var(--wn-text); font-weight: 600; }
+
+        /* Acciones a la derecha */
+        .wn-interview-actions {
+            display: flex; flex-direction: column; gap: 8px;
+            align-items: stretch; flex-shrink: 0;
+            min-width: 160px;
+        }
+        .wn-interview-actions .wn-action-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px; padding: 9px 14px;
+            border-radius: 9px; font-size: 0.78rem; font-weight: 600;
+            text-decoration: none !important; transition: all 0.2s ease;
+            cursor: pointer; border: none; font-family: inherit;
+            white-space: nowrap;
+        }
+        .wn-action-btn.primary {
+            background-color: var(--wn-accent); color: #ffffff !important;
+        }
+        .wn-action-btn.primary:hover {
+            background-color: var(--wn-accent-hover); color: #ffffff !important;
+        }
+        .wn-action-btn.secondary {
+            background-color: transparent;
+            color: var(--wn-text-muted) !important;
+            border: 1px solid var(--wn-border);
+        }
+        .wn-action-btn.secondary:hover {
+            background-color: var(--wn-bg-elevated);
+            color: var(--wn-text) !important;
+        }
+        .wn-action-btn.danger {
+            background-color: transparent;
+            color: var(--wn-danger) !important;
+            border: 1px solid rgba(218, 54, 51, 0.3);
+        }
+        .wn-action-btn.danger:hover {
+            background-color: rgba(218, 54, 51, 0.12);
+            color: var(--wn-danger) !important;
+            border-color: var(--wn-danger);
+        }
+        .wn-action-btn.success {
+            background-color: var(--wn-success); color: #ffffff !important;
+        }
+        .wn-action-btn.success:hover {
+            background-color: #2ea043; color: #ffffff !important;
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .wn-empty {
+            background-color: var(--wn-bg-dark);
+            border: 1px dashed var(--wn-border);
+            border-radius: 14px; padding: 60px 24px;
+            text-align: center;
+            display: flex; flex-direction: column; align-items: center; gap: 14px;
+        }
+        .wn-empty-icon {
+            width: 72px; height: 72px; border-radius: 50%;
+            background-color: var(--wn-bg-elevated);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; color: var(--wn-text-muted);
+        }
+        .wn-empty h3 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+        .wn-empty p { color: var(--wn-text-muted); font-size: 0.85rem; margin: 0; max-width: 400px; }
+
+        /* ===== WIDGETS LATERALES ===== */
+        .wn-widgets-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 16px; margin-top: 32px;
+        }
+        .wn-widget {
+            background-color: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-radius: 14px; padding: 20px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .wn-widget-header {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.95rem; font-weight: 600;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--wn-border);
+        }
+        .wn-widget-header i { color: var(--wn-accent); font-size: 1.1rem; }
+
+        .wn-interview-mini {
+            display: flex; gap: 12px; padding: 12px;
+            background-color: var(--wn-bg-elevated);
+            border-radius: 10px;
+        }
+        .wn-interview-mini-date {
+            width: 48px; height: 48px; border-radius: 10px;
+            background-color: var(--wn-accent); color: white;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            font-weight: 700; flex-shrink: 0; line-height: 1;
+        }
+        .wn-interview-mini-date .day { font-size: 1.1rem; }
+        .wn-interview-mini-date .month {
+            font-size: 0.65rem; text-transform: uppercase;
+            opacity: 0.9; letter-spacing: 0.5px;
+        }
+        .wn-interview-mini-info { flex: 1; min-width: 0; }
+        .wn-interview-mini-title { font-size: 0.85rem; font-weight: 600; margin: 0 0 2px 0; }
+        .wn-interview-mini-meta {
+            font-size: 0.72rem; color: var(--wn-text-muted);
+            display: flex; align-items: center; gap: 4px; margin: 0;
+        }
+        .wn-interview-mini-meta i { color: var(--wn-accent); }
+
+        /* Resumen por modalidad */
+        .wn-modality-summary { display: flex; flex-direction: column; gap: 12px; }
+        .wn-modality-row {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px;
+        }
+        .wn-modality-label {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.85rem; color: var(--wn-text-muted);
+        }
+        .wn-modality-label i {
+            width: 32px; height: 32px; border-radius: 8px;
+            background-color: rgba(31, 111, 235, 0.12);
+            color: var(--wn-accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.95rem; flex-shrink: 0;
+        }
+        .wn-modality-count {
+            font-size: 1rem; font-weight: 700; color: var(--wn-text);
+        }
+        .wn-modality-bar {
+            width: 100%; height: 6px;
+            background-color: var(--wn-bg-elevated);
+            border-radius: 3px; overflow: hidden;
+            margin-top: 4px;
+        }
+        .wn-modality-bar-fill {
+            height: 100%; border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+        .wn-modality-bar-fill.presencial { background: linear-gradient(90deg, var(--wn-accent), var(--wn-accent-hover)); }
+        .wn-modality-bar-fill.video { background: linear-gradient(90deg, var(--wn-purple), #8B5CF6); }
+
+        /* ===== MODAL ===== */
+        .wn-modal-backdrop {
+            position: fixed; inset: 0; z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .wn-modal-backdrop.show { display: flex; }
+        .wn-modal {
+            background-color: var(--wn-bg-panel);
+            border: 1px solid var(--wn-border);
+            border-radius: 16px; padding: 28px;
+            max-width: 460px; width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            display: flex; flex-direction: column; gap: 18px;
+            animation: modalIn 0.2s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .wn-modal-icon {
+            width: 56px; height: 56px; border-radius: 50%;
+            background-color: rgba(218, 54, 51, 0.15);
+            color: var(--wn-danger);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+        }
+        .wn-modal h2 { font-size: 1.15rem; font-weight: 700; margin: 0; letter-spacing: -0.3px; }
+        .wn-modal p { font-size: 0.85rem; color: var(--wn-text-muted); margin: 0; line-height: 1.55; }
+        .wn-modal-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1200px) {
+            .wn-filters { grid-template-columns: 1fr 1fr 1fr; }
+            .wn-filters .wn-filter-group:first-child { grid-column: 1 / -1; }
+            .wn-filters .wn-filter-clear { grid-column: 1 / -1; justify-self: end; }
+        }
+        @media (max-width: 992px) {
+            :root { --wn-navbar-width: 72px; }
+            .wn-navbar { width: var(--wn-navbar-width); padding: 16px 8px; }
+            .wn-navbar-brand span,
+            .wn-navbar-menu a span,
+            .wn-user-info > div:not(.wn-avatar) { display: none; }
+            .wn-navbar-menu a { justify-content: center; }
+            .wn-navbar-toggle { display: none; }
+            .wn-navbar.collapsed .wn-navbar-brand-left { box-shadow: none; animation: none; background: none; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 32px); padding: 24px 20px; }
+            .wn-user-chevron { display: none; }
+            .wn-user-info { justify-content: center; }
+            .wn-widgets-grid { grid-template-columns: 1fr; }
+            .wn-interview-card { grid-template-columns: auto 1fr; }
+            .wn-interview-actions {
+                grid-column: 1 / -1;
+                flex-direction: row; flex-wrap: wrap;
+                min-width: 0;
+            }
+            .wn-interview-actions .wn-action-btn { flex: 1; min-width: 120px; }
+        }
+        @media (max-width: 768px) {
+            :root { --wn-navbar-width: 60px; }
+            .wn-navbar { top: 12px; left: 12px; bottom: 12px; padding: 12px 6px; border-radius: 14px; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 24px); margin-right: 12px; margin-top: 12px; padding: 20px 16px; }
+            .wn-header { flex-direction: column; align-items: stretch; }
+            .wn-header-actions { width: 100%; }
+            .wn-header-actions .btn-wn-primary,
+            .wn-header-actions .btn-wn-secondary { flex: 1; justify-content: center; }
+            .wn-filters { grid-template-columns: 1fr; }
+            .wn-filters .wn-filter-group:first-child { grid-column: auto; }
+            .wn-filters .wn-filter-clear { grid-column: auto; justify-self: stretch; }
+            .wn-interview-card { grid-template-columns: 1fr; }
+            .wn-interview-date-block { width: 60px; height: 60px; }
+            .wn-interview-date-block .day { font-size: 1.35rem; }
+            .wn-interview-actions { flex-direction: column; }
+        }
+        @media (max-width: 480px) {
+            :root { --wn-navbar-width: 52px; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 16px); margin-right: 8px; margin-top: 8px; padding: 16px 12px; border-radius: 14px; }
+            .wn-header-left h1 { font-size: 1.4rem; }
+            .wn-stat-value { font-size: 1.25rem; }
+            .wn-stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .wn-stat-card { padding: 14px; gap: 12px; }
+            .wn-stat-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .wn-navbar.collapsed .wn-navbar-brand-left { animation: none; }
+            .wn-navbar, .wn-main, .wn-interview-card, .wn-stat-card,
+            .wn-progress-fill, .wn-action-btn { transition: none; }
+            .wn-modal { animation: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wn-bg"><div class="wn-bg-grid"></div></div>
+
+    <!-- ===== NAVBAR EMPLEADOR ===== -->
+    <nav class="wn-navbar" id="navbar">
+        <div class="wn-navbar-brand">
+            <div class="wn-navbar-brand-left" id="navbarBrandTrigger">
+                <i class="bi bi-briefcase-fill"></i>
+                <span>Work.net</span>
+            </div>
+            <button class="wn-navbar-toggle" id="navbarToggle" aria-label="Minimizar menú" type="button">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+
+        <ul class="wn-navbar-menu">
+            <li><a href="dashboard-empleador.html" title="Inicio"><i class="bi bi-house-door"></i> <span>Inicio</span></a></li>
+            <li><a href="ofertas.html" title="Ofertas"><i class="bi bi-briefcase"></i> <span>Ofertas</span></a></li>
+            <li><a href="postulantes.html" title="Postulaciones"><i class="bi bi-inbox"></i> <span>Postulaciones</span></a></li>
+            <li><a href="entrevistas-empleador.html" class="active" title="Entrevistas"><i class="bi bi-calendar-event"></i> <span>Entrevistas</span></a></li>
+            <li><a href="mi-empresa.html" title="Mi empresa"><i class="bi bi-building"></i> <span>Mi empresa</span></a></li>
+            <li>
+                <a href="notificaciones-empleador.html" title="Notificaciones">
+                    <i class="bi bi-bell"></i> <span>Notificaciones</span>
+                    <span class="badge bg-danger ms-auto" style="font-size:0.65rem;">3</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="wn-navbar-footer">
+            <div class="wn-user-info" id="userInfoTrigger">
+                <div class="wn-avatar">TS</div>
+                <div class="wn-user-text">
+                    <div class="wn-user-name">Tech Solutions</div>
+                    <div class="wn-user-role">Empleador</div>
+                </div>
+                <i class="bi bi-chevron-up wn-user-chevron"></i>
+            </div>
+
+            <div class="wn-user-dropdown" id="userDropdown">
+                <div class="wn-user-dropdown-header">
+                    <p class="wn-user-dropdown-name">Tech Solutions S.A.</p>
+                    <p class="wn-user-dropdown-email">contacto@techsolutions.com</p>
+                </div>
+                <a href="mi-empresa.html" class="wn-user-dropdown-item"><i class="bi bi-building"></i> Mi empresa</a>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-gear"></i> Configuración</a>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-question-circle"></i> Ayuda</a>
+                <div class="wn-user-dropdown-divider"></div>
+                <a href="login.html" class="wn-user-dropdown-item danger"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== MAIN ===== -->
+    <main class="wn-main">
+
+        <!-- HEADER -->
+        <header class="wn-header">
+            <div class="wn-header-left">
+                <h1>Entrevistas</h1>
+                <p>Tenés <strong>2 entrevistas hoy</strong> y <strong>5 programadas</strong> esta semana.</p>
+            </div>
+            <div class="wn-header-actions">
+                <a href="postulantes.html" class="btn-wn-secondary">
+                    <i class="bi bi-inbox"></i> Ver postulantes
+                </a>
+                <a href="convocar-entrevista.html" class="btn-wn-primary">
+                    <i class="bi bi-plus-lg"></i> Convocar entrevista
+                </a>
+            </div>
+        </header>
+
+        <!-- STATS -->
+        <section class="wn-stats" aria-label="Resumen de entrevistas">
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon warning"><i class="bi bi-hourglass-split"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">3</div>
+                    <div class="wn-stat-label">Pendientes</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon"><i class="bi bi-calendar-day"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">2</div>
+                    <div class="wn-stat-label">Hoy</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon purple"><i class="bi bi-calendar-week"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">5</div>
+                    <div class="wn-stat-label">Esta semana</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon success"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">12</div>
+                    <div class="wn-stat-label">Completadas</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FILTROS -->
+        <section class="wn-filters" aria-label="Filtros de entrevistas">
+            <div class="wn-filter-group wn-filter-search">
+                <label class="wn-filter-label" for="filterSearch">Buscar</label>
+                <i class="bi bi-search"></i>
+                <input type="text" id="filterSearch" class="wn-filter-input" placeholder="Candidato u oferta...">
+            </div>
+            <div class="wn-filter-group">
+                <label class="wn-filter-label" for="filterStatus">Estado</label>
+                <select id="filterStatus" class="wn-filter-select">
+                    <option value="">Todos</option>
+                    <option value="pending">Pendientes</option>
+                    <option value="confirmed">Confirmadas</option>
+                    <option value="completed">Completadas</option>
+                    <option value="cancelled">Canceladas</option>
+                </select>
+            </div>
+            <div class="wn-filter-group">
+                <label class="wn-filter-label" for="filterModality">Modalidad</label>
+                <select id="filterModality" class="wn-filter-select">
+                    <option value="">Todas</option>
+                    <option value="presencial">Presencial</option>
+                    <option value="videollamada">Videollamada</option>
+                </select>
+            </div>
+            <div class="wn-filter-group">
+                <label class="wn-filter-label" for="filterDate">Fecha</label>
+                <select id="filterDate" class="wn-filter-select">
+                    <option value="">Todas</option>
+                    <option value="today">Hoy</option>
+                    <option value="week">Esta semana</option>
+                    <option value="month">Este mes</option>
+                </select>
+            </div>
+            <button type="button" class="wn-filter-clear" id="filterClear">
+                <i class="bi bi-x-lg"></i> Limpiar
+            </button>
+        </section>
+
+        <!-- INFO RESULTADOS -->
+        <div class="wn-results-info">
+            <div class="wn-results-count">
+                <strong id="resultsCount">8</strong> entrevistas encontradas
+            </div>
+            <div class="wn-results-sort">
+                <label for="sortBy">Ordenar por:</label>
+                <select id="sortBy">
+                    <option value="date-asc">Fecha (más próximas)</option>
+                    <option value="date-desc">Fecha (más lejanas)</option>
+                    <option value="candidate">Candidato (A-Z)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- LISTA DE ENTREVISTAS -->
+        <section class="wn-interviews-list" id="interviewsList" aria-label="Listado de entrevistas">
+
+            <!-- Entrevista 1: Hoy, confirmada, presencial -->
+            <article class="wn-interview-card status-confirmed" data-status="confirmed" data-modality="presencial" data-date="2026-10-15" data-name="Juan Pérez">
+                <div class="wn-interview-date-block today">
+                    <span class="day">15</span>
+                    <span class="month">Oct</span>
+                </div>
+                <div class="wn-interview-main">
+                    <div class="wn-interview-top">
+                        <div class="wn-interview-candidate">
+                            <div class="wn-interview-avatar">JP</div>
+                            <div>
+                                <p class="wn-interview-name">Juan Pérez</p>
+                                <p class="wn-interview-position">Desarrollador Laravel Senior</p>
+                            </div>
+                        </div>
+                        <span class="wn-interview-status wn-status-confirmed">
+                            <i class="bi bi-check-circle-fill"></i> Confirmada
+                        </span>
+                    </div>
+                    <div class="wn-interview-meta">
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-clock-fill"></i>
+                            <strong>10:00</strong> hs · 1 hora
+                        </span>
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-building"></i> Presencial
+                        </span>
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-geo-alt-fill"></i> Av. Irrazábal 1234, Encarnación
+                        </span>
+                    </div>
+                </div>
+                <div class="wn-interview-actions">
+                    <a href="postulante-detalle.html" class="wn-action-btn primary">
+                        <i class="bi bi-person-lines-fill"></i> Ver candidato
+                    </a>
+                    <button type="button" class="wn-action-btn secondary">
+                        <i class="bi bi-pencil"></i> Reprogramar
+                    </button>
+                    <button type="button" class="wn-action-btn danger" data-cancel="Juan Pérez">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                </div>
+            </article>
+
+            <!-- Entrevista 2: Hoy, pendiente, videollamada -->
+            <article class="wn-interview-card status-pending" data-status="pending" data-modality="videollamada" data-date="2026-10-15" data-name="María González">
+                <div class="wn-interview-date-block today">
+                    <span class="day">15</span>
+                    <span class="month">Oct</span>
+                </div>
+                <div class="wn-interview-main">
+                    <div class="wn-interview-top">
+                        <div class="wn-interview-candidate">
+                            <div class="wn-interview-avatar">MG</div>
+                            <div>
+                                <p class="wn-interview-name">María González</p>
+                                <p class="wn-interview-position">Desarrollador Laravel Senior</p>
+                            </div>
+                        </div>
+                        <span class="wn-interview-status wn-status-pending">
+                            <i class="bi bi-hourglass-split"></i> Pendiente
+                        </span>
+                    </div>
+                    <div class="wn-interview-meta">
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-clock-fill"></i>
+                            <strong>15:30</strong> hs · 1 hora
+                        </span>
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-camera-video-fill"></i> Videollamada
+                        </span>
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-link-45deg"></i> meet.google.com/abc-defg-hij
+                        </span>
+                    </div>
+                </div>
+                <div class="wn-interview-actions">
+                    <a href="postulante-detalle.html" class="wn-action-btn primary">
+                        <i class="bi bi-person-lines-fill"></i> Ver candidato
+                    </a>
+                    <button type="button" class="wn-action-btn secondary">
+                        <i class="bi bi-pencil"></i> Reprogramar
+                    </button>
+                    <button type="button" class="wn-action-btn danger" data-cancel="María González">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                </div>
+            </article>
+
+            <!-- Entrevista 3: Próxima semana, confirmada, presencial -->
+            <article class="wn-interview-card status-confirmed" data-status="confirmed" data-modality="presencial" data-date="2026-10-18" data-name="Carlos Ramírez">
+                <div class="wn-interview-date-block">
+                    <span class="day">18</span>
+                    <span class="month">Oct</span>
+                </div>
+                <div class="wn-interview-main">
+                    <div class="wn-interview-top">
+                        <div class="wn-interview-candidate">
+                            <div class="wn-interview-avatar">CR</div>
+                            <div>
+                                <p class="wn-interview-name">Carlos Ramírez</p>
+                                <p class="wn-interview-position">Analista de Sistemas</p>
+                            </div>
+                        </div>
+                        <span class="wn-interview-status wn-status-confirmed">
+                            <i class="bi bi-check-circle-fill"></i> Confirmada
+                        </span>
+                    </div>
+                    <div class="wn-interview-meta">
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-clock-fill"></i>
+                            <strong>09:00</strong> hs · 45 minutos
+                        </span>
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-building"></i> Presencial
+                        </span>
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-geo-alt-fill"></i> Av. Irrazábal 1234, Encarnación
+                        </span>
+                    </div>
+                </div>
+                <div class="wn-interview-actions">
+                    <a href="postulante-detalle.html" class="wn-action-btn primary">
+                        <i class="bi bi-person-lines-fill"></i> Ver candidato
+                    </a>
+                    <button type="button" class="wn-action-btn secondary">
+                        <i class="bi bi-pencil"></i> Reprogramar
+                    </button>
+                    <button type="button" class="wn-action-btn danger" data-cancel="Carlos Ramírez">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                </div>
+            </article>
+
+            <!-- Entrevista 4: Próxima semana, pendiente, videollamada -->
+            <article class="wn-interview-card status-pending" data-status="pending" data-modality="videollamada" data-date="2026-10-20" data-name="Lucía Benítez">
+                <div class="wn-interview-date-block">
+                    <span class="day">20</span>
+                    <span class="month">Oct</span>
+                </div>
+                <div class="wn-interview-main">
+                    <div class="wn-interview-top">
+                        <div class="wn-interview-candidate">
+                            <div class="wn-interview-avatar">LB</div>
+                            <div>
+                                <p class="wn-interview-name">Lucía Benítez</p>
+                                <p class="wn-interview-position">Analista de Sistemas</p>
+                            </div>
+                        </div>
+                        <span class="wn-interview-status wn-status-pending">
+                            <i class="bi bi-hourglass-split"></i> Pendiente
+                        </span>
+                    </div>
+                    <div class="wn-interview-meta">
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-clock-fill"></i>
+                            <strong>14:00</strong> hs · 1 hora
+                        </span>
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-camera-video-fill"></i> Videollamada
+                        </span>
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-link-45deg"></i> meet.google.com/xyz-1234-abc
+                        </span>
+                    </div>
+                </div>
+                <div class="wn-interview-actions">
+                    <a href="postulante-detalle.html" class="wn-action-btn primary">
+                        <i class="bi bi-person-lines-fill"></i> Ver candidato
+                    </a>
+                    <button type="button" class="wn-action-btn secondary">
+                        <i class="bi bi-pencil"></i> Reprogramar
+                    </button>
+                    <button type="button" class="wn-action-btn danger" data-cancel="Lucía Benítez">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                </div>
+            </article>
+
+            <!-- Entrevista 5: Completada, presencial -->
+            <article class="wn-interview-card status-completed" data-status="completed" data-modality="presencial" data-date="2026-10-08" data-name="Pedro Acosta">
+                <div class="wn-interview-date-block">
+                    <span class="day">08</span>
+                    <span class="month">Oct</span>
+                </div>
+                <div class="wn-interview-main">
+                    <div class="wn-interview-top">
+                        <div class="wn-interview-candidate">
+                            <div class="wn-interview-avatar">PA</div>
+                            <div>
+                                <p class="wn-interview-name">Pedro Acosta</p>
+                                <p class="wn-interview-position">Diseñador UX/UI</p>
+                            </div>
+                        </div>
+                        <span class="wn-interview-status wn-status-completed">
+                            <i class="bi bi-check-circle-fill"></i> Completada
+                        </span>
+                    </div>
+                    <div class="wn-interview-meta">
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-clock-fill"></i>
+                            <strong>11:00</strong> hs · 1 hora
+                        </span>
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-building"></i> Presencial
+                        </span>
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-geo-alt-fill"></i> Av. Irrazábal 1234, Encarnación
+                        </span>
+                    </div>
+                </div>
+                <div class="wn-interview-actions">
+                    <a href="postulante-detalle.html" class="wn-action-btn primary">
+                        <i class="bi bi-person-lines-fill"></i> Ver candidato
+                    </a>
+                    <button type="button" class="wn-action-btn secondary">
+                        <i class="bi bi-chat-left-text"></i> Ver feedback
+                    </button>
+                </div>
+            </article>
+
+            <!-- Entrevista 6: Cancelada -->
+            <article class="wn-interview-card status-cancelled" data-status="cancelled" data-modality="videollamada" data-date="2026-10-05" data-name="Sofía Méndez">
+                <div class="wn-interview-date-block">
+                    <span class="day">05</span>
+                    <span class="month">Oct</span>
+                </div>
+                <div class="wn-interview-main">
+                    <div class="wn-interview-top">
+                        <div class="wn-interview-candidate">
+                            <div class="wn-interview-avatar">SM</div>
+                            <div>
+                                <p class="wn-interview-name">Sofía Méndez</p>
+                                <p class="wn-interview-position">Desarrollador Laravel Senior</p>
+                            </div>
+                        </div>
+                        <span class="wn-interview-status wn-status-cancelled">
+                            <i class="bi bi-x-circle-fill"></i> Cancelada
+                        </span>
+                    </div>
+                    <div class="wn-interview-meta">
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-clock-fill"></i>
+                            <strong>16:00</strong> hs
+                        </span>
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-camera-video-fill"></i> Videollamada
+                        </span>
+                        <span class="wn-interview-meta-item">
+                            <i class="bi bi-info-circle"></i> Cancelada por el candidato
+                        </span>
+                    </div>
+                </div>
+                <div class="wn-interview-actions">
+                    <a href="postulante-detalle.html" class="wn-action-btn primary">
+                        <i class="bi bi-person-lines-fill"></i> Ver candidato
+                    </a>
+                    <button type="button" class="wn-action-btn secondary">
+                        <i class="bi bi-arrow-clockwise"></i> Reprogramar
+                    </button>
+                </div>
+            </article>
+
+        </section>
+
+        <!-- EMPTY STATE (oculto por defecto, se muestra si no hay resultados) -->
+        <div class="wn-empty" id="emptyState" style="display: none;">
+            <div class="wn-empty-icon"><i class="bi bi-calendar-x"></i></div>
+            <h3>No encontramos entrevistas</h3>
+            <p>Probá ajustar los filtros o convocá a un nuevo candidato desde el listado de postulantes.</p>
+            <a href="postulantes.html" class="btn-wn-primary" style="margin-top: 6px;">
+                <i class="bi bi-inbox"></i> Ver postulantes
+            </a>
+        </div>
+
+        <!-- WIDGETS -->
+        <div class="wn-widgets-grid">
+
+            <!-- Próximas entrevistas -->
+            <div class="wn-widget">
+                <div class="wn-widget-header">
+                    <i class="bi bi-calendar-event-fill"></i>
+                    <span>Próximas entrevistas</span>
+                </div>
+
+                <div class="wn-interview-mini">
+                    <div class="wn-interview-mini-date">
+                        <span class="day">15</span>
+                        <span class="month">Oct</span>
+                    </div>
+                    <div class="wn-interview-mini-info">
+                        <p class="wn-interview-mini-title">Juan Pérez · Desarrollador Laravel</p>
+                        <p class="wn-interview-mini-meta">
+                            <i class="bi bi-clock"></i> 10:00 hs · Presencial
+                        </p>
+                    </div>
+                </div>
+
+                <div class="wn-interview-mini">
+                    <div class="wn-interview-mini-date">
+                        <span class="day">15</span>
+                        <span class="month">Oct</span>
+                    </div>
+                    <div class="wn-interview-mini-info">
+                        <p class="wn-interview-mini-title">María González · Desarrollador Laravel</p>
+                        <p class="wn-interview-mini-meta">
+                            <i class="bi bi-camera-video"></i> 15:30 hs · Videollamada
+                        </p>
+                    </div>
+                </div>
+
+                <a href="convocar-entrevista.html" class="btn-wn-secondary" style="margin-top: 4px;">
+                    <i class="bi bi-plus-lg"></i> Convocar nueva
+                </a>
+            </div>
+
+            <!-- Resumen por modalidad -->
+            <div class="wn-widget">
+                <div class="wn-widget-header">
+                    <i class="bi bi-pie-chart-fill"></i>
+                    <span>Resumen por modalidad</span>
+                </div>
+
+                <div class="wn-modality-summary">
+                    <div>
+                        <div class="wn-modality-row">
+                            <div class="wn-modality-label">
+                                <i class="bi bi-building"></i>
+                                <span>Presencial</span>
+                            </div>
+                            <span class="wn-modality-count">8</span>
+                        </div>
+                        <div class="wn-modality-bar">
+                            <div class="wn-modality-bar-fill presencial" style="width: 66%;"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="wn-modality-row">
+                            <div class="wn-modality-label">
+                                <i class="bi bi-camera-video"></i>
+                                <span>Videollamada</span>
+                            </div>
+                            <span class="wn-modality-count">4</span>
+                        </div>
+                        <div class="wn-modality-bar">
+                            <div class="wn-modality-bar-fill video" style="width: 34%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding-top: 8px; border-top: 1px solid var(--wn-border); font-size: 0.78rem; color: var(--wn-text-muted); display: flex; justify-content: space-between;">
+                    <span>Total del mes</span>
+                    <strong style="color: var(--wn-text);">12 entrevistas</strong>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ===== MODAL CANCELAR ===== -->
+    <div class="wn-modal-backdrop" id="cancelModal" role="dialog" aria-modal="true" aria-labelledby="cancelModalTitle">
+        <div class="wn-modal">
+            <div class="wn-modal-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div>
+                <h2 id="cancelModalTitle">¿Cancelar esta entrevista?</h2>
+                <p id="cancelModalText">
+                    Se notificará al candidato y la entrevista quedará marcada como cancelada. Esta acción no se puede deshacer.
+                </p>
+            </div>
+            <div class="wn-modal-actions">
+                <button type="button" class="btn-wn-secondary" id="cancelModalNo">
+                    <i class="bi bi-x-lg"></i> Volver
+                </button>
+                <button type="button" class="btn-wn-danger" id="cancelModalYes">
+                    <i class="bi bi-check-lg"></i> Sí, cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ===== NAVBAR ===== */
+        const navbar = document.getElementById('navbar');
+        const navbarToggle = document.getElementById('navbarToggle');
+        const navbarBrandTrigger = document.getElementById('navbarBrandTrigger');
+        const userInfoTrigger = document.getElementById('userInfoTrigger');
+        const userDropdown = document.getElementById('userDropdown');
+
+        navbarToggle.addEventListener('click', () => {
+            navbar.classList.add('collapsed');
+            document.body.classList.add('navbar-collapsed');
+        });
+        navbarBrandTrigger.addEventListener('click', () => {
+            if (navbar.classList.contains('collapsed')) {
+                navbar.classList.remove('collapsed');
+                document.body.classList.remove('navbar-collapsed');
+            }
+        });
+        userInfoTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userInfoTrigger.classList.toggle('open');
+            userDropdown.classList.toggle('show');
+        });
+        document.addEventListener('click', (e) => {
+            if (!userInfoTrigger.contains(e.target) && !userDropdown.contains(e.target)) {
+                userInfoTrigger.classList.remove('open');
+                userDropdown.classList.remove('show');
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                userInfoTrigger.classList.remove('open');
+                userDropdown.classList.remove('show');
+                closeCancelModal();
+            }
+        });
+
+        /* ===== FILTROS (mock) ===== */
+        const filterSearch = document.getElementById('filterSearch');
+        const filterStatus = document.getElementById('filterStatus');
+        const filterModality = document.getElementById('filterModality');
+        const filterDate = document.getElementById('filterDate');
+        const filterClear = document.getElementById('filterClear');
+        const sortBy = document.getElementById('sortBy');
+        const resultsCount = document.getElementById('resultsCount');
+        const interviewsList = document.getElementById('interviewsList');
+        const emptyState = document.getElementById('emptyState');
+
+        const allCards = Array.from(interviewsList.querySelectorAll('.wn-interview-card'));
+
+        function applyFilters() {
+            const q = (filterSearch.value || '').toLowerCase().trim();
+            const status = filterStatus.value;
+            const modality = filterModality.value;
+            const dateFilter = filterDate.value;
+
+            const today = new Date('2026-10-15');
+            const weekEnd = new Date('2026-10-21');
+
+            let visible = 0;
+            allCards.forEach(card => {
+                const name = (card.dataset.name || '').toLowerCase();
+                const cardStatus = card.dataset.status;
+                const cardModality = card.dataset.modality;
+                const cardDate = new Date(card.dataset.date);
+
+                let match = true;
+                if (q && !name.includes(q)) match = false;
+                if (status && cardStatus !== status) match = false;
+                if (modality && cardModality !== modality) match = false;
+                if (dateFilter === 'today') {
+                    if (cardDate.toDateString() !== today.toDateString()) match = false;
+                } else if (dateFilter === 'week') {
+                    if (cardDate < today || cardDate > weekEnd) match = false;
+                } else if (dateFilter === 'month') {
+                    if (cardDate.getMonth() !== today.getMonth() ||
+                        cardDate.getFullYear() !== today.getFullYear()) match = false;
+                }
+
+                card.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+
+            resultsCount.textContent = visible;
+            emptyState.style.display = visible === 0 ? 'flex' : 'none';
+            interviewsList.style.display = visible === 0 ? 'none' : '';
+        }
+
+        [filterSearch, filterStatus, filterModality, filterDate].forEach(el => {
+            el.addEventListener('input', applyFilters);
+            el.addEventListener('change', applyFilters);
+        });
+
+        filterClear.addEventListener('click', () => {
+            filterSearch.value = '';
+            filterStatus.value = '';
+            filterModality.value = '';
+            filterDate.value = '';
+            applyFilters();
+        });
+
+        /* Ordenamiento (mock simple) */
+        sortBy.addEventListener('change', () => {
+            const mode = sortBy.value;
+            const sorted = allCards.slice().sort((a, b) => {
+                if (mode === 'date-asc') return new Date(a.dataset.date) - new Date(b.dataset.date);
+                if (mode === 'date-desc') return new Date(b.dataset.date) - new Date(a.dataset.date);
+                if (mode === 'candidate') return a.dataset.name.localeCompare(b.dataset.name);
+                return 0;
+            });
+            sorted.forEach(card => interviewsList.appendChild(card));
+        });
+
+        /* ===== MODAL CANCELAR ===== */
+        const cancelModal = document.getElementById('cancelModal');
+        const cancelModalText = document.getElementById('cancelModalText');
+        const cancelModalNo = document.getElementById('cancelModalNo');
+        const cancelModalYes = document.getElementById('cancelModalYes');
+        let pendingCancelCard = null;
+
+        function openCancelModal(card) {
+            pendingCancelCard = card;
+            const name = card.dataset.name || 'el candidato';
+            cancelModalText.textContent = `Se notificará a ${name} y la entrevista quedará marcada como cancelada. Esta acción no se puede deshacer.`;
+            cancelModal.classList.add('show');
+        }
+        function closeCancelModal() {
+            cancelModal.classList.remove('show');
+            pendingCancelCard = null;
+        }
+
+        document.querySelectorAll('[data-cancel]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const card = btn.closest('.wn-interview-card');
+                if (card) openCancelModal(card);
+            });
+        });
+
+        cancelModalNo.addEventListener('click', closeCancelModal);
+        cancelModalYes.addEventListener('click', () => {
+            if (pendingCancelCard) {
+                pendingCancelCard.classList.remove('status-confirmed', 'status-pending');
+                pendingCancelCard.classList.add('status-cancelled');
+                pendingCancelCard.dataset.status = 'cancelled';
+                const statusEl = pendingCancelCard.querySelector('.wn-interview-status');
+                if (statusEl) {
+                    statusEl.className = 'wn-interview-status wn-status-cancelled';
+                    statusEl.innerHTML = '<i class="bi bi-x-circle-fill"></i> Cancelada';
+                }
+                const cancelBtn = pendingCancelCard.querySelector('[data-cancel]');
+                if (cancelBtn) cancelBtn.remove();
+            }
+            closeCancelModal();
+            applyFilters();
+        });
+
+        cancelModal.addEventListener('click', (e) => {
+            if (e.target === cancelModal) closeCancelModal();
+        });
+
+        /* Init */
+        applyFilters();
+    </script>
+
+</body>
+</html>

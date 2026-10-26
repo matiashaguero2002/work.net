@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Work.net - Panel de administración</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --wn-bg-dark:       #0D1117;
+            --wn-bg-panel:      #161B22;
+            --wn-bg-elevated:   #21262D;
+            --wn-border:        #30363D;
+            --wn-text:          #E6EDF3;
+            --wn-text-muted:    #8B949E;
+            --wn-accent:        #1F6FEB;
+            --wn-accent-hover:  #388BFD;
+            --wn-success:       #238636;
+            --wn-danger:        #DA3633;
+            --wn-warning:       #D29922;
+            --wn-purple:        #6E40C9;
+            --wn-navbar-width: 240px;
+            --wn-navbar-width-mini: 72px;
+        }
+
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--wn-bg-dark);
+            color: var(--wn-text);
+            overflow-x: hidden;
+        }
+
+        .wn-bg { position: fixed; inset: 0; z-index: 0; background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%); pointer-events: none; }
+        .wn-bg-grid {
+            position: absolute; inset: 0;
+            background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+            -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%);
+        }
+
+        /* NAVBAR (mismo patrón, con badge admin) */
+        .wn-navbar {
+            position: fixed; top: 16px; left: 16px; bottom: 16px;
+            width: var(--wn-navbar-width);
+            background-color: var(--wn-bg-panel);
+            border: 1px solid var(--wn-border);
+            border-radius: 16px; padding: 20px 16px;
+            display: flex; flex-direction: column;
+            z-index: 100; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .wn-navbar.collapsed { width: var(--wn-navbar-width-mini); padding: 20px 8px; }
+        .wn-navbar-brand { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--wn-border); margin-bottom: 16px; }
+        .wn-navbar-brand-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; padding: 6px 8px; border-radius: 10px; transition: background-color 0.2s ease, box-shadow 0.2s ease; user-select: none; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { cursor: pointer; background-color: rgba(31, 111, 235, 0.15); box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); animation: glowPulse 2s ease-in-out infinite; }
+        .wn-navbar.collapsed .wn-navbar-brand-left i { color: var(--wn-accent-hover); filter: drop-shadow(0 0 8px rgba(31, 111, 235, 0.8)); }
+        @keyframes glowPulse { 0%, 100% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); } 50% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.6), 0 0 28px rgba(31, 111, 235, 0.55); } }
+        .wn-navbar-brand i { color: var(--wn-accent); font-size: 1.5rem; flex-shrink: 0; transition: color 0.2s ease, filter 0.2s ease; }
+        .wn-navbar-brand span { font-weight: 700; font-size: 1.1rem; letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; }
+        .wn-navbar-toggle { background: none; border: none; color: var(--wn-text-muted); cursor: pointer; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.2s ease; flex-shrink: 0; }
+        .wn-navbar-toggle:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar.collapsed .wn-navbar-brand { justify-content: center; padding-bottom: 12px; margin-bottom: 12px; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { justify-content: center; flex: none; }
+        .wn-navbar.collapsed .wn-navbar-brand span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-toggle { display: none; }
+
+        .wn-navbar-menu { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .wn-navbar-menu li { margin-bottom: 4px; }
+        .wn-navbar-menu a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--wn-text-muted); text-decoration: none; border-radius: 8px; font-size: 0.9rem; transition: all 0.2s ease; position: relative; white-space: nowrap; }
+        .wn-navbar-menu a:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar-menu a.active { background-color: var(--wn-accent); color: white; font-weight: 500; }
+        .wn-navbar-menu a i { font-size: 1.1rem; flex-shrink: 0; width: 20px; text-align: center; }
+        .wn-navbar.collapsed .wn-navbar-menu a { justify-content: center; padding: 12px 8px; }
+        .wn-navbar.collapsed .wn-navbar-menu a span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-menu a .badge { position: absolute; top: 4px; right: 4px; font-size: 0.6rem; padding: 2px 5px; }
+
+        .wn-navbar-footer { padding-top: 16px; border-top: 1px solid var(--wn-border); position: relative; }
+        .wn-user-info { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; cursor: pointer; transition: background-color 0.2s ease; user-select: none; }
+        .wn-user-info:hover { background-color: var(--wn-bg-elevated); }
+        .wn-user-text { flex: 1; min-width: 0; }
+        .wn-user-chevron { color: var(--wn-text-muted); font-size: 0.75rem; transition: transform 0.2s ease; flex-shrink: 0; }
+        .wn-user-info.open .wn-user-chevron { transform: rotate(180deg); }
+        .wn-navbar.collapsed .wn-user-info { justify-content: center; padding: 8px 4px; }
+        .wn-navbar.collapsed .wn-user-info > div:not(.wn-avatar) { display: none; }
+        .wn-navbar.collapsed .wn-user-chevron { display: none; }
+        .wn-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--wn-danger), var(--wn-purple)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+        .wn-user-name { font-size: 0.85rem; font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-user-role { font-size: 0.7rem; color: var(--wn-text-muted); text-transform: capitalize; }
+
+        .wn-user-dropdown { position: absolute; bottom: calc(100% + 8px); left: 0; right: 0; background-color: var(--wn-bg-elevated); border: 1px solid var(--wn-border); border-radius: 12px; padding: 6px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6); opacity: 0; visibility: hidden; transform: translateY(8px); transition: all 0.2s ease; z-index: 200; }
+        .wn-navbar.collapsed .wn-user-dropdown { left: 100%; bottom: 0; width: 220px; margin-left: 8px; }
+        .wn-user-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .wn-user-dropdown-header { padding: 10px 12px 8px; border-bottom: 1px solid var(--wn-border); margin-bottom: 6px; }
+        .wn-user-dropdown-name { font-size: 0.85rem; font-weight: 600; margin: 0 0 2px 0; }
+        .wn-user-dropdown-email { font-size: 0.7rem; color: var(--wn-text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-user-dropdown-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; color: var(--wn-text-muted); text-decoration: none; border-radius: 8px; font-size: 0.82rem; transition: all 0.2s ease; cursor: pointer; border: none; background: none; width: 100%; text-align: left; font-family: inherit; }
+        .wn-user-dropdown-item:hover { background-color: var(--wn-bg-panel); color: var(--wn-text); }
+        .wn-user-dropdown-item.danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+        .wn-user-dropdown-item i { font-size: 0.95rem; flex-shrink: 0; }
+        .wn-user-dropdown-divider { height: 1px; background-color: var(--wn-border); margin: 6px 0; }
+
+        /* MAIN */
+        .wn-main { margin-left: calc(var(--wn-navbar-width) + 32px); margin-right: 16px; margin-top: 16px; margin-bottom: 16px; padding: 32px 40px; min-height: calc(100vh - 32px); background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); position: relative; z-index: 1; transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        body.navbar-collapsed .wn-main { margin-left: calc(var(--wn-navbar-width-mini) + 32px); }
+
+        /* HEADER */
+        .wn-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--wn-border); flex-wrap: wrap; }
+        .wn-header-left h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 4px 0; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
+        .wn-header-left h1 .wn-admin-badge { font-size: 0.65rem; padding: 3px 8px; background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+        .wn-header-left p { color: var(--wn-text-muted); margin: 0; font-size: 0.9rem; }
+        .wn-header-left p strong { color: var(--wn-text); font-weight: 600; }
+        .wn-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        /* Botones */
+        .btn-wn-primary { background-color: var(--wn-accent); border: none; color: #ffffff !important; font-weight: 600; padding: 10px 20px; border-radius: 10px; font-size: 0.85rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-primary:hover { background-color: var(--wn-accent-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35); color: #ffffff !important; }
+        .btn-wn-secondary { background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted) !important; font-weight: 500; padding: 10px 20px; border-radius: 10px; font-size: 0.85rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-secondary:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text) !important; border-color: var(--wn-text-muted); }
+
+        /* STATS */
+        .wn-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
+        .wn-stat-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 12px; padding: 18px 20px; display: flex; align-items: center; gap: 16px; transition: all 0.2s ease; }
+        .wn-stat-card:hover { border-color: var(--wn-accent); transform: translateY(-2px); }
+        .wn-stat-icon { width: 48px; height: 48px; border-radius: 12px; background-color: rgba(31, 111, 235, 0.12); color: var(--wn-accent); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+        .wn-stat-icon.success { background-color: rgba(35, 134, 54, 0.12); color: var(--wn-success); }
+        .wn-stat-icon.warning { background-color: rgba(210, 153, 34, 0.12); color: var(--wn-warning); }
+        .wn-stat-icon.purple { background-color: rgba(110, 64, 201, 0.12); color: var(--wn-purple); }
+        .wn-stat-icon.danger { background-color: rgba(218, 54, 51, 0.12); color: var(--wn-danger); }
+        .wn-stat-info { min-width: 0; }
+        .wn-stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 4px; letter-spacing: -0.5px; }
+        .wn-stat-label { font-size: 0.75rem; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+
+        /* SECCIONES */
+        .wn-section { margin-bottom: 32px; }
+        .wn-section:last-child { margin-bottom: 0; }
+        .wn-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
+        .wn-section-title { display: flex; align-items: center; gap: 10px; font-size: 1.05rem; font-weight: 600; margin: 0; }
+        .wn-section-title i { color: var(--wn-accent); font-size: 1.15rem; }
+        .wn-link { color: var(--wn-accent); text-decoration: none; font-weight: 500; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px; transition: color 0.2s ease; }
+        .wn-link:hover { color: var(--wn-accent-hover); text-decoration: underline; }
+
+        /* Stats mini grid (por rol) */
+        .wn-role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+        .wn-role-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 12px; transition: all 0.2s ease; }
+        .wn-role-card:hover { border-color: var(--wn-accent); transform: translateY(-2px); }
+        .wn-role-header { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: 600; }
+        .wn-role-header i { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .wn-role-header.candidate i { background-color: rgba(31, 111, 235, 0.12); color: var(--wn-accent); }
+        .wn-role-header.employer i { background-color: rgba(110, 64, 201, 0.12); color: var(--wn-purple); }
+        .wn-role-header.admin i { background-color: rgba(218, 54, 51, 0.12); color: var(--wn-danger); }
+        .wn-role-value { font-size: 1.75rem; font-weight: 700; letter-spacing: -1px; line-height: 1; }
+        .wn-role-label { font-size: 0.75rem; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+
+        /* Tabla de usuarios recientes */
+        .wn-table-wrap { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; overflow: hidden; }
+        .wn-table { width: 100%; border-collapse: collapse; }
+        .wn-table thead { background-color: var(--wn-bg-elevated); }
+        .wn-table th { padding: 14px 16px; text-align: left; font-size: 0.72rem; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; border-bottom: 1px solid var(--wn-border); white-space: nowrap; }
+        .wn-table td { padding: 14px 16px; font-size: 0.85rem; border-bottom: 1px solid var(--wn-border); vertical-align: middle; }
+        .wn-table tr:last-child td { border-bottom: none; }
+        .wn-table tbody tr { transition: background-color 0.2s ease; }
+        .wn-table tbody tr:hover { background-color: var(--wn-bg-elevated); }
+        .wn-table-user { display: flex; align-items: center; gap: 10px; }
+        .wn-table-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.75rem; flex-shrink: 0; }
+        .wn-table-name { font-weight: 600; font-size: 0.85rem; margin: 0; }
+        .wn-table-email { font-size: 0.75rem; color: var(--wn-text-muted); margin: 0; }
+        .wn-role-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .wn-role-badge.candidato { background-color: rgba(31, 111, 235, 0.15); color: var(--wn-accent-hover); }
+        .wn-role-badge.empleador { background-color: rgba(110, 64, 201, 0.15); color: #8B5CF6; }
+        .wn-role-badge.admin { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+        .wn-status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+        .wn-status-badge.activo { background-color: rgba(35, 134, 54, 0.15); color: var(--wn-success); }
+        .wn-status-badge.suspendido { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+        .wn-status-badge.pendiente { background-color: rgba(210, 153, 34, 0.15); color: var(--wn-warning); }
+        .wn-table-actions { display: flex; gap: 6px; justify-content: flex-end; }
+        .wn-icon-btn { width: 32px; height: 32px; border-radius: 8px; background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted); display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; text-decoration: none !important; }
+        .wn-icon-btn:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-icon-btn.danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); border-color: var(--wn-danger); }
+
+        /* Feed de actividad */
+        .wn-activity { display: flex; flex-direction: column; gap: 12px; }
+        .wn-activity-item { display: flex; gap: 12px; padding: 12px; background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 10px; align-items: flex-start; }
+        .wn-activity-icon { width: 32px; height: 32px; border-radius: 8px; background-color: rgba(31, 111, 235, 0.12); color: var(--wn-accent); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+        .wn-activity-icon.success { background-color: rgba(35, 134, 54, 0.12); color: var(--wn-success); }
+        .wn-activity-icon.warning { background-color: rgba(210, 153, 34, 0.12); color: var(--wn-warning); }
+        .wn-activity-icon.danger { background-color: rgba(218, 54, 51, 0.12); color: var(--wn-danger); }
+        .wn-activity-text { flex: 1; min-width: 0; font-size: 0.82rem; line-height: 1.5; }
+        .wn-activity-text strong { color: var(--wn-text); font-weight: 600; }
+        .wn-activity-time { font-size: 0.72rem; color: var(--wn-text-muted); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+
+        /* Widgets grid */
+        .wn-widgets-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; }
+        .wn-widget { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+        .wn-widget-header { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; font-weight: 600; padding-bottom: 12px; border-bottom: 1px solid var(--wn-border); }
+        .wn-widget-header i { color: var(--wn-accent); font-size: 1.1rem; }
+
+        /* RESPONSIVE */
+        @media (max-width: 992px) {
+            :root { --wn-navbar-width: 72px; }
+            .wn-navbar { width: var(--wn-navbar-width); padding: 16px 8px; }
+            .wn-navbar-brand span, .wn-navbar-menu a span, .wn-user-info > div:not(.wn-avatar) { display: none; }
+            .wn-navbar-menu a { justify-content: center; }
+            .wn-navbar-toggle { display: none; }
+            .wn-navbar.collapsed .wn-navbar-brand-left { box-shadow: none; animation: none; background: none; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 32px); padding: 24px 20px; }
+            .wn-user-chevron { display: none; }
+            .wn-user-info { justify-content: center; }
+            .wn-widgets-grid { grid-template-columns: 1fr; }
+            .wn-role-grid { grid-template-columns: 1fr; }
+            .wn-table { font-size: 0.8rem; }
+        }
+        @media (max-width: 768px) {
+            :root { --wn-navbar-width: 60px; }
+            .wn-navbar { top: 12px; left: 12px; bottom: 12px; padding: 12px 6px; border-radius: 14px; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 24px); margin-right: 12px; margin-top: 12px; padding: 20px 16px; }
+            .wn-header { flex-direction: column; align-items: stretch; }
+            .wn-header-actions { width: 100%; }
+            .wn-header-actions .btn-wn-primary, .wn-header-actions .btn-wn-secondary { flex: 1; justify-content: center; }
+            .wn-table-wrap { overflow-x: auto; }
+            .wn-table { min-width: 640px; }
+        }
+        @media (max-width: 480px) {
+            :root { --wn-navbar-width: 52px; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 16px); margin-right: 8px; margin-top: 8px; padding: 16px 12px; border-radius: 14px; }
+            .wn-header-left h1 { font-size: 1.4rem; }
+            .wn-stat-value { font-size: 1.25rem; }
+            .wn-stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .wn-stat-card { padding: 14px; gap: 12px; }
+            .wn-stat-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .wn-navbar.collapsed .wn-navbar-brand-left { animation: none; }
+            .wn-navbar, .wn-main, .wn-stat-card, .wn-role-card { transition: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wn-bg"><div class="wn-bg-grid"></div></div>
+
+    <!-- NAVBAR ADMIN -->
+    <nav class="wn-navbar" id="navbar">
+        <div class="wn-navbar-brand">
+            <div class="wn-navbar-brand-left" id="navbarBrandTrigger">
+                <i class="bi bi-shield-lock-fill"></i>
+                <span>Work.net</span>
+            </div>
+            <button class="wn-navbar-toggle" id="navbarToggle" aria-label="Minimizar menú" type="button">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+
+        <ul class="wn-navbar-menu">
+            <li><a href="admin-dashboard.html" class="active" title="Panel"><i class="bi bi-speedometer2"></i> <span>Panel</span></a></li>
+            <li><a href="admin-usuarios.html" title="Usuarios"><i class="bi bi-people"></i> <span>Usuarios</span></a></li>
+            <li><a href="#" title="Ofertas"><i class="bi bi-briefcase"></i> <span>Ofertas</span></a></li>
+            <li><a href="#" title="Reportes"><i class="bi bi-flag"></i> <span>Reportes</span></a></li>
+            <li><a href="#" title="Configuración"><i class="bi bi-gear"></i> <span>Configuración</span></a></li>
+        </ul>
+
+        <div class="wn-navbar-footer">
+            <div class="wn-user-info" id="userInfoTrigger">
+                <div class="wn-avatar">AD</div>
+                <div class="wn-user-text">
+                    <div class="wn-user-name">Admin General</div>
+                    <div class="wn-user-role">Administrador</div>
+                </div>
+                <i class="bi bi-chevron-up wn-user-chevron"></i>
+            </div>
+
+            <div class="wn-user-dropdown" id="userDropdown">
+                <div class="wn-user-dropdown-header">
+                    <p class="wn-user-dropdown-name">Administrador del sistema</p>
+                    <p class="wn-user-dropdown-email">admin@work.net</p>
+                </div>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-gear"></i> Configuración</a>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-question-circle"></i> Ayuda</a>
+                <div class="wn-user-dropdown-divider"></div>
+                <a href="login.html" class="wn-user-dropdown-item danger"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="wn-main">
+
+        <header class="wn-header">
+            <div class="wn-header-left">
+                <h1>Panel de administración <span class="wn-admin-badge">Admin</span></h1>
+                <p>Tenés <strong>3 usuarios pendientes</strong> de aprobación y <strong>2 reportes</strong> sin revisar.</p>
+            </div>
+            <div class="wn-header-actions">
+                <a href="admin-usuarios.html" class="btn-wn-secondary">
+                    <i class="bi bi-people"></i> Gestionar usuarios
+                </a>
+                <a href="#" class="btn-wn-primary">
+                    <i class="bi bi-flag"></i> Ver reportes
+                </a>
+            </div>
+        </header>
+
+        <!-- STATS -->
+        <section class="wn-stats" aria-label="Resumen general">
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon"><i class="bi bi-people-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">1.248</div>
+                    <div class="wn-stat-label">Usuarios totales</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon success"><i class="bi bi-briefcase-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">87</div>
+                    <div class="wn-stat-label">Ofertas activas</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon warning"><i class="bi bi-flag-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">2</div>
+                    <div class="wn-stat-label">Reportes pendientes</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon purple"><i class="bi bi-clock-history"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">3</div>
+                    <div class="wn-stat-label">Usuarios pendientes</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DISTRIBUCIÓN POR ROL -->
+        <section class="wn-section">
+            <div class="wn-section-header">
+                <h2 class="wn-section-title">
+                    <i class="bi bi-pie-chart"></i>
+                    Distribución por rol
+                </h2>
+            </div>
+            <div class="wn-role-grid">
+                <div class="wn-role-card">
+                    <div class="wn-role-header candidate">
+                        <i class="bi bi-person-fill"></i>
+                        <span>Candidatos</span>
+                    </div>
+                    <div class="wn-role-value">1.087</div>
+                    <div class="wn-role-label">87% del total</div>
+                </div>
+                <div class="wn-role-card">
+                    <div class="wn-role-header employer">
+                        <i class="bi bi-building-fill"></i>
+                        <span>Empleadores</span>
+                    </div>
+                    <div class="wn-role-value">158</div>
+                    <div class="wn-role-label">12.7% del total</div>
+                </div>
+                <div class="wn-role-card">
+                    <div class="wn-role-header admin">
+                        <i class="bi bi-shield-lock-fill"></i>
+                        <span>Administradores</span>
+                    </div>
+                    <div class="wn-role-value">3</div>
+                    <div class="wn-role-label">0.3% del total</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- WIDGETS: ÚLTIMOS USUARIOS + ACTIVIDAD -->
+        <div class="wn-widgets-grid">
+
+            <!-- Últimos usuarios registrados -->
+            <div class="wn-widget">
+                <div class="wn-widget-header">
+                    <i class="bi bi-person-plus-fill"></i>
+                    <span>Últimos usuarios registrados</span>
+                </div>
+
+                <div class="wn-table-wrap">
+                    <table class="wn-table">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Rol</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="wn-table-user">
+                                        <div class="wn-table-avatar">JP</div>
+                                        <div>
+                                            <p class="wn-table-name">Juan Pérez</p>
+                                            <p class="wn-table-email">juan.perez@email.com</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="wn-role-badge candidato">Candidato</span></td>
+                                <td><span class="wn-status-badge activo"><i class="bi bi-check-circle-fill"></i> Activo</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="wn-table-user">
+                                        <div class="wn-table-avatar">TS</div>
+                                        <div>
+                                            <p class="wn-table-name">Tech Solutions S.A.</p>
+                                            <p class="wn-table-email">contacto@techsolutions.com</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="wn-role-badge empleador">Empleador</span></td>
+                                <td><span class="wn-status-badge activo"><i class="bi bi-check-circle-fill"></i> Activo</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="wn-table-user">
+                                        <div class="wn-table-avatar">MG</div>
+                                        <div>
+                                            <p class="wn-table-name">María González</p>
+                                            <p class="wn-table-email">maria.gonzalez@email.com</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="wn-role-badge candidato">Candidato</span></td>
+                                <td><span class="wn-status-badge pendiente"><i class="bi bi-hourglass-split"></i> Pendiente</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="wn-table-user">
+                                        <div class="wn-table-avatar">DC</div>
+                                        <div>
+                                            <p class="wn-table-name">DataCorp S.A.</p>
+                                            <p class="wn-table-email">rrhh@datacorp.com</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="wn-role-badge empleador">Empleador</span></td>
+                                <td><span class="wn-status-badge activo"><i class="bi bi-check-circle-fill"></i> Activo</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="wn-table-user">
+                                        <div class="wn-table-avatar">CR</div>
+                                        <div>
+                                            <p class="wn-table-name">Carlos Ramírez</p>
+                                            <p class="wn-table-email">carlos.ramirez@email.com</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="wn-role-badge candidato">Candidato</span></td>
+                                <td><span class="wn-status-badge suspendido"><i class="bi bi-x-circle-fill"></i> Suspendido</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <a href="admin-usuarios.html" class="btn-wn-secondary" style="align-self: flex-start;">
+                    <i class="bi bi-people"></i> Ver todos los usuarios
+                </a>
+            </div>
+
+            <!-- Actividad reciente -->
+            <div class="wn-widget">
+                <div class="wn-widget-header">
+                    <i class="bi bi-activity"></i>
+                    <span>Actividad reciente</span>
+                </div>
+
+                <div class="wn-activity">
+                    <div class="wn-activity-item">
+                        <div class="wn-activity-icon success"><i class="bi bi-person-plus-fill"></i></div>
+                        <div class="wn-activity-text">
+                            <strong>Juan Pérez</strong> se registró como candidato.
+                            <div class="wn-activity-time"><i class="bi bi-clock"></i> Hace 5 minutos</div>
+                        </div>
+                    </div>
+
+                    <div class="wn-activity-item">
+                        <div class="wn-activity-icon"><i class="bi bi-briefcase-fill"></i></div>
+                        <div class="wn-activity-text">
+                            <strong>Tech Solutions</strong> publicó una nueva oferta.
+                            <div class="wn-activity-time"><i class="bi bi-clock"></i> Hace 20 minutos</div>
+                        </div>
+                    </div>
+
+                    <div class="wn-activity-item">
+                        <div class="wn-activity-icon danger"><i class="bi bi-flag-fill"></i></div>
+                        <div class="wn-activity-text">
+                            Se reportó una oferta de <strong>DataCorp S.A.</strong> por contenido inapropiado.
+                            <div class="wn-activity-time"><i class="bi bi-clock"></i> Hace 1 hora</div>
+                        </div>
+                    </div>
+
+                    <div class="wn-activity-item">
+                        <div class="wn-activity-icon warning"><i class="bi bi-person-x-fill"></i></div>
+                        <div class="wn-activity-text">
+                            <strong>Carlos Ramírez</strong> fue suspendido por incumplir términos.
+                            <div class="wn-activity-time"><i class="bi bi-clock"></i> Hace 3 horas</div>
+                        </div>
+                    </div>
+
+                    <div class="wn-activity-item">
+                        <div class="wn-activity-icon success"><i class="bi bi-check-circle-fill"></i></div>
+                        <div class="wn-activity-text">
+                            <strong>María González</strong> fue aprobada como candidata.
+                            <div class="wn-activity-time"><i class="bi bi-clock"></i> Hace 5 horas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const navbar = document.getElementById('navbar');
+        const navbarToggle = document.getElementById('navbarToggle');
+        const navbarBrandTrigger = document.getElementById('navbarBrandTrigger');
+        const userInfoTrigger = document.getElementById('userInfoTrigger');
+        const userDropdown = document.getElementById('userDropdown');
+
+        navbarToggle.addEventListener('click', () => { navbar.classList.add('collapsed'); document.body.classList.add('navbar-collapsed'); });
+        navbarBrandTrigger.addEventListener('click', () => { if (navbar.classList.contains('collapsed')) { navbar.classList.remove('collapsed'); document.body.classList.remove('navbar-collapsed'); } });
+        userInfoTrigger.addEventListener('click', (e) => { e.stopPropagation(); userInfoTrigger.classList.toggle('open'); userDropdown.classList.toggle('show'); });
+        document.addEventListener('click', (e) => { if (!userInfoTrigger.contains(e.target) && !userDropdown.contains(e.target)) { userInfoTrigger.classList.remove('open'); userDropdown.classList.remove('show'); } });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { userInfoTrigger.classList.remove('open'); userDropdown.classList.remove('show'); } });
+    </script>
+
+</body>
+</html>

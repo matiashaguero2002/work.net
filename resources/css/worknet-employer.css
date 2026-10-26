@@ -1113,4 +1113,135 @@ body:has(.wn-page-employer) {
             .wn-page-employer .wn-form .wn-form-actions-right { flex-direction: column; }
 }
 
+/* ============================================================
+   ENTREVISTAS — LISTADO DEL EMPLEADOR
+   (specs/empleador-Entrevistas.html)
+   Colisiones resueltas bajo scope:
+   - .wn-filters/.wn-filter-* choca con worknet-map.css (panel fijo)
+   - .wn-interview-card/-status/-actions choca con worknet-interviews.css
+   - .wn-interview-meta choca con la versión del dashboard (arriba)
+   La vista usa <main class="wn-main wn-page-employer wn-page-interviews">.
+   ============================================================ */
+.wn-page-employer .wn-filters { position: relative; inset: auto; background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 18px; margin-bottom: 24px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 12px; align-items: end; max-height: none; opacity: 1; width: auto; top: auto; left: auto; bottom: auto; z-index: auto; transition: none; }
+.wn-page-employer .wn-filter-group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.wn-page-employer .wn-filter-label { font-size: 0.72rem; font-weight: 600; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.wn-page-employer .wn-filter-input, .wn-page-employer .wn-filter-select { position: static; width: 100%; background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); color: var(--wn-text); border-radius: 10px; padding: 10px 12px; font-size: 0.85rem; font-family: inherit; transition: all 0.2s ease; display: block; max-height: none; opacity: 1; appearance: auto; }
+.wn-page-employer .wn-filter-input:focus, .wn-page-employer .wn-filter-select:focus { outline: none; border-color: var(--wn-accent); box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15); }
+.wn-page-employer .wn-filter-input::placeholder { color: var(--wn-text-muted); opacity: 0.5; }
+.wn-page-employer .wn-filter-search { position: relative; }
+.wn-page-employer .wn-filter-search i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--wn-text-muted); font-size: 0.9rem; pointer-events: none; }
+.wn-page-employer .wn-filter-search .wn-filter-input { padding-left: 34px; }
+.wn-page-employer .wn-filter-clear { background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted); padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; white-space: nowrap; }
+.wn-page-employer .wn-filter-clear:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+
+/* Orden del listado */
+.wn-results-sort { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--wn-text-muted); }
+.wn-results-sort select { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); color: var(--wn-text); border-radius: 8px; padding: 6px 10px; font-size: 0.82rem; font-family: inherit; cursor: pointer; }
+
+/* === Lista de entrevistas === */
+.wn-page-interviews .wn-interviews-list { display: flex; flex-direction: column; gap: 14px; }
+.wn-page-interviews .wn-interview-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 20px; display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: center; transition: all 0.2s ease; position: relative; overflow: hidden; text-align: left; }
+.wn-page-interviews .wn-interview-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: var(--wn-accent); transition: background-color 0.2s ease; }
+.wn-page-interviews .wn-interview-card.status-pending::before { background-color: var(--wn-warning); }
+.wn-page-interviews .wn-interview-card.status-confirmed::before { background-color: var(--wn-accent); }
+.wn-page-interviews .wn-interview-card.status-completed::before { background-color: var(--wn-success); }
+.wn-page-interviews .wn-interview-card.status-cancelled::before { background-color: var(--wn-danger); }
+.wn-page-interviews .wn-interview-card:hover { border-color: var(--wn-accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(31, 111, 235, 0.15); }
+.wn-page-interviews .wn-interview-card.status-cancelled { opacity: 0.7; }
+.wn-page-interviews .wn-interview-card.status-cancelled:hover { opacity: 1; }
+
+/* Fecha grande a la izquierda */
+.wn-interview-date-block { width: 72px; height: 72px; border-radius: 14px; background-color: var(--wn-bg-elevated); border: 1px solid var(--wn-border); display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; line-height: 1; color: var(--wn-text); }
+.wn-interview-date-block .day { font-size: 1.6rem; letter-spacing: -1px; }
+.wn-interview-date-block .month { font-size: 0.7rem; text-transform: uppercase; color: var(--wn-text-muted); letter-spacing: 1px; margin-top: 2px; font-weight: 600; }
+.wn-interview-date-block.today { background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple)); border-color: transparent; color: white; }
+.wn-interview-date-block.today .month { color: rgba(255, 255, 255, 0.85); }
+
+/* Info central */
+.wn-page-interviews .wn-interview-main { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.wn-page-interviews .wn-interview-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.wn-page-interviews .wn-interview-candidate { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.wn-page-interviews .wn-interview-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+.wn-page-interviews .wn-interview-name { font-size: 0.95rem; font-weight: 700; margin: 0 0 2px 0; letter-spacing: -0.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wn-page-interviews .wn-interview-position { font-size: 0.78rem; color: var(--wn-text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Estado */
+.wn-page-interviews .wn-interview-status { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+.wn-status-pending { background-color: rgba(210, 153, 34, 0.15); color: var(--wn-warning); }
+.wn-status-confirmed { background-color: rgba(31, 111, 235, 0.15); color: var(--wn-accent-hover); }
+.wn-status-completed { background-color: rgba(35, 134, 54, 0.15); color: var(--wn-success); }
+.wn-status-cancelled { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+
+/* Meta (hora, modalidad, ubicación) */
+.wn-page-interviews .wn-interview-meta { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.8rem; color: var(--wn-text-muted); }
+.wn-page-interviews .wn-interview-meta-item { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.wn-page-interviews .wn-interview-meta-item i { color: var(--wn-accent); font-size: 0.9rem; }
+.wn-page-interviews .wn-interview-meta-item strong { color: var(--wn-text); font-weight: 600; }
+
+/* Acciones a la derecha */
+.wn-page-interviews .wn-interview-actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; flex-shrink: 0; min-width: 160px; padding: 0; border: none; background: none; border-radius: 0; }
+.wn-page-interviews .wn-interview-actions .wn-action-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 14px; border-radius: 9px; font-size: 0.78rem; font-weight: 600; text-decoration: none !important; transition: all 0.2s ease; cursor: pointer; border: none; font-family: inherit; white-space: nowrap; }
+.wn-page-interviews .wn-interview-actions .wn-action-btn.primary { background-color: var(--wn-accent); color: #ffffff !important; }
+.wn-page-interviews .wn-interview-actions .wn-action-btn.primary:hover { background-color: var(--wn-accent-hover); color: #ffffff !important; }
+.wn-page-interviews .wn-interview-actions .wn-action-btn.secondary { background-color: transparent; color: var(--wn-text-muted) !important; border: 1px solid var(--wn-border); }
+.wn-page-interviews .wn-interview-actions .wn-action-btn.secondary:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text) !important; }
+.wn-page-interviews .wn-interview-actions .wn-action-btn.danger { background-color: transparent; color: var(--wn-danger) !important; border: 1px solid rgba(218, 54, 51, 0.3); }
+.wn-page-interviews .wn-interview-actions .wn-action-btn.danger:hover { background-color: rgba(218, 54, 51, 0.12); color: var(--wn-danger) !important; border-color: var(--wn-danger); }
+
+/* === Widgets laterales === */
+.wn-interview-mini { display: flex; gap: 12px; padding: 12px; background-color: var(--wn-bg-elevated); border-radius: 10px; }
+.wn-interview-mini-date { width: 48px; height: 48px; border-radius: 10px; background-color: var(--wn-accent); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; line-height: 1; }
+.wn-interview-mini-date .day { font-size: 1.1rem; }
+.wn-interview-mini-date .month { font-size: 0.65rem; text-transform: uppercase; opacity: 0.9; letter-spacing: 0.5px; }
+.wn-interview-mini-info { flex: 1; min-width: 0; }
+.wn-interview-mini-title { font-size: 0.85rem; font-weight: 600; margin: 0 0 2px 0; }
+.wn-interview-mini-meta { font-size: 0.72rem; color: var(--wn-text-muted); display: flex; align-items: center; gap: 4px; margin: 0; }
+.wn-interview-mini-meta i { color: var(--wn-accent); }
+
+/* Resumen por modalidad */
+.wn-modality-summary { display: flex; flex-direction: column; gap: 12px; }
+.wn-modality-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.wn-modality-label { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--wn-text-muted); }
+.wn-modality-label i { width: 32px; height: 32px; border-radius: 8px; background-color: rgba(31, 111, 235, 0.12); color: var(--wn-accent); display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0; }
+.wn-modality-count { font-size: 1rem; font-weight: 700; color: var(--wn-text); }
+.wn-modality-bar { width: 100%; height: 6px; background-color: var(--wn-bg-elevated); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+.wn-modality-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+.wn-modality-bar-fill.presencial { background: linear-gradient(90deg, var(--wn-accent), var(--wn-accent-hover)); }
+.wn-modality-bar-fill.video { background: linear-gradient(90deg, var(--wn-purple), #8B5CF6); }
+
+/* === Modal de cancelación (backdrop fuera del main: se scopea
+   poniendo wn-page-interviews en el propio .wn-modal-backdrop) === */
+.wn-page-interviews .wn-modal-backdrop, .wn-page-interviews.wn-modal-backdrop { position: fixed; inset: 0; z-index: 1000; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 20px; }
+.wn-page-interviews .wn-modal-backdrop.show, .wn-page-interviews.wn-modal-backdrop.show { display: flex; }
+.wn-page-interviews .wn-modal { position: relative; inset: auto; transform: none; background-color: var(--wn-bg-panel); background-image: none; border: 1px solid var(--wn-border); border-radius: 16px; padding: 28px; max-width: 460px; max-height: none; width: 100%; overflow: visible; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; gap: 18px; animation: wnAdminModalIn 0.2s ease; }
+.wn-page-interviews .wn-modal-icon { position: static; width: 56px; height: 56px; border-radius: 50%; background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
+.wn-page-interviews .wn-modal h2 { font-size: 1.15rem; font-weight: 700; margin: 0; letter-spacing: -0.3px; color: var(--wn-text); }
+.wn-page-interviews .wn-modal p { font-size: 0.85rem; color: var(--wn-text-muted); margin: 0; line-height: 1.55; }
+.wn-page-interviews .wn-modal-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+
+/* === Responsive del listado de entrevistas === */
+@media (max-width: 1200px) {
+    .wn-page-employer .wn-filters { grid-template-columns: 1fr 1fr 1fr; }
+    .wn-page-employer .wn-filters .wn-filter-group:first-child { grid-column: 1 / -1; }
+    .wn-page-employer .wn-filters .wn-filter-clear { grid-column: 1 / -1; justify-self: end; }
+}
+@media (max-width: 992px) {
+    .wn-page-interviews .wn-interview-card { grid-template-columns: auto 1fr; }
+    .wn-page-interviews .wn-interview-actions { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; min-width: 0; }
+    .wn-page-interviews .wn-interview-actions .wn-action-btn { flex: 1; min-width: 120px; }
+}
+@media (max-width: 768px) {
+    .wn-page-employer .wn-filters { grid-template-columns: 1fr; }
+    .wn-page-employer .wn-filters .wn-filter-group:first-child { grid-column: auto; }
+    .wn-page-employer .wn-filters .wn-filter-clear { grid-column: auto; justify-self: stretch; }
+    .wn-page-interviews .wn-interview-card { grid-template-columns: 1fr; }
+    .wn-page-interviews .wn-interview-date-block { width: 60px; height: 60px; }
+    .wn-page-interviews .wn-interview-date-block .day { font-size: 1.35rem; }
+    .wn-page-interviews .wn-interview-actions { flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .wn-page-interviews .wn-interview-card, .wn-modality-bar-fill { transition: none; }
+    .wn-page-interviews .wn-modal { animation: none; }
+}
+
 /* .wn-notification-icon.interview: idéntica a worknet-dashboard.css, no se duplica */

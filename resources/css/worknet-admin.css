@@ -1,0 +1,414 @@
+/* ============================================================
+   WORK.NET — MÓDULO ADMIN (extraído de specs/Administrador - *.html)
+   Requiere worknet.css (paleta --wn-*).
+   Reutiliza de otros módulos: .wn-main, .wn-header, .wn-stats,
+   .wn-stat-* (worknet-dashboard.css), .wn-widget(s),
+   .btn-wn-* (worknet.css / worknet-employer.css / worknet-profile.css),
+   .wn-link, navbar y dropdown (worknet-map.css).
+   Las clases que colisionan con otros módulos (wn-filters, wn-tab,
+   wn-offer-card, wn-info-card, wn-modal…) se SCOPEAN bajo
+   .wn-page-admin para no contaminar las demás páginas.
+   ============================================================ */
+
+/* Layout con scroll (igual que el módulo empleador y el perfil):
+   el módulo auth fija el body (overflow:hidden + flex centrado)
+   para el login; en las páginas admin se restaura el flujo
+   normal con scroll. Las vistas admin llevan .wn-page-admin
+   en el <main>. */
+html:has(.wn-page-admin) { overflow-y: auto; }
+body:has(.wn-page-admin) {
+    position: static;
+    display: block;
+    overflow: visible;
+    height: auto;
+    min-height: 100%;
+}
+
+/* Avatar del admin: gradiente rojo/púrpura según prototipo */
+.wn-avatar-admin {
+    background: linear-gradient(135deg, var(--wn-danger), var(--wn-purple));
+}
+
+/* ============================================================
+   HEADER (valores exactos del prototipo)
+   Scoped porque .wn-header-left queda apliado en
+   worknet-employer.css (display:flex en fila, para el diseño
+   logo+info del empleador) y aquí es un bloque simple.
+   ============================================================ */
+.wn-page-admin .wn-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--wn-border); flex-wrap: wrap; }
+.wn-page-admin .wn-header-left { display: block; flex: none; min-width: 0; }
+.wn-page-admin .wn-header-left h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 4px 0; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
+.wn-page-admin .wn-header-left p { color: var(--wn-text-muted); margin: 0; font-size: 0.9rem; }
+.wn-page-admin .wn-header-left p strong { color: var(--wn-text); font-weight: 600; }
+.wn-page-admin .wn-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* Badge "Admin/Supervisión/Moderación" junto al h1 (prototipo) */
+.wn-header-left h1 .wn-admin-badge { font-size: 0.65rem; padding: 3px 8px; background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+
+/* ============================================================
+   DISTRIBUCIÓN POR ROL (Panel)
+   ============================================================ */
+.wn-role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+.wn-role-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 12px; transition: all 0.2s ease; }
+.wn-role-card:hover { border-color: var(--wn-accent); transform: translateY(-2px); }
+.wn-role-header { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: 600; }
+.wn-role-header i { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+.wn-role-header.candidate i { background-color: rgba(31, 111, 235, 0.12); color: var(--wn-accent); }
+.wn-role-header.employer i { background-color: rgba(110, 64, 201, 0.12); color: var(--wn-purple); }
+.wn-role-header.admin i { background-color: rgba(218, 54, 51, 0.12); color: var(--wn-danger); }
+.wn-role-value { font-size: 1.75rem; font-weight: 700; letter-spacing: -1px; line-height: 1; }
+.wn-role-label { font-size: 0.75rem; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+
+/* ============================================================
+   ACTIVIDAD RECIENTE (valores exactos del prototipo del Panel;
+   scoped: las clases wn-activity-* solo existen en este spec)
+   ============================================================ */
+.wn-page-admin .wn-activity { display: flex; flex-direction: column; gap: 12px; }
+.wn-page-admin .wn-activity-item { display: flex; gap: 12px; padding: 12px; background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 10px; align-items: flex-start; }
+.wn-page-admin .wn-activity-icon { width: 32px; height: 32px; border-radius: 8px; background-color: rgba(31, 111, 235, 0.12); color: var(--wn-accent); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+.wn-page-admin .wn-activity-icon.success { background-color: rgba(35, 134, 54, 0.12); color: var(--wn-success); }
+.wn-page-admin .wn-activity-icon.warning { background-color: rgba(210, 153, 34, 0.12); color: var(--wn-warning); }
+.wn-page-admin .wn-activity-icon.danger { background-color: rgba(218, 54, 51, 0.12); color: var(--wn-danger); }
+.wn-page-admin .wn-activity-text { flex: 1; min-width: 0; font-size: 0.82rem; line-height: 1.5; }
+.wn-page-admin .wn-activity-text strong { color: var(--wn-text); font-weight: 600; }
+.wn-page-admin .wn-activity-time { font-size: 0.72rem; color: var(--wn-text-muted); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+
+/* Grid de widgets: el prototipo del Panel usa 1.3fr 1fr
+   (dashboard.css lo comparte con el candidato en 1fr 1fr) */
+.wn-page-admin .wn-widgets-grid { grid-template-columns: 1.3fr 1fr; }
+
+/* ============================================================
+   BADGES (scoped: wn-role-badge se usa con otros valores en
+   el navbar/dashboard de otros módulos)
+   ============================================================ */
+.wn-page-admin .wn-role-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.wn-page-admin .wn-role-badge.candidato { background-color: rgba(31, 111, 235, 0.15); color: var(--wn-accent-hover); }
+.wn-page-admin .wn-role-badge.empleador { background-color: rgba(110, 64, 201, 0.15); color: #8B5CF6; }
+.wn-page-admin .wn-role-badge.admin { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+.wn-page-admin .wn-role-badge.active { background-color: rgba(35, 134, 54, 0.15); color: var(--wn-success); }
+.wn-page-admin .wn-role-badge.paused { background-color: rgba(210, 153, 34, 0.15); color: var(--wn-warning); }
+.wn-page-admin .wn-role-badge.closed { background-color: rgba(139, 148, 158, 0.15); color: var(--wn-text-muted); }
+.wn-page-admin .wn-role-badge.reported { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+.wn-page-admin .wn-role-badge.info { background-color: rgba(31, 111, 235, 0.15); color: var(--wn-accent-hover); }
+.wn-page-admin .wn-status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+.wn-page-admin .wn-status-badge.activo { background-color: rgba(35, 134, 54, 0.15); color: var(--wn-success); }
+.wn-page-admin .wn-status-badge.suspendido { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+.wn-page-admin .wn-status-badge.pendiente { background-color: rgba(210, 153, 34, 0.15); color: var(--wn-warning); }
+
+/* ============================================================
+   TABLA (Usuarios, Panel)
+   ============================================================ */
+.wn-page-admin .wn-table-wrap { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; overflow: hidden; }
+.wn-page-admin .wn-table { width: 100%; border-collapse: collapse; }
+.wn-page-admin .wn-table thead { background-color: var(--wn-bg-elevated); }
+.wn-page-admin .wn-table th { padding: 14px 16px; text-align: left; font-size: 0.72rem; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; border-bottom: 1px solid var(--wn-border); white-space: nowrap; }
+.wn-page-admin .wn-table td { padding: 14px 16px; font-size: 0.85rem; border-bottom: 1px solid var(--wn-border); vertical-align: middle; }
+.wn-page-admin .wn-table tr:last-child td { border-bottom: none; }
+.wn-page-admin .wn-table tbody tr { transition: background-color 0.2s ease; }
+.wn-page-admin .wn-table tbody tr:hover { background-color: var(--wn-bg-elevated); }
+.wn-table-user { display: flex; align-items: center; gap: 10px; }
+.wn-table-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; }
+.wn-table-name { font-weight: 600; font-size: 0.88rem; margin: 0; }
+.wn-table-email { font-size: 0.75rem; color: var(--wn-text-muted); margin: 0; }
+.wn-table-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.wn-icon-btn { width: 32px; height: 32px; border-radius: 8px; background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted); display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; text-decoration: none !important; flex-shrink: 0; }
+.wn-icon-btn:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+.wn-icon-btn.primary:hover { background-color: rgba(31, 111, 235, 0.15); color: var(--wn-accent-hover); border-color: var(--wn-accent); }
+.wn-icon-btn.danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); border-color: var(--wn-danger); }
+
+/* ============================================================
+   FILTROS (barra, scoped: .wn-filters es el panel fijo del mapa)
+   ============================================================ */
+.wn-page-admin .wn-filters { position: relative; inset: auto; background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 18px; margin-bottom: 24px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 12px; align-items: end; max-height: none; opacity: 1; width: auto; top: auto; left: auto; bottom: auto; z-index: auto; transition: none; }
+.wn-page-admin .wn-filter-group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.wn-filter-label { font-size: 0.72rem; font-weight: 600; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.wn-page-admin .wn-filter-input, .wn-page-admin .wn-filter-select { position: static; width: 100%; background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); color: var(--wn-text); border-radius: 10px; padding: 10px 12px; font-size: 0.85rem; font-family: inherit; transition: all 0.2s ease; display: block; max-height: none; opacity: 1; appearance: auto; }
+.wn-page-admin .wn-filter-input:focus, .wn-page-admin .wn-filter-select:focus { outline: none; border-color: var(--wn-accent); box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15); }
+.wn-page-admin .wn-filter-input::placeholder { color: var(--wn-text-muted); opacity: 0.5; }
+.wn-filter-search { position: relative; }
+.wn-filter-search i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--wn-text-muted); font-size: 0.9rem; pointer-events: none; }
+.wn-page-admin .wn-filter-search .wn-filter-input { padding-left: 34px; }
+.wn-filter-clear { background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted); padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; white-space: nowrap; }
+.wn-filter-clear:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+
+/* Results info + tabs (pills, scoped: .wn-tab ya existe en
+   worknet-dashboard.css y worknet-interviews.css con otro diseño) */
+.wn-results-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.wn-results-count { font-size: 0.85rem; color: var(--wn-text-muted); }
+.wn-results-count strong { color: var(--wn-text); font-weight: 700; }
+.wn-page-admin .wn-tabs { display: flex; gap: 6px; margin: 0; padding: 0; border-bottom: none; flex-wrap: wrap; }
+.wn-page-admin .wn-tab { padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background-color: transparent; color: var(--wn-text-muted); border: 1px solid var(--wn-border); border-bottom: 1px solid var(--wn-border); cursor: pointer; transition: all 0.2s ease; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; text-decoration: none !important; white-space: nowrap; overflow-x: visible; justify-content: flex-start; }
+.wn-page-admin .wn-tab:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+.wn-page-admin .wn-tab.active { background-color: var(--wn-accent); border-color: var(--wn-accent); color: white; }
+.wn-page-admin .wn-tab.danger.active { background-color: var(--wn-danger); border-color: var(--wn-danger); }
+.wn-page-admin .wn-tab .count { background: none; border-radius: 0; padding: 0; font-size: inherit; font-weight: 700; opacity: 0.85; margin: 0; }
+
+/* ============================================================
+   OFERTAS — LISTADO (cards)
+   ============================================================ */
+.wn-page-admin-list .wn-offers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+.wn-page-admin-list .wn-offer-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px; transition: all 0.2s ease; position: relative; overflow: hidden; }
+.wn-page-admin-list .wn-offer-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: var(--wn-accent); transition: background-color 0.2s ease; }
+.wn-page-admin-list .wn-offer-card.status-active::before { background-color: var(--wn-success); }
+.wn-page-admin-list .wn-offer-card.status-paused::before { background-color: var(--wn-warning); }
+.wn-page-admin-list .wn-offer-card.status-closed::before { background-color: var(--wn-text-muted); }
+.wn-page-admin-list .wn-offer-card.status-reported::before { background-color: var(--wn-danger); }
+.wn-page-admin-list .wn-offer-card:hover { border-color: var(--wn-accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(31, 111, 235, 0.15); }
+.wn-page-admin-list .wn-offer-card.status-reported { border-color: rgba(218, 54, 51, 0.4); }
+.wn-page-admin-list .wn-offer-card.status-reported:hover { box-shadow: 0 8px 24px rgba(218, 54, 51, 0.2); }
+
+.wn-offer-card-header { display: flex; align-items: flex-start; gap: 12px; }
+.wn-page-admin-list .wn-offer-logo { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1rem; flex-shrink: 0; overflow: hidden; }
+.wn-page-admin-list .wn-offer-info { min-width: 0; flex: 1; }
+.wn-page-admin-list .wn-offer-title { font-size: 0.95rem; font-weight: 700; margin: 0 0 2px 0; line-height: 1.3; letter-spacing: -0.2px; }
+.wn-page-admin-list .wn-offer-company { font-size: 0.78rem; color: var(--wn-text-muted); margin: 0; display: flex; align-items: center; gap: 4px; }
+.wn-page-admin-list .wn-offer-company i { font-size: 0.75rem; }
+
+.wn-page-admin-list .wn-offer-status { position: absolute; top: 14px; right: 14px; font-size: 0.65rem; font-weight: 700; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.wn-page-admin-list .wn-offer-status.active { background-color: rgba(35, 134, 54, 0.15); color: var(--wn-success); }
+.wn-page-admin-list .wn-offer-status.paused { background-color: rgba(210, 153, 34, 0.15); color: var(--wn-warning); }
+.wn-page-admin-list .wn-offer-status.closed { background-color: rgba(139, 148, 158, 0.15); color: var(--wn-text-muted); }
+.wn-page-admin-list .wn-offer-status.reported { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+
+.wn-page-admin-list .wn-offer-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.wn-page-admin-list .wn-offer-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background-color: var(--wn-bg-elevated); border-radius: 20px; font-size: 0.7rem; color: var(--wn-text-muted); font-weight: 500; }
+.wn-page-admin-list .wn-offer-badge i { font-size: 0.7rem; color: var(--wn-accent); }
+.wn-page-admin-list .wn-offer-badge.reported { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+.wn-page-admin-list .wn-offer-badge.reported i { color: var(--wn-danger); }
+
+.wn-page-admin-list .wn-offer-description { font-size: 0.8rem; color: var(--wn-text-muted); line-height: 1.55; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.wn-page-admin-list .wn-offer-stats { display: flex; gap: 16px; padding: 12px 0; border-top: 1px solid var(--wn-border); border-bottom: 1px solid var(--wn-border); }
+.wn-page-admin-list .wn-offer-stat { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--wn-text-muted); background: none; border: none; border-radius: 0; padding: 0; text-align: left; }
+.wn-page-admin-list .wn-offer-stat i { color: var(--wn-accent); font-size: 0.85rem; }
+.wn-page-admin-list .wn-offer-stat strong { color: var(--wn-text); font-weight: 700; }
+
+.wn-page-admin-list .wn-offer-actions { display: flex; gap: 6px; margin-top: auto; }
+.wn-offer-action { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; text-decoration: none !important; transition: all 0.2s ease; cursor: pointer; border: none; font-family: inherit; white-space: nowrap; }
+.wn-offer-action.primary { background-color: var(--wn-accent); color: #ffffff !important; }
+.wn-offer-action.primary:hover { background-color: var(--wn-accent-hover); color: #ffffff !important; }
+.wn-offer-action.secondary { background-color: transparent; color: var(--wn-text-muted) !important; border: 1px solid var(--wn-border); }
+.wn-offer-action.secondary:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text) !important; }
+.wn-offer-action.danger { background-color: transparent; color: var(--wn-danger) !important; border: 1px solid rgba(218, 54, 51, 0.3); }
+.wn-offer-action.danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger) !important; border-color: var(--wn-danger); }
+.wn-offer-action.icon-only { flex: 0 0 36px; padding: 8px; }
+
+/* ============================================================
+   DETALLE — HERO DEL USUARIO
+   ============================================================ */
+.wn-page-admin-detail .wn-user-hero { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 24px; display: flex; align-items: center; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+.wn-user-hero-avatar { width: 88px; height: 88px; border-radius: 50%; background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.75rem; flex-shrink: 0; }
+.wn-user-hero-info { flex: 1; min-width: 200px; }
+.wn-user-hero-name { font-size: 1.4rem; font-weight: 700; margin: 0 0 4px 0; letter-spacing: -0.3px; }
+.wn-user-hero-email { font-size: 0.85rem; color: var(--wn-text-muted); margin: 0 0 10px 0; display: flex; align-items: center; gap: 6px; }
+.wn-user-hero-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Stats del usuario */
+.wn-user-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.wn-user-stat { background-color: var(--wn-bg-elevated); border: 1px solid var(--wn-border); border-radius: 10px; padding: 14px; text-align: center; transition: all 0.2s ease; }
+.wn-user-stat-value { font-size: 1.35rem; font-weight: 700; color: var(--wn-text); line-height: 1; margin-bottom: 4px; }
+.wn-user-stat-label { font-size: 0.7rem; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Sección de ofertas (si es empleador) */
+.wn-offers-list { display: flex; flex-direction: column; gap: 8px; }
+.wn-offer-mini { display: flex; align-items: center; gap: 12px; padding: 12px; background-color: var(--wn-bg-elevated); border-radius: 10px; text-decoration: none; color: inherit; transition: background-color 0.2s ease; }
+.wn-offer-mini:hover { background-color: var(--wn-border); color: inherit; }
+.wn-offer-mini-logo { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; }
+.wn-offer-mini-info { flex: 1; min-width: 0; }
+.wn-offer-mini-title { font-size: 0.85rem; font-weight: 600; margin: 0 0 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wn-offer-mini-meta { font-size: 0.72rem; color: var(--wn-text-muted); margin: 0; }
+.wn-offer-mini-status { padding: 3px 8px; border-radius: 10px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
+.wn-offer-mini-status.active { background-color: rgba(35, 134, 54, 0.15); color: var(--wn-success); }
+.wn-offer-mini-status.paused { background-color: rgba(210, 153, 34, 0.15); color: var(--wn-warning); }
+
+/* Detalle — hero de la oferta */
+.wn-page-admin-detail .wn-offer-hero { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 24px; display: flex; align-items: center; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+.wn-page-admin-detail .wn-offer-hero.status-reported { border-color: rgba(218, 54, 51, 0.4); background-color: rgba(218, 54, 51, 0.03); }
+.wn-offer-hero-logo { width: 88px; height: 88px; border-radius: 16px; background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.75rem; flex-shrink: 0; }
+.wn-offer-hero-info { flex: 1; min-width: 200px; }
+.wn-offer-hero-title { font-size: 1.4rem; font-weight: 700; margin: 0 0 4px 0; letter-spacing: -0.3px; }
+.wn-offer-hero-company { font-size: 0.9rem; color: var(--wn-text-muted); margin: 0 0 10px 0; display: flex; align-items: center; gap: 6px; }
+.wn-offer-hero-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Alerta de reportes */
+.wn-alert-danger { background-color: rgba(218, 54, 51, 0.08); border: 1px solid rgba(218, 54, 51, 0.3); border-radius: 14px; padding: 18px 20px; margin-bottom: 24px; display: flex; gap: 14px; align-items: flex-start; }
+.wn-alert-danger-icon { width: 44px; height: 44px; border-radius: 10px; background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+.wn-alert-danger-body { flex: 1; min-width: 0; }
+.wn-alert-danger-title { font-size: 0.95rem; font-weight: 700; color: var(--wn-danger); margin: 0 0 4px 0; }
+.wn-alert-danger-text { font-size: 0.82rem; color: var(--wn-text-muted); margin: 0; line-height: 1.5; }
+.wn-alert-danger-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+/* Info grid (scoped: .wn-info-card ya existe en worknet-profile.css) */
+.wn-page-admin .wn-info-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; margin-bottom: 24px; }
+.wn-page-admin .wn-info-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 20px; }
+.wn-page-admin .wn-info-card-header { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; font-weight: 600; padding-bottom: 12px; border-bottom: 1px solid var(--wn-border); margin-bottom: 14px; }
+.wn-page-admin .wn-info-card-header i { color: var(--wn-accent); font-size: 1.1rem; }
+.wn-page-admin .wn-info-row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; font-size: 0.85rem; border-bottom: 1px solid rgba(48, 54, 61, 0.5); }
+.wn-page-admin .wn-info-row:last-child { border-bottom: none; }
+.wn-page-admin .wn-info-label { color: var(--wn-text-muted); flex-shrink: 0; }
+.wn-page-admin .wn-info-value { color: var(--wn-text); font-weight: 500; text-align: right; word-break: break-word; }
+.wn-page-admin .wn-info-value.empty { color: var(--wn-text-muted); font-style: italic; font-weight: 400; }
+
+/* Descripción de la oferta (detalle) */
+.wn-page-admin-detail .wn-offer-description { font-size: 0.88rem; line-height: 1.7; color: var(--wn-text); }
+.wn-page-admin-detail .wn-offer-description p { margin: 0 0 12px 0; }
+.wn-page-admin-detail .wn-offer-description ul { margin: 0 0 12px 0; padding-left: 20px; }
+.wn-page-admin-detail .wn-offer-description li { margin-bottom: 6px; }
+.wn-page-admin-detail .wn-offer-description strong { color: var(--wn-text); font-weight: 600; }
+
+/* Stats de la oferta (detalle: cajitas) */
+.wn-page-admin-detail .wn-offer-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+.wn-page-admin-detail .wn-offer-stat { background-color: var(--wn-bg-elevated); border: 1px solid var(--wn-border); border-radius: 10px; padding: 14px; text-align: center; display: block; }
+.wn-offer-stat-value { font-size: 1.35rem; font-weight: 700; color: var(--wn-text); line-height: 1; margin-bottom: 4px; }
+.wn-offer-stat-label { font-size: 0.7rem; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Reportes dentro del detalle de oferta */
+.wn-page-admin-detail .wn-reports { display: flex; flex-direction: column; gap: 10px; }
+.wn-report-item { display: flex; gap: 12px; padding: 14px; background-color: var(--wn-bg-elevated); border: 1px solid var(--wn-border); border-radius: 10px; align-items: flex-start; transition: all 0.2s ease; }
+.wn-report-icon { width: 32px; height: 32px; border-radius: 8px; background-color: rgba(218, 54, 51, 0.12); color: var(--wn-danger); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+.wn-page-admin-detail .wn-report-body { flex: 1; min-width: 0; background: none; border-radius: 0; padding: 0; font-size: 0.85rem; line-height: 1.5; }
+.wn-report-reason { font-size: 0.85rem; font-weight: 600; margin: 0 0 2px 0; }
+.wn-page-admin-detail .wn-report-meta { font-size: 0.72rem; color: var(--wn-text-muted); margin: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.wn-page-admin-detail .wn-report-meta i { color: var(--wn-danger); }
+.wn-report-description { font-size: 0.78rem; color: var(--wn-text-muted); margin: 6px 0 0 0; line-height: 1.5; }
+
+/* Acciones del admin (sidebar del detalle) */
+.wn-admin-actions { display: flex; flex-direction: column; gap: 8px; }
+.wn-admin-actions .btn-wn-secondary,
+.wn-admin-actions .btn-wn-danger,
+.wn-admin-actions .btn-wn-warning,
+.wn-admin-actions .btn-wn-primary { width: 100%; justify-content: flex-start; }
+
+/* Zona peligrosa */
+.wn-danger-zone { background-color: rgba(218, 54, 51, 0.05); border: 1px solid rgba(218, 54, 51, 0.3); border-radius: 14px; padding: 20px; margin-top: 24px; }
+.wn-danger-zone-header { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; font-weight: 600; color: var(--wn-danger); padding-bottom: 12px; border-bottom: 1px solid rgba(218, 54, 51, 0.2); margin-bottom: 14px; }
+.wn-danger-zone p { font-size: 0.82rem; color: var(--wn-text-muted); margin: 0 0 14px 0; line-height: 1.5; }
+
+/* ============================================================
+   REPORTES (listado)
+   ============================================================ */
+.wn-page-admin-reports .wn-filters { grid-template-columns: 2fr 1fr 1fr auto; }
+.wn-reports-list { display: flex; flex-direction: column; gap: 14px; }
+.wn-report-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px; transition: all 0.2s ease; position: relative; overflow: hidden; }
+.wn-report-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: var(--wn-warning); }
+.wn-report-card.severity-high::before { background-color: var(--wn-danger); }
+.wn-report-card.severity-medium::before { background-color: var(--wn-warning); }
+.wn-report-card.severity-low::before { background-color: var(--wn-text-muted); }
+.wn-report-card:hover { border-color: var(--wn-accent); }
+.wn-report-card.resolved { opacity: 0.7; }
+.wn-report-card.resolved::before { background-color: var(--wn-success); }
+
+.wn-report-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.wn-report-header-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+.wn-report-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--wn-danger), var(--wn-purple)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+.wn-report-info { min-width: 0; flex: 1; }
+.wn-report-title { font-size: 0.95rem; font-weight: 700; margin: 0 0 2px 0; letter-spacing: -0.2px; }
+.wn-report-subtitle { font-size: 0.78rem; color: var(--wn-text-muted); margin: 0; }
+.wn-report-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.wn-report-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.wn-report-badge.high { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+.wn-report-badge.medium { background-color: rgba(210, 153, 34, 0.15); color: var(--wn-warning); }
+.wn-report-badge.low { background-color: rgba(139, 148, 158, 0.15); color: var(--wn-text-muted); }
+.wn-report-badge.resolved { background-color: rgba(35, 134, 54, 0.15); color: var(--wn-success); }
+.wn-report-badge.reason { background-color: rgba(31, 111, 235, 0.15); color: var(--wn-accent-hover); }
+.wn-report-badge.pending { background-color: rgba(210, 153, 34, 0.15); color: var(--wn-warning); }
+.wn-report-badge.review { background-color: rgba(31, 111, 235, 0.15); color: var(--wn-accent-hover); }
+
+/* wn-report-body / wn-report-meta difieren entre detalle y listado:
+   el listado usa cajita con padding; se scopea. */
+.wn-page-admin-reports .wn-report-body { font-size: 0.85rem; line-height: 1.55; color: var(--wn-text); padding: 12px 14px; background-color: var(--wn-bg-elevated); border-radius: 10px; flex: 1; min-width: 0; }
+.wn-page-admin-reports .wn-report-body strong { color: var(--wn-text); font-weight: 600; }
+
+.wn-page-admin-reports .wn-report-meta { display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.78rem; color: var(--wn-text-muted); }
+.wn-report-meta-item { display: inline-flex; align-items: center; gap: 6px; }
+.wn-report-meta-item i { color: var(--wn-accent); font-size: 0.85rem; }
+.wn-report-meta-item strong { color: var(--wn-text); font-weight: 600; }
+
+.wn-report-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; padding-top: 4px; }
+.wn-report-action { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 8px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; text-decoration: none !important; transition: all 0.2s ease; cursor: pointer; border: none; font-family: inherit; white-space: nowrap; }
+.wn-report-action.primary { background-color: var(--wn-accent); color: #ffffff !important; }
+.wn-report-action.primary:hover { background-color: var(--wn-accent-hover); color: #ffffff !important; }
+.wn-report-action.secondary { background-color: transparent; color: var(--wn-text-muted) !important; border: 1px solid var(--wn-border); }
+.wn-report-action.secondary:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text) !important; }
+.wn-report-action.success { background-color: var(--wn-success); color: #ffffff !important; }
+.wn-report-action.success:hover { background-color: #2ea043; color: #ffffff !important; }
+.wn-report-action.danger { background-color: transparent; color: var(--wn-danger) !important; border: 1px solid rgba(218, 54, 51, 0.3); }
+.wn-report-action.danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger) !important; border-color: var(--wn-danger); }
+
+/* ============================================================
+   EMPTY STATE (scoped: .wn-empty ya existe en otros módulos)
+   ============================================================ */
+.wn-page-admin .wn-empty { padding: 60px 24px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px; background-color: var(--wn-bg-dark); border: 1px dashed var(--wn-border); border-radius: 14px; }
+.wn-empty-icon { width: 72px; height: 72px; border-radius: 50%; background-color: var(--wn-bg-elevated); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--wn-text-muted); }
+.wn-page-admin .wn-empty h3 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+.wn-page-admin .wn-empty p { color: var(--wn-text-muted); font-size: 0.85rem; margin: 0; max-width: 400px; }
+
+/* ============================================================
+   PAGINACIÓN
+   ============================================================ */
+.wn-pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+.wn-pagination-info { font-size: 0.8rem; color: var(--wn-text-muted); }
+.wn-pagination-info strong { color: var(--wn-text); }
+.wn-pagination-controls { display: flex; gap: 6px; }
+.wn-page-btn { min-width: 36px; height: 36px; padding: 0 10px; border-radius: 8px; background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted); font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; }
+.wn-page-btn:hover:not(:disabled) { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+.wn-page-btn.active { background-color: var(--wn-accent); border-color: var(--wn-accent); color: white; }
+.wn-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ============================================================
+   MODAL CONFIRMAR ACCIÓN (scoped: .wn-modal es el popup del mapa)
+   ============================================================ */
+.wn-page-admin .wn-modal-backdrop, .wn-page-admin.wn-modal-backdrop { position: fixed; inset: 0; z-index: 1000; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 20px; }
+.wn-page-admin .wn-modal-backdrop.show, .wn-page-admin.wn-modal-backdrop.show { display: flex; }
+.wn-page-admin .wn-modal { position: relative; inset: auto; transform: none; background-color: var(--wn-bg-panel); background-image: none; border: 1px solid var(--wn-border); border-radius: 16px; padding: 28px; max-width: 460px; width: 100%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; gap: 18px; animation: wnAdminModalIn 0.2s ease; }
+@keyframes wnAdminModalIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.wn-page-admin .wn-modal-icon { width: 56px; height: 56px; border-radius: 50%; background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; }
+.wn-page-admin .wn-modal-icon.success { background-color: rgba(35, 134, 54, 0.15); color: var(--wn-success); }
+.wn-page-admin .wn-modal h2 { font-size: 1.15rem; font-weight: 700; margin: 0; letter-spacing: -0.3px; color: var(--wn-text); }
+.wn-page-admin .wn-modal p { font-size: 0.85rem; color: var(--wn-text-muted); margin: 0; line-height: 1.55; }
+.wn-page-admin .wn-modal-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+
+/* ============================================================
+   RESPONSIVE (solo lo propio del admin; .wn-main base está en
+   worknet-dashboard.css)
+   ============================================================ */
+@media (max-width: 1200px) {
+    .wn-page-admin .wn-filters { grid-template-columns: 1fr 1fr 1fr; }
+    .wn-page-admin .wn-filters .wn-filter-group:first-child { grid-column: 1 / -1; }
+    .wn-page-admin .wn-filters .wn-filter-clear { grid-column: 1 / -1; justify-self: end; }
+    .wn-page-admin-reports .wn-filters { grid-template-columns: 1fr 1fr 1fr; }
+}
+@media (max-width: 992px) {
+    .wn-page-admin .wn-info-grid { grid-template-columns: 1fr; }
+    .wn-role-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+    .wn-page-admin .wn-filters { grid-template-columns: 1fr; }
+    .wn-page-admin .wn-filters .wn-filter-group:first-child { grid-column: auto; }
+    .wn-page-admin .wn-filters .wn-filter-clear { grid-column: auto; justify-self: stretch; }
+    .wn-page-admin .wn-header { flex-direction: column; align-items: stretch; }
+    .wn-page-admin .wn-header-actions { width: 100%; }
+    .wn-table-wrap { overflow-x: auto; }
+    .wn-page-admin .wn-table { min-width: 760px; }
+    .wn-page-admin-list .wn-offers-grid { grid-template-columns: 1fr; }
+    .wn-page-admin-detail .wn-user-hero { flex-direction: column; align-items: flex-start; }
+    .wn-page-admin-detail .wn-offer-hero { flex-direction: column; align-items: flex-start; }
+    .wn-page-admin-detail .wn-alert-danger { flex-direction: column; }
+    .wn-page-admin-reports .wn-report-header { flex-direction: column; align-items: flex-start; }
+    .wn-header-actions .btn-wn-primary, .wn-header-actions .btn-wn-secondary, .wn-header-actions .btn-wn-warning, .wn-header-actions .btn-wn-danger { flex: 1; justify-content: center; }
+}
+@media (max-width: 480px) {
+    .wn-header-left h1 { font-size: 1.4rem; }
+    .wn-stat-value { font-size: 1.25rem; }
+    .wn-stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .wn-stat-card { padding: 14px; gap: 12px; }
+    .wn-stat-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+    .wn-user-hero-avatar { width: 72px; height: 72px; font-size: 1.5rem; }
+    .wn-offer-hero-logo { width: 72px; height: 72px; font-size: 1.5rem; }
+    .wn-report-actions { flex-direction: column; }
+    .wn-report-action { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .wn-role-card, .wn-user-stat, .wn-offer-mini, .wn-report-item, .wn-report-card, .wn-icon-btn, .wn-page-btn { transition: none; }
+    .wn-page-admin .wn-modal { animation: none; }
+}

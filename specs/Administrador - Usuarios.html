@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Work.net - Usuarios</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --wn-bg-dark: #0D1117; --wn-bg-panel: #161B22; --wn-bg-elevated: #21262D;
+            --wn-border: #30363D; --wn-text: #E6EDF3; --wn-text-muted: #8B949E;
+            --wn-accent: #1F6FEB; --wn-accent-hover: #388BFD;
+            --wn-success: #238636; --wn-danger: #DA3633; --wn-warning: #D29922; --wn-purple: #6E40C9;
+            --wn-navbar-width: 240px; --wn-navbar-width-mini: 72px;
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--wn-bg-dark); color: var(--wn-text); overflow-x: hidden; }
+        .wn-bg { position: fixed; inset: 0; z-index: 0; background: radial-gradient(ellipse at top left, #0D1117 0%, #0A0D12 50%, #05070A 100%); pointer-events: none; }
+        .wn-bg-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(48,54,61,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(48,54,61,0.2) 1px, transparent 1px); background-size: 40px 40px; mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%); -webkit-mask-image: radial-gradient(ellipse at top, black 30%, transparent 90%); }
+
+        /* NAVBAR (igual) */
+        .wn-navbar { position: fixed; top: 16px; left: 16px; bottom: 16px; width: var(--wn-navbar-width); background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); border-radius: 16px; padding: 20px 16px; display: flex; flex-direction: column; z-index: 100; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .wn-navbar.collapsed { width: var(--wn-navbar-width-mini); padding: 20px 8px; }
+        .wn-navbar-brand { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--wn-border); margin-bottom: 16px; }
+        .wn-navbar-brand-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; padding: 6px 8px; border-radius: 10px; transition: background-color 0.2s ease, box-shadow 0.2s ease; user-select: none; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { cursor: pointer; background-color: rgba(31, 111, 235, 0.15); box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); animation: glowPulse 2s ease-in-out infinite; }
+        .wn-navbar.collapsed .wn-navbar-brand-left i { color: var(--wn-accent-hover); filter: drop-shadow(0 0 8px rgba(31, 111, 235, 0.8)); }
+        @keyframes glowPulse { 0%, 100% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.4), 0 0 20px rgba(31, 111, 235, 0.35); } 50% { box-shadow: 0 0 0 1px rgba(31, 111, 235, 0.6), 0 0 28px rgba(31, 111, 235, 0.55); } }
+        .wn-navbar-brand i { color: var(--wn-accent); font-size: 1.5rem; flex-shrink: 0; transition: color 0.2s ease, filter 0.2s ease; }
+        .wn-navbar-brand span { font-weight: 700; font-size: 1.1rem; letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; }
+        .wn-navbar-toggle { background: none; border: none; color: var(--wn-text-muted); cursor: pointer; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.2s ease; flex-shrink: 0; }
+        .wn-navbar-toggle:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar.collapsed .wn-navbar-brand { justify-content: center; padding-bottom: 12px; margin-bottom: 12px; }
+        .wn-navbar.collapsed .wn-navbar-brand-left { justify-content: center; flex: none; }
+        .wn-navbar.collapsed .wn-navbar-brand span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-toggle { display: none; }
+        .wn-navbar-menu { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .wn-navbar-menu li { margin-bottom: 4px; }
+        .wn-navbar-menu a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--wn-text-muted); text-decoration: none; border-radius: 8px; font-size: 0.9rem; transition: all 0.2s ease; position: relative; white-space: nowrap; }
+        .wn-navbar-menu a:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-navbar-menu a.active { background-color: var(--wn-accent); color: white; font-weight: 500; }
+        .wn-navbar-menu a i { font-size: 1.1rem; flex-shrink: 0; width: 20px; text-align: center; }
+        .wn-navbar.collapsed .wn-navbar-menu a { justify-content: center; padding: 12px 8px; }
+        .wn-navbar.collapsed .wn-navbar-menu a span { display: none; }
+        .wn-navbar.collapsed .wn-navbar-menu a .badge { position: absolute; top: 4px; right: 4px; font-size: 0.6rem; padding: 2px 5px; }
+        .wn-navbar-footer { padding-top: 16px; border-top: 1px solid var(--wn-border); position: relative; }
+        .wn-user-info { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; cursor: pointer; transition: background-color 0.2s ease; user-select: none; }
+        .wn-user-info:hover { background-color: var(--wn-bg-elevated); }
+        .wn-user-text { flex: 1; min-width: 0; }
+        .wn-user-chevron { color: var(--wn-text-muted); font-size: 0.75rem; transition: transform 0.2s ease; flex-shrink: 0; }
+        .wn-user-info.open .wn-user-chevron { transform: rotate(180deg); }
+        .wn-navbar.collapsed .wn-user-info { justify-content: center; padding: 8px 4px; }
+        .wn-navbar.collapsed .wn-user-info > div:not(.wn-avatar) { display: none; }
+        .wn-navbar.collapsed .wn-user-chevron { display: none; }
+        .wn-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--wn-danger), var(--wn-purple)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+        .wn-user-name { font-size: 0.85rem; font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-user-role { font-size: 0.7rem; color: var(--wn-text-muted); text-transform: capitalize; }
+        .wn-user-dropdown { position: absolute; bottom: calc(100% + 8px); left: 0; right: 0; background-color: var(--wn-bg-elevated); border: 1px solid var(--wn-border); border-radius: 12px; padding: 6px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6); opacity: 0; visibility: hidden; transform: translateY(8px); transition: all 0.2s ease; z-index: 200; }
+        .wn-navbar.collapsed .wn-user-dropdown { left: 100%; bottom: 0; width: 220px; margin-left: 8px; }
+        .wn-user-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .wn-user-dropdown-header { padding: 10px 12px 8px; border-bottom: 1px solid var(--wn-border); margin-bottom: 6px; }
+        .wn-user-dropdown-name { font-size: 0.85rem; font-weight: 600; margin: 0 0 2px 0; }
+        .wn-user-dropdown-email { font-size: 0.7rem; color: var(--wn-text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .wn-user-dropdown-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; color: var(--wn-text-muted); text-decoration: none; border-radius: 8px; font-size: 0.82rem; transition: all 0.2s ease; cursor: pointer; border: none; background: none; width: 100%; text-align: left; font-family: inherit; }
+        .wn-user-dropdown-item:hover { background-color: var(--wn-bg-panel); color: var(--wn-text); }
+        .wn-user-dropdown-item.danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+        .wn-user-dropdown-item i { font-size: 0.95rem; flex-shrink: 0; }
+        .wn-user-dropdown-divider { height: 1px; background-color: var(--wn-border); margin: 6px 0; }
+
+        /* MAIN */
+        .wn-main { margin-left: calc(var(--wn-navbar-width) + 32px); margin-right: 16px; margin-top: 16px; margin-bottom: 16px; padding: 32px 40px; min-height: calc(100vh - 32px); background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); position: relative; z-index: 1; transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        body.navbar-collapsed .wn-main { margin-left: calc(var(--wn-navbar-width-mini) + 32px); }
+
+        /* HEADER */
+        .wn-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--wn-border); flex-wrap: wrap; }
+        .wn-header-left h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 4px 0; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
+        .wn-header-left h1 .wn-admin-badge { font-size: 0.65rem; padding: 3px 8px; background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+        .wn-header-left p { color: var(--wn-text-muted); margin: 0; font-size: 0.9rem; }
+        .wn-header-left p strong { color: var(--wn-text); font-weight: 600; }
+        .wn-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        /* Botones */
+        .btn-wn-primary { background-color: var(--wn-accent); border: none; color: #ffffff !important; font-weight: 600; padding: 10px 20px; border-radius: 10px; font-size: 0.85rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-primary:hover { background-color: var(--wn-accent-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(31, 111, 235, 0.35); color: #ffffff !important; }
+        .btn-wn-secondary { background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted) !important; font-weight: 500; padding: 10px 20px; border-radius: 10px; font-size: 0.85rem; transition: all 0.2s ease; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none !important; white-space: nowrap; }
+        .btn-wn-secondary:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text) !important; border-color: var(--wn-text-muted); }
+
+        /* Stats */
+        .wn-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .wn-stat-card { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 12px; padding: 18px 20px; display: flex; align-items: center; gap: 16px; transition: all 0.2s ease; }
+        .wn-stat-card:hover { border-color: var(--wn-accent); transform: translateY(-2px); }
+        .wn-stat-icon { width: 48px; height: 48px; border-radius: 12px; background-color: rgba(31, 111, 235, 0.12); color: var(--wn-accent); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+        .wn-stat-icon.success { background-color: rgba(35, 134, 54, 0.12); color: var(--wn-success); }
+        .wn-stat-icon.warning { background-color: rgba(210, 153, 34, 0.12); color: var(--wn-warning); }
+        .wn-stat-icon.purple { background-color: rgba(110, 64, 201, 0.12); color: var(--wn-purple); }
+        .wn-stat-icon.danger { background-color: rgba(218, 54, 51, 0.12); color: var(--wn-danger); }
+        .wn-stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 4px; letter-spacing: -0.5px; }
+        .wn-stat-label { font-size: 0.75rem; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+
+        /* Filtros */
+        .wn-filters { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; padding: 18px; margin-bottom: 24px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
+        .wn-filter-group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+        .wn-filter-label { font-size: 0.72rem; font-weight: 600; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .wn-filter-input, .wn-filter-select { width: 100%; background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); color: var(--wn-text); border-radius: 10px; padding: 10px 12px; font-size: 0.85rem; font-family: inherit; transition: all 0.2s ease; }
+        .wn-filter-input:focus, .wn-filter-select:focus { outline: none; border-color: var(--wn-accent); box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15); }
+        .wn-filter-input::placeholder { color: var(--wn-text-muted); opacity: 0.5; }
+        .wn-filter-search { position: relative; }
+        .wn-filter-search i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--wn-text-muted); font-size: 0.9rem; pointer-events: none; }
+        .wn-filter-search .wn-filter-input { padding-left: 34px; }
+        .wn-filter-clear { background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted); padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; white-space: nowrap; }
+        .wn-filter-clear:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+
+        /* Results info */
+        .wn-results-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+        .wn-results-count { font-size: 0.85rem; color: var(--wn-text-muted); }
+        .wn-results-count strong { color: var(--wn-text); font-weight: 700; }
+        .wn-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+        .wn-tab { padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background-color: transparent; color: var(--wn-text-muted); border: 1px solid var(--wn-border); cursor: pointer; transition: all 0.2s ease; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; text-decoration: none !important; }
+        .wn-tab:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-tab.active { background-color: var(--wn-accent); border-color: var(--wn-accent); color: white; }
+
+        /* Tabla */
+        .wn-table-wrap { background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 14px; overflow: hidden; }
+        .wn-table { width: 100%; border-collapse: collapse; }
+        .wn-table thead { background-color: var(--wn-bg-elevated); }
+        .wn-table th { padding: 14px 16px; text-align: left; font-size: 0.72rem; color: var(--wn-text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; border-bottom: 1px solid var(--wn-border); white-space: nowrap; }
+        .wn-table td { padding: 14px 16px; font-size: 0.85rem; border-bottom: 1px solid var(--wn-border); vertical-align: middle; }
+        .wn-table tr:last-child td { border-bottom: none; }
+        .wn-table tbody tr { transition: background-color 0.2s ease; }
+        .wn-table tbody tr:hover { background-color: var(--wn-bg-elevated); }
+        .wn-table-user { display: flex; align-items: center; gap: 10px; }
+        .wn-table-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--wn-accent), var(--wn-purple)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; }
+        .wn-table-name { font-weight: 600; font-size: 0.88rem; margin: 0; }
+        .wn-table-email { font-size: 0.75rem; color: var(--wn-text-muted); margin: 0; }
+        .wn-role-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .wn-role-badge.candidato { background-color: rgba(31, 111, 235, 0.15); color: var(--wn-accent-hover); }
+        .wn-role-badge.empleador { background-color: rgba(110, 64, 201, 0.15); color: #8B5CF6; }
+        .wn-role-badge.admin { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+        .wn-status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+        .wn-status-badge.activo { background-color: rgba(35, 134, 54, 0.15); color: var(--wn-success); }
+        .wn-status-badge.suspendido { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); }
+        .wn-status-badge.pendiente { background-color: rgba(210, 153, 34, 0.15); color: var(--wn-warning); }
+        .wn-table-actions { display: flex; gap: 6px; justify-content: flex-end; }
+        .wn-icon-btn { width: 32px; height: 32px; border-radius: 8px; background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted); display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; text-decoration: none !important; }
+        .wn-icon-btn:hover { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-icon-btn.primary:hover { background-color: rgba(31, 111, 235, 0.15); color: var(--wn-accent-hover); border-color: var(--wn-accent); }
+        .wn-icon-btn.danger:hover { background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); border-color: var(--wn-danger); }
+
+        /* Paginación */
+        .wn-pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+        .wn-pagination-info { font-size: 0.8rem; color: var(--wn-text-muted); }
+        .wn-pagination-info strong { color: var(--wn-text); }
+        .wn-pagination-controls { display: flex; gap: 6px; }
+        .wn-page-btn { min-width: 36px; height: 36px; padding: 0 10px; border-radius: 8px; background-color: transparent; border: 1px solid var(--wn-border); color: var(--wn-text-muted); font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; }
+        .wn-page-btn:hover:not(:disabled) { background-color: var(--wn-bg-elevated); color: var(--wn-text); }
+        .wn-page-btn.active { background-color: var(--wn-accent); border-color: var(--wn-accent); color: white; }
+        .wn-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Empty state */
+        .wn-empty { background-color: var(--wn-bg-dark); border: 1px dashed var(--wn-border); border-radius: 14px; padding: 60px 24px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+        .wn-empty-icon { width: 72px; height: 72px; border-radius: 50%; background-color: var(--wn-bg-elevated); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--wn-text-muted); }
+        .wn-empty h3 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+        .wn-empty p { color: var(--wn-text-muted); font-size: 0.85rem; margin: 0; max-width: 400px; }
+
+        /* Modal */
+        .wn-modal-backdrop { position: fixed; inset: 0; z-index: 1000; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 20px; }
+        .wn-modal-backdrop.show { display: flex; }
+        .wn-modal { background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border); border-radius: 16px; padding: 28px; max-width: 460px; width: 100%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; gap: 18px; animation: modalIn 0.2s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .wn-modal-icon { width: 56px; height: 56px; border-radius: 50%; background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
+        .wn-modal h2 { font-size: 1.15rem; font-weight: 700; margin: 0; letter-spacing: -0.3px; }
+        .wn-modal p { font-size: 0.85rem; color: var(--wn-text-muted); margin: 0; line-height: 1.55; }
+        .wn-modal-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+
+        /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .wn-filters { grid-template-columns: 1fr 1fr 1fr; }
+            .wn-filters .wn-filter-group:first-child { grid-column: 1 / -1; }
+            .wn-filters .wn-filter-clear { grid-column: 1 / -1; justify-self: end; }
+        }
+        @media (max-width: 992px) {
+            :root { --wn-navbar-width: 72px; }
+            .wn-navbar { width: var(--wn-navbar-width); padding: 16px 8px; }
+            .wn-navbar-brand span, .wn-navbar-menu a span, .wn-user-info > div:not(.wn-avatar) { display: none; }
+            .wn-navbar-menu a { justify-content: center; }
+            .wn-navbar-toggle { display: none; }
+            .wn-navbar.collapsed .wn-navbar-brand-left { box-shadow: none; animation: none; background: none; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 32px); padding: 24px 20px; }
+            .wn-user-chevron { display: none; }
+            .wn-user-info { justify-content: center; }
+        }
+        @media (max-width: 768px) {
+            :root { --wn-navbar-width: 60px; }
+            .wn-navbar { top: 12px; left: 12px; bottom: 12px; padding: 12px 6px; border-radius: 14px; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 24px); margin-right: 12px; margin-top: 12px; padding: 20px 16px; }
+            .wn-header { flex-direction: column; align-items: stretch; }
+            .wn-header-actions { width: 100%; }
+            .wn-header-actions .btn-wn-primary, .wn-header-actions .btn-wn-secondary { flex: 1; justify-content: center; }
+            .wn-filters { grid-template-columns: 1fr; }
+            .wn-filters .wn-filter-group:first-child { grid-column: auto; }
+            .wn-filters .wn-filter-clear { grid-column: auto; justify-self: stretch; }
+            .wn-table-wrap { overflow-x: auto; }
+            .wn-table { min-width: 760px; }
+        }
+        @media (max-width: 480px) {
+            :root { --wn-navbar-width: 52px; }
+            .wn-main { margin-left: calc(var(--wn-navbar-width) + 16px); margin-right: 8px; margin-top: 8px; padding: 16px 12px; border-radius: 14px; }
+            .wn-header-left h1 { font-size: 1.4rem; }
+            .wn-stat-value { font-size: 1.25rem; }
+            .wn-stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .wn-stat-card { padding: 14px; gap: 12px; }
+            .wn-stat-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .wn-navbar.collapsed .wn-navbar-brand-left { animation: none; }
+            .wn-navbar, .wn-main, .wn-stat-card { transition: none; }
+            .wn-modal { animation: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wn-bg"><div class="wn-bg-grid"></div></div>
+
+    <!-- NAVBAR ADMIN -->
+    <nav class="wn-navbar" id="navbar">
+        <div class="wn-navbar-brand">
+            <div class="wn-navbar-brand-left" id="navbarBrandTrigger">
+                <i class="bi bi-shield-lock-fill"></i>
+                <span>Work.net</span>
+            </div>
+            <button class="wn-navbar-toggle" id="navbarToggle" aria-label="Minimizar menú" type="button">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+        <ul class="wn-navbar-menu">
+            <li><a href="admin-dashboard.html" title="Panel"><i class="bi bi-speedometer2"></i> <span>Panel</span></a></li>
+            <li><a href="admin-usuarios.html" class="active" title="Usuarios"><i class="bi bi-people"></i> <span>Usuarios</span></a></li>
+            <li><a href="#" title="Ofertas"><i class="bi bi-briefcase"></i> <span>Ofertas</span></a></li>
+            <li><a href="#" title="Reportes"><i class="bi bi-flag"></i> <span>Reportes</span></a></li>
+            <li><a href="#" title="Configuración"><i class="bi bi-gear"></i> <span>Configuración</span></a></li>
+        </ul>
+        <div class="wn-navbar-footer">
+            <div class="wn-user-info" id="userInfoTrigger">
+                <div class="wn-avatar">AD</div>
+                <div class="wn-user-text">
+                    <div class="wn-user-name">Admin General</div>
+                    <div class="wn-user-role">Administrador</div>
+                </div>
+                <i class="bi bi-chevron-up wn-user-chevron"></i>
+            </div>
+            <div class="wn-user-dropdown" id="userDropdown">
+                <div class="wn-user-dropdown-header">
+                    <p class="wn-user-dropdown-name">Administrador del sistema</p>
+                    <p class="wn-user-dropdown-email">admin@work.net</p>
+                </div>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-gear"></i> Configuración</a>
+                <a href="#" class="wn-user-dropdown-item"><i class="bi bi-question-circle"></i> Ayuda</a>
+                <div class="wn-user-dropdown-divider"></div>
+                <a href="login.html" class="wn-user-dropdown-item danger"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="wn-main">
+
+        <header class="wn-header">
+            <div class="wn-header-left">
+                <h1>Usuarios <span class="wn-admin-badge">Admin</span></h1>
+                <p>Gestioná los usuarios registrados en la plataforma.</p>
+            </div>
+            <div class="wn-header-actions">
+                <a href="admin-dashboard.html" class="btn-wn-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver al panel
+                </a>
+                <button type="button" class="btn-wn-primary">
+                    <i class="bi bi-download"></i> Exportar CSV
+                </button>
+            </div>
+        </header>
+
+        <!-- STATS -->
+        <section class="wn-stats" aria-label="Resumen de usuarios">
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon"><i class="bi bi-people-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">1.248</div>
+                    <div class="wn-stat-label">Total</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon success"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">1.198</div>
+                    <div class="wn-stat-label">Activos</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon warning"><i class="bi bi-hourglass-split"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">3</div>
+                    <div class="wn-stat-label">Pendientes</div>
+                </div>
+            </div>
+            <div class="wn-stat-card">
+                <div class="wn-stat-icon danger"><i class="bi bi-x-circle-fill"></i></div>
+                <div class="wn-stat-info">
+                    <div class="wn-stat-value">47</div>
+                    <div class="wn-stat-label">Suspendidos</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FILTROS -->
+        <section class="wn-filters" aria-label="Filtros de usuarios">
+            <div class="wn-filter-group wn-filter-search">
+                <label class="wn-filter-label" for="filterSearch">Buscar</label>
+                <i class="bi bi-search"></i>
+                <input type="text" id="filterSearch" class="wn-filter-input" placeholder="Nombre, email o empresa...">
+            </div>
+            <div class="wn-filter-group">
+                <label class="wn-filter-label" for="filterRole">Rol</label>
+                <select id="filterRole" class="wn-filter-select">
+                    <option value="">Todos</option>
+                    <option value="candidato">Candidato</option>
+                    <option value="empleador">Empleador</option>
+                    <option value="admin">Administrador</option>
+                </select>
+            </div>
+            <div class="wn-filter-group">
+                <label class="wn-filter-label" for="filterStatus">Estado</label>
+                <select id="filterStatus" class="wn-filter-select">
+                    <option value="">Todos</option>
+                    <option value="activo">Activo</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="suspendido">Suspendido</option>
+                </select>
+            </div>
+            <div class="wn-filter-group">
+                <label class="wn-filter-label" for="filterDate">Registro</label>
+                <select id="filterDate" class="wn-filter-select">
+                    <option value="">Cualquier fecha</option>
+                    <option value="today">Hoy</option>
+                    <option value="week">Esta semana</option>
+                    <option value="month">Este mes</option>
+                </select>
+            </div>
+            <button type="button" class="wn-filter-clear" id="filterClear">
+                <i class="bi bi-x-lg"></i> Limpiar
+            </button>
+        </section>
+
+        <!-- INFO + TABS -->
+        <div class="wn-results-info">
+            <div class="wn-results-count">
+                <strong id="resultsCount">8</strong> usuarios encontrados
+            </div>
+            <div class="wn-tabs" role="tablist" aria-label="Filtros rápidos">
+                <button type="button" class="wn-tab active" data-tab="">Todos</button>
+                <button type="button" class="wn-tab" data-tab="pendiente">Pendientes (3)</button>
+                <button type="button" class="wn-tab" data-tab="suspendido">Suspendidos (47)</button>
+            </div>
+        </div>
+
+        <!-- TABLA -->
+        <div class="wn-table-wrap">
+            <table class="wn-table" id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Registro</th>
+                        <th style="text-align: right;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTbody">
+
+                    <tr data-role="candidato" data-status="activo" data-name="Juan Pérez" data-email="juan.perez@email.com" data-date="2026-10-15">
+                        <td>
+                            <div class="wn-table-user">
+                                <div class="wn-table-avatar">JP</div>
+                                <div>
+                                    <p class="wn-table-name">Juan Pérez</p>
+                                    <p class="wn-table-email">juan.perez@email.com</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="wn-role-badge candidato">Candidato</span></td>
+                        <td><span class="wn-status-badge activo"><i class="bi bi-check-circle-fill"></i> Activo</span></td>
+                        <td><span style="font-size: 0.8rem; color: var(--wn-text-muted);">Hoy</span></td>
+                        <td>
+                            <div class="wn-table-actions">
+                                <a href="admin-usuario-detalle.html" class="wn-icon-btn primary" title="Ver detalle"><i class="bi bi-eye"></i></a>
+                                <button type="button" class="wn-icon-btn danger" title="Suspender" data-action="suspend" data-name="Juan Pérez"><i class="bi bi-slash-circle"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr data-role="empleador" data-status="activo" data-name="Tech Solutions S.A." data-email="contacto@techsolutions.com" data-date="2026-10-14">
+                        <td>
+                            <div class="wn-table-user">
+                                <div class="wn-table-avatar">TS</div>
+                                <div>
+                                    <p class="wn-table-name">Tech Solutions S.A.</p>
+                                    <p class="wn-table-email">contacto@techsolutions.com</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="wn-role-badge empleador">Empleador</span></td>
+                        <td><span class="wn-status-badge activo"><i class="bi bi-check-circle-fill"></i> Activo</span></td>
+                        <td><span style="font-size: 0.8rem; color: var(--wn-text-muted);">Hace 1 día</span></td>
+                        <td>
+                            <div class="wn-table-actions">
+                                <a href="admin-usuario-detalle.html" class="wn-icon-btn primary" title="Ver detalle"><i class="bi bi-eye"></i></a>
+                                <button type="button" class="wn-icon-btn danger" title="Suspender" data-action="suspend" data-name="Tech Solutions S.A."><i class="bi bi-slash-circle"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr data-role="candidato" data-status="pendiente" data-name="María González" data-email="maria.gonzalez@email.com" data-date="2026-10-15">
+                        <td>
+                            <div class="wn-table-user">
+                                <div class="wn-table-avatar">MG</div>
+                                <div>
+                                    <p class="wn-table-name">María González</p>
+                                    <p class="wn-table-email">maria.gonzalez@email.com</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="wn-role-badge candidato">Candidato</span></td>
+                        <td><span class="wn-status-badge pendiente"><i class="bi bi-hourglass-split"></i> Pendiente</span></td>
+                        <td><span style="font-size: 0.8rem; color: var(--wn-text-muted);">Hoy</span></td>
+                        <td>
+                            <div class="wn-table-actions">
+                                <a href="admin-usuario-detalle.html" class="wn-icon-btn primary" title="Ver detalle"><i class="bi bi-eye"></i></a>
+                                <button type="button" class="wn-icon-btn" title="Aprobar" data-action="approve" data-name="María González"><i class="bi bi-check-lg"></i></button>
+                                <button type="button" class="wn-icon-btn danger" title="Rechazar" data-action="reject" data-name="María González"><i class="bi bi-x-lg"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr data-role="empleador" data-status="activo" data-name="DataCorp S.A." data-email="rrhh@datacorp.com" data-date="2026-10-10">
+                        <td>
+                            <div class="wn-table-user">
+                                <div class="wn-table-avatar">DC</div>
+                                <div>
+                                    <p class="wn-table-name">DataCorp S.A.</p>
+                                    <p class="wn-table-email">rrhh@datacorp.com</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="wn-role-badge empleador">Empleador</span></td>
+                        <td><span class="wn-status-badge activo"><i class="bi bi-check-circle-fill"></i> Activo</span></td>
+                        <td><span style="font-size: 0.8rem; color: var(--wn-text-muted);">Hace 5 días</span></td>
+                        <td>
+                            <div class="wn-table-actions">
+                                <a href="admin-usuario-detalle.html" class="wn-icon-btn primary" title="Ver detalle"><i class="bi bi-eye"></i></a>
+                                <button type="button" class="wn-icon-btn danger" title="Suspender" data-action="suspend" data-name="DataCorp S.A."><i class="bi bi-slash-circle"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr data-role="candidato" data-status="suspendido" data-name="Carlos Ramírez" data-email="carlos.ramirez@email.com" data-date="2026-09-28">
+                        <td>
+                            <div class="wn-table-user">
+                                <div class="wn-table-avatar">CR</div>
+                                <div>
+                                    <p class="wn-table-name">Carlos Ramírez</p>
+                                    <p class="wn-table-email">carlos.ramirez@email.com</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="wn-role-badge candidato">Candidato</span></td>
+                        <td><span class="wn-status-badge suspendido"><i class="bi bi-x-circle-fill"></i> Suspendido</span></td>
+                        <td><span style="font-size: 0.8rem; color: var(--wn-text-muted);">Hace 17 días</span></td>
+                        <td>
+                            <div class="wn-table-actions">
+                                <a href="admin-usuario-detalle.html" class="wn-icon-btn primary" title="Ver detalle"><i class="bi bi-eye"></i></a>
+                                <button type="button" class="wn-icon-btn" title="Reactivar" data-action="reactivate" data-name="Carlos Ramírez"><i class="bi bi-arrow-clockwise"></i></button>
+                                <button type="button" class="wn-icon-btn danger" title="Eliminar" data-action="delete" data-name="Carlos Ramírez"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr data-role="candidato" data-status="activo" data-name="Lucía Benítez" data-email="lucia.benitez@email.com" data-date="2026-10-12">
+                        <td>
+                            <div class="wn-table-user">
+                                <div class="wn-table-avatar">LB</div>
+                                <div>
+                                    <p class="wn-table-name">Lucía Benítez</p>
+                                    <p class="wn-table-email">lucia.benitez@email.com</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="wn-role-badge candidato">Candidato</span></td>
+                        <td><span class="wn-status-badge activo"><i class="bi bi-check-circle-fill"></i> Activo</span></td>
+                        <td><span style="font-size: 0.8rem; color: var(--wn-text-muted);">Hace 3 días</span></td>
+                        <td>
+                            <div class="wn-table-actions">
+                                <a href="admin-usuario-detalle.html" class="wn-icon-btn primary" title="Ver detalle"><i class="bi bi-eye"></i></a>
+                                <button type="button" class="wn-icon-btn danger" title="Suspender" data-action="suspend" data-name="Lucía Benítez"><i class="bi bi-slash-circle"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr data-role="empleador" data-status="pendiente" data-name="Creative Studio" data-email="hola@creativestudio.com" data-date="2026-10-15">
+                        <td>
+                            <div class="wn-table-user">
+                                <div class="wn-table-avatar">CS</div>
+                                <div>
+                                    <p class="wn-table-name">Creative Studio</p>
+                                    <p class="wn-table-email">hola@creativestudio.com</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="wn-role-badge empleador">Empleador</span></td>
+                        <td><span class="wn-status-badge pendiente"><i class="bi bi-hourglass-split"></i> Pendiente</span></td>
+                        <td><span style="font-size: 0.8rem; color: var(--wn-text-muted);">Hoy</span></td>
+                        <td>
+                            <div class="wn-table-actions">
+                                <a href="admin-usuario-detalle.html" class="wn-icon-btn primary" title="Ver detalle"><i class="bi bi-eye"></i></a>
+                                <button type="button" class="wn-icon-btn" title="Aprobar" data-action="approve" data-name="Creative Studio"><i class="bi bi-check-lg"></i></button>
+                                <button type="button" class="wn-icon-btn danger" title="Rechazar" data-action="reject" data-name="Creative Studio"><i class="bi bi-x-lg"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr data-role="admin" data-status="activo" data-name="Admin General" data-email="admin@work.net" data-date="2025-01-01">
+                        <td>
+                            <div class="wn-table-user">
+                                <div class="wn-table-avatar">AD</div>
+                                <div>
+                                    <p class="wn-table-name">Admin General</p>
+                                    <p class="wn-table-email">admin@work.net</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="wn-role-badge admin">Administrador</span></td>
+                        <td><span class="wn-status-badge activo"><i class="bi bi-check-circle-fill"></i> Activo</span></td>
+                        <td><span style="font-size: 0.8rem; color: var(--wn-text-muted);">Hace 10 meses</span></td>
+                        <td>
+                            <div class="wn-table-actions">
+                                <a href="admin-usuario-detalle.html" class="wn-icon-btn primary" title="Ver detalle"><i class="bi bi-eye"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div class="wn-empty" id="emptyState" style="display: none;">
+            <div class="wn-empty-icon"><i class="bi bi-person-x"></i></div>
+            <h3>No encontramos usuarios</h3>
+            <p>Probá ajustar los filtros de búsqueda o el estado seleccionado.</p>
+        </div>
+
+        <!-- PAGINACIÓN -->
+        <div class="wn-pagination">
+            <div class="wn-pagination-info">
+                Mostrando <strong>1-8</strong> de <strong>1.248</strong> usuarios
+            </div>
+            <div class="wn-pagination-controls">
+                <button type="button" class="wn-page-btn" disabled><i class="bi bi-chevron-left"></i></button>
+                <button type="button" class="wn-page-btn active">1</button>
+                <button type="button" class="wn-page-btn">2</button>
+                <button type="button" class="wn-page-btn">3</button>
+                <button type="button" class="wn-page-btn">...</button>
+                <button type="button" class="wn-page-btn">156</button>
+                <button type="button" class="wn-page-btn"><i class="bi bi-chevron-right"></i></button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL ACCIÓN -->
+    <div class="wn-modal-backdrop" id="actionModal" role="dialog" aria-modal="true" aria-labelledby="actionModalTitle">
+        <div class="wn-modal">
+            <div class="wn-modal-icon" id="actionModalIcon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div>
+                <h2 id="actionModalTitle">¿Confirmar acción?</h2>
+                <p id="actionModalText">Esta acción se aplicará al usuario seleccionado.</p>
+            </div>
+            <div class="wn-modal-actions">
+                <button type="button" class="btn-wn-secondary" id="actionModalNo">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </button>
+                <button type="button" class="btn-wn-primary" id="actionModalYes">
+                    <i class="bi bi-check-lg"></i> Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const navbar = document.getElementById('navbar');
+        const navbarToggle = document.getElementById('navbarToggle');
+        const navbarBrandTrigger = document.getElementById('navbarBrandTrigger');
+        const userInfoTrigger = document.getElementById('userInfoTrigger');
+        const userDropdown = document.getElementById('userDropdown');
+
+        navbarToggle.addEventListener('click', () => { navbar.classList.add('collapsed'); document.body.classList.add('navbar-collapsed'); });
+        navbarBrandTrigger.addEventListener('click', () => { if (navbar.classList.contains('collapsed')) { navbar.classList.remove('collapsed'); document.body.classList.remove('navbar-collapsed'); } });
+        userInfoTrigger.addEventListener('click', (e) => { e.stopPropagation(); userInfoTrigger.classList.toggle('open'); userDropdown.classList.toggle('show'); });
+        document.addEventListener('click', (e) => { if (!userInfoTrigger.contains(e.target) && !userDropdown.contains(e.target)) { userInfoTrigger.classList.remove('open'); userDropdown.classList.remove('show'); } });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { userInfoTrigger.classList.remove('open'); userDropdown.classList.remove('show'); closeActionModal(); } });
+
+        /* ===== FILTROS ===== */
+        const filterSearch = document.getElementById('filterSearch');
+        const filterRole = document.getElementById('filterRole');
+        const filterStatus = document.getElementById('filterStatus');
+        const filterDate = document.getElementById('filterDate');
+        const filterClear = document.getElementById('filterClear');
+        const resultsCount = document.getElementById('resultsCount');
+        const usersTbody = document.getElementById('usersTbody');
+        const emptyState = document.getElementById('emptyState');
+        const allRows = Array.from(usersTbody.querySelectorAll('tr'));
+        const tabs = document.querySelectorAll('.wn-tab');
+
+        let activeTab = '';
+
+        function applyFilters() {
+            const q = (filterSearch.value || '').toLowerCase().trim();
+            const role = filterRole.value;
+            const status = activeTab || filterStatus.value;
+            const dateFilter = filterDate.value;
+
+            const today = new Date('2026-10-15');
+            const weekStart = new Date(today); weekStart.setDate(today.getDate() - 7);
+            const monthStart = new Date(today); monthStart.setMonth(today.getMonth() - 1);
+
+            let visible = 0;
+            allRows.forEach(row => {
+                const name = (row.dataset.name || '').toLowerCase();
+                const email = (row.dataset.email || '').toLowerCase();
+                const rowRole = row.dataset.role;
+                const rowStatus = row.dataset.status;
+                const rowDate = new Date(row.dataset.date);
+
+                let match = true;
+                if (q && !name.includes(q) && !email.includes(q)) match = false;
+                if (role && rowRole !== role) match = false;
+                if (status && rowStatus !== status) match = false;
+                if (dateFilter === 'today') {
+                    if (rowDate.toDateString() !== today.toDateString()) match = false;
+                } else if (dateFilter === 'week') {
+                    if (rowDate < weekStart) match = false;
+                } else if (dateFilter === 'month') {
+                    if (rowDate < monthStart) match = false;
+                }
+
+                row.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+
+            resultsCount.textContent = visible;
+            emptyState.style.display = visible === 0 ? 'flex' : 'none';
+            document.querySelector('.wn-table-wrap').style.display = visible === 0 ? 'none' : '';
+        }
+
+        [filterSearch, filterRole, filterStatus, filterDate].forEach(el => {
+            el.addEventListener('input', applyFilters);
+            el.addEventListener('change', applyFilters);
+        });
+
+        filterClear.addEventListener('click', () => {
+            filterSearch.value = '';
+            filterRole.value = '';
+            filterStatus.value = '';
+            filterDate.value = '';
+            activeTab = '';
+            tabs.forEach(t => t.classList.remove('active'));
+            tabs[0].classList.add('active');
+            applyFilters();
+        });
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                activeTab = tab.dataset.tab;
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                filterStatus.value = '';
+                applyFilters();
+            });
+        });
+
+        /* ===== MODAL ACCIONES ===== */
+        const actionModal = document.getElementById('actionModal');
+        const actionModalTitle = document.getElementById('actionModalTitle');
+        const actionModalText = document.getElementById('actionModalText');
+        const actionModalIcon = document.getElementById('actionModalIcon');
+        const actionModalNo = document.getElementById('actionModalNo');
+        const actionModalYes = document.getElementById('actionModalYes');
+        let pendingRow = null;
+        let pendingAction = '';
+
+        const actionConfig = {
+            suspend: { title: '¿Suspender usuario?', text: 'El usuario no podrá acceder al sistema hasta que sea reactivado.', icon: 'bi-slash-circle', iconColor: 'danger', btnClass: 'btn-wn-primary' },
+            approve: { title: '¿Aprobar usuario?', text: 'El usuario podrá acceder al sistema inmediatamente.', icon: 'bi-check-circle', iconColor: 'success', btnClass: 'btn-wn-primary' },
+            reject: { title: '¿Rechazar usuario?', text: 'El usuario será marcado como rechazado y no podrá acceder.', icon: 'bi-x-circle', iconColor: 'danger', btnClass: 'btn-wn-primary' },
+            reactivate: { title: '¿Reactivar usuario?', text: 'El usuario podrá volver a acceder al sistema.', icon: 'bi-arrow-clockwise', iconColor: 'success', btnClass: 'btn-wn-primary' },
+            delete: { title: '¿Eliminar usuario?', text: 'Esta acción es permanente. Se eliminarán todos los datos del usuario.', icon: 'bi-trash', iconColor: 'danger', btnClass: 'btn-wn-primary' }
+        };
+
+        function openActionModal(row, action, name) {
+            pendingRow = row;
+            pendingAction = action;
+            const cfg = actionConfig[action];
+            actionModalTitle.textContent = cfg.title;
+            actionModalText.textContent = `${cfg.text} Usuario: ${name}.`;
+            actionModalIcon.className = 'wn-modal-icon';
+            actionModalIcon.innerHTML = `<i class="bi ${cfg.icon}"></i>`;
+            actionModalIcon.style.backgroundColor = action === 'suspend' || action === 'delete' || action === 'reject'
+                ? 'rgba(218, 54, 51, 0.15)' : 'rgba(35, 134, 54, 0.15)';
+            actionModalIcon.style.color = action === 'suspend' || action === 'delete' || action === 'reject'
+                ? 'var(--wn-danger)' : 'var(--wn-success)';
+            actionModal.classList.add('show');
+        }
+
+        function closeActionModal() {
+            actionModal.classList.remove('show');
+            pendingRow = null;
+            pendingAction = '';
+        }
+
+        document.querySelectorAll('[data-action]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const row = btn.closest('tr');
+                openActionModal(row, btn.dataset.action, btn.dataset.name);
+            });
+        });
+
+        actionModalNo.addEventListener('click', closeActionModal);
+        actionModalYes.addEventListener('click', () => {
+            if (pendingRow && pendingAction) {
+                const statusBadge = pendingRow.querySelector('.wn-status-badge');
+                if (pendingAction === 'suspend' || pendingAction === 'reject') {
+                    pendingRow.dataset.status = 'suspendido';
+                    statusBadge.className = 'wn-status-badge suspendido';
+                    statusBadge.innerHTML = '<i class="bi bi-x-circle-fill"></i> Suspendido';
+                } else if (pendingAction === 'approve' || pendingAction === 'reactivate') {
+                    pendingRow.dataset.status = 'activo';
+                    statusBadge.className = 'wn-status-badge activo';
+                    statusBadge.innerHTML = '<i class="bi bi-check-circle-fill"></i> Activo';
+                } else if (pendingAction === 'delete') {
+                    pendingRow.remove();
+                    allRows.splice(allRows.indexOf(pendingRow), 1);
+                }
+            }
+            closeActionModal();
+            applyFilters();
+        });
+
+        actionModal.addEventListener('click', (e) => {
+            if (e.target === actionModal) closeActionModal();
+        });
+
+        applyFilters();
+    </script>
+
+</body>
+</html>

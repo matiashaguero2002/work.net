@@ -13,6 +13,10 @@ use App\Http\Controllers\Employer\DashboardController as EmployerDashboardContro
 use App\Http\Controllers\Employer\InterviewController as EmployerInterviewController;
 use App\Http\Controllers\Employer\NotificationController as EmployerNotificationController;
 use App\Http\Controllers\Employer\OfferController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\OfferController as AdminOfferController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\MapController;
 use Illuminate\Support\Facades\Route;
 
@@ -70,4 +74,18 @@ Route::prefix('empleador')->name('employer.')->group(function () {
 
     // Notificaciones del empleador
     Route::get('/notificaciones', [EmployerNotificationController::class, 'index'])->name('notifications.index');
+
+    // Entrevistas del empleador (listado)
+    Route::get('/entrevistas', [EmployerInterviewController::class, 'index'])->name('interviews.index');
+});
+
+// Módulo del administrador (público por ahora, sin middleware auth;
+// datos mock hardcodeados en los controladores)
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/usuarios', [AdminUserController::class, 'index'])->name('users.index');
+    Route::get('/usuarios/{id}', [AdminUserController::class, 'show'])->name('users.show');
+    Route::get('/ofertas', [AdminOfferController::class, 'index'])->name('offers.index');
+    Route::get('/ofertas/{id}', [AdminOfferController::class, 'show'])->name('offers.show');
+    Route::get('/reportes', [AdminReportController::class, 'index'])->name('reports.index');
 });

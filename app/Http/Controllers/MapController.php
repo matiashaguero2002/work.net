@@ -31,6 +31,8 @@ class MapController extends Controller
                 'benefits' => 'Seguro médico, capacitaciones continuas, horario flexible, ambiente laboral agradable, oportunidades de crecimiento.',
                 'contact' => 'rrhh@sanmiguel.com.py | +595 71 200 300',
                 'publishedAt' => 'Hace 2 días',
+                'area' => 'informatica',
+                'salaryMin' => 7000000,
                 'coords' => [-27.3306, -55.8667],
                 'image' => 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=1200&h=600&fit=crop',
                 'logoUrl' => 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop&crop=center',
@@ -51,6 +53,8 @@ class MapController extends Controller
                 'benefits' => 'Seguro médico, bonos por objetivos, capacitación.',
                 'contact' => 'contacto@datacorp.com.py',
                 'publishedAt' => 'Hace 5 días',
+                'area' => 'informatica',
+                'salaryMin' => 6000000,
                 'coords' => [-27.3256, -55.8600],
                 'image' => 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=600&fit=crop',
                 'logoUrl' => null,
@@ -71,6 +75,8 @@ class MapController extends Controller
                 'benefits' => 'Capacitaciones, transporte, buen clima laboral.',
                 'contact' => 'soporte@techhelp.com.py',
                 'publishedAt' => 'Hace 1 semana',
+                'area' => 'informatica',
+                'salaryMin' => 3500000,
                 'coords' => [-27.3400, -55.8750],
                 'image' => 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&h=600&fit=crop',
                 'logoUrl' => null,
@@ -91,6 +97,8 @@ class MapController extends Controller
                 'benefits' => 'Trabajo 100% remoto, horario flexible, proyectos variados.',
                 'contact' => 'hola@creativestudio.com',
                 'publishedAt' => 'Hace 3 días',
+                'area' => 'diseno',
+                'salaryMin' => null, // "A convenir"
                 'coords' => [-27.3180, -55.8580],
                 'image' => 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1200&h=600&fit=crop',
                 'logoUrl' => null,
@@ -111,6 +119,8 @@ class MapController extends Controller
                 'benefits' => 'Seguro médico familiar, bonos anuales, estabilidad laboral.',
                 'contact' => 'talento@bancoregional.com.py',
                 'publishedAt' => 'Hace 1 día',
+                'area' => 'informatica',
+                'salaryMin' => 8000000,
                 'coords' => [-27.3350, -55.8700],
                 'image' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=600&fit=crop',
                 'logoUrl' => null,
@@ -131,6 +141,8 @@ class MapController extends Controller
                 'benefits' => '100% remoto, capacitaciones, equipos modernos.',
                 'contact' => 'jobs@appfactory.com',
                 'publishedAt' => 'Hace 4 días',
+                'area' => 'informatica',
+                'salaryMin' => 6500000,
                 'coords' => [-27.3280, -55.8800],
                 'image' => 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1200&h=600&fit=crop',
                 'logoUrl' => null,
@@ -151,6 +163,8 @@ class MapController extends Controller
                 'benefits' => 'Seguro médico, home office, bonos por desempeño.',
                 'contact' => 'rrhh@cloudsolutions.com.py',
                 'publishedAt' => 'Hace 6 horas',
+                'area' => 'informatica',
+                'salaryMin' => 9000000,
                 'coords' => [-27.3220, -55.8650],
                 'image' => 'https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?w=1200&h=600&fit=crop',
                 'logoUrl' => null,
@@ -187,6 +201,27 @@ class MapController extends Controller
             ];
         }
 
-        return view('map.index', compact('offers', 'mapFocus'));
+        // RF-08: IDs de ofertas ya guardadas por el candidato actual,
+        // para que el botón "Guardar" del modal refleje el estado real.
+        $savedOfferIds = [];
+        if (auth()->check() && auth()->user()->candidato) {
+            $savedOfferIds = \App\Models\OfertaGuardada::query()
+                ->where('id_candidato', auth()->user()->candidato->id_candidato)
+                ->pluck('id_oferta')
+                ->all();
+        }
+
+        // Postulaciones activas del candidato (estado != Retirada),
+        // para que el botón "Postularme" refleje el estado real.
+        $postulatedOfferIds = [];
+        if (auth()->check() && auth()->user()->candidato) {
+            $postulatedOfferIds = \App\Models\Postulacion::query()
+                ->where('id_candidato', auth()->user()->candidato->id_candidato)
+                ->where('id_estado_post', '!=', 5)
+                ->pluck('id_oferta')
+                ->all();
+        }
+
+        return view('map.index', compact('offers', 'mapFocus', 'savedOfferIds', 'postulatedOfferIds'));
     }
 }

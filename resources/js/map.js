@@ -94,9 +94,13 @@ if (mapEl && typeof L !== 'undefined') {
                                     onclick="openModal(${offer.id})">
                                 <i class="bi bi-arrows-angle-expand"></i> Ver más
                             </button>
-                            <a href="#" class="wn-popup-btn wn-popup-btn-primary">
-                                <i class="bi bi-send"></i> Postularme
-                            </a>
+                            <button class="wn-popup-btn wn-popup-btn-primary${postulatedOffers.has(String(offer.id)) ? ' applied' : ''}" 
+                                    data-apply-offer="${offer.id}"
+                                    onclick="window.toggleApplyOffer(${offer.id}, event)">
+                                ${postulatedOffers.has(String(offer.id))
+                                    ? '<i class="bi bi-box-arrow-right"></i> Retirar'
+                                    : '<i class="bi bi-send"></i> Postularme'}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -114,6 +118,86 @@ if (mapEl && typeof L !== 'undefined') {
         } catch (e) {
             offers = window.__OFFERS__ || [];
         }
+
+        // ============================================
+        // POSTULARSE / RETIRAR (estado real desde la BD)
+        // Debe declararse ANTES de crear los marcadores:
+        // el popup renderiza el botón según el estado.
+        // ============================================
+        let postulatedOffers = new Set();
+        try {
+            const postIds = mapEl.dataset.postulated ? JSON.parse(mapEl.dataset.postulated) : [];
+            postulatedOffers = new Set(postIds.map(String));
+        } catch (e) {
+            postulatedOffers = new Set();
+        }
+        const postUrlTemplate = mapEl.dataset.postUrl || '';
+        const withdrawUrlTemplate = mapEl.dataset.withdrawUrl || '';
+
+        // Sincroniza todos los botones de postular de una oferta
+        // (popup abierto + botón del modal).
+        function refreshApplyButtons(offerId) {
+            const isPost = postulatedOffers.has(String(offerId));
+            document.querySelectorAll('[data-apply-offer="' + offerId + '"]').forEach((btn) => {
+                btn.innerHTML = isPost
+                    ? '<i class="bi bi-box-arrow-right"></i> Retirar'
+                    : '<i class="bi bi-send"></i> Postularme';
+                btn.classList.toggle('applied', isPost);
+            });
+        }
+
+        function renderModalApplyState() {
+            const btn = document.getElementById('modalApply');
+            if (!btn || currentModalOfferId === null) return;
+            btn.dataset.applyOffer = String(currentModalOfferId);
+            refreshApplyButtons(String(currentModalOfferId));
+        }
+
+        // Postularse o retirar (optimista, sincroniza con la BD).
+        function toggleApplyOffer(offerId, event) {
+            if (event) event.stopPropagation();
+
+            const id = String(offerId);
+            const wasPost = postulatedOffers.has(id);
+
+            const postUrl = postUrlTemplate ? postUrlTemplate.replace(':idOferta', id) : null;
+            const withdrawUrl = withdrawUrlTemplate ? withdrawUrlTemplate.replace(':idOferta', id) : null;
+            const url = wasPost ? withdrawUrl : postUrl;
+            if (!url) {
+                showGeoAlert('Necesitás una cuenta de candidato para postularte.');
+                return;
+            }
+
+            if (wasPost) postulatedOffers.delete(id); else postulatedOffers.add(id);
+            refreshApplyButtons(id);
+
+            fetch(url, {
+                method: wasPost ? 'DELETE' : 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                },
+                credentials: 'same-origin',
+            })
+                .then((res) => res.json().then((body) => ({ ok: res.ok, body })))
+                .then(({ ok, body }) => {
+                    if (ok) return; // el estado optimista es el correcto
+
+                    // Revertir el cambio optimista
+                    if (wasPost) postulatedOffers.add(id); else postulatedOffers.delete(id);
+                    refreshApplyButtons(id);
+
+                    showGeoAlert((body && body.message) ||
+                        'No se pudo enviar la postulación. Probá de nuevo.');
+                })
+                .catch(() => {
+                    if (wasPost) postulatedOffers.add(id); else postulatedOffers.delete(id);
+                    refreshApplyButtons(id);
+                    showGeoAlert('No se pudo enviar la postulación. Verificá tu conexión e intentá de nuevo.');
+                });
+        }
+        window.toggleApplyOffer = toggleApplyOffer;
 
         // ============================================
         // AGREGAR MARCADORES
@@ -173,10 +257,25 @@ if (mapEl && typeof L !== 'undefined') {
         // ============================================
         // MODAL
         // ============================================
-        // Estado "guardado" del modal (mock, en memoria):
-        // recuerda qué ofertas marcó el usuario durante la sesión.
-        const savedOffers = new Set();
+        // Estado "guardado" real (RF-08): se inicializa con
+        // las ofertas guardadas en la base de datos
+        // (data-saved del #map) y se sincroniza vía AJAX
+        // al presionar Guardar — persiste entre recargas.
+        let savedOffers = new Set();
+        try {
+            const savedIds = mapEl.dataset.saved ? JSON.parse(mapEl.dataset.saved) : [];
+            savedOffers = new Set(savedIds.map(String));
+        } catch (e) {
+            savedOffers = new Set();
+        }
+        const saveUrlTemplate = mapEl.dataset.saveUrl || '';
         let currentModalOfferId = null;
+
+        // CSRF nativo de Laravel para las peticiones AJAX.
+        function csrfToken() {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            return meta ? meta.getAttribute('content') : '';
+        }
 
         function renderModalSaveState() {
             const btn = document.getElementById('modalSave');
@@ -193,6 +292,7 @@ if (mapEl && typeof L !== 'undefined') {
 
             currentModalOfferId = offerId;
             renderModalSaveState();
+            renderModalApplyState();
 
             document.getElementById('modalImage').src = offer.image;
             document.getElementById('modalImage').alt = offer.company;
@@ -248,17 +348,57 @@ if (mapEl && typeof L !== 'undefined') {
         window.openModal = openModal;
         window.closeModal = closeModal;
 
-        // Botón "Guardar" del modal de oferta (mock, en memoria).
+        // Botón "Postularme a esta oferta" del modal (mismo flujo que el popup).
+        const modalApplyBtn = document.getElementById('modalApply');
+        if (modalApplyBtn) {
+            modalApplyBtn.addEventListener('click', (e) => {
+                if (currentModalOfferId !== null) toggleApplyOffer(currentModalOfferId, e);
+            });
+        }
+
+        // Botón "Guardar" del modal de oferta (RF-08):
+        // POST AJAX al servidor; la BD decide el estado real.
         function toggleSaveOffer(event) {
             if (event) event.stopPropagation();
             if (currentModalOfferId === null) return;
-            const key = String(currentModalOfferId);
-            if (savedOffers.has(key)) {
-                savedOffers.delete(key);
-            } else {
-                savedOffers.add(key);
-            }
+
+            const offerId = String(currentModalOfferId);
+            const url = saveUrlTemplate ? saveUrlTemplate.replace(':idOferta', offerId) : null;
+            if (!url) return;
+
+            // Optimista: se refleja al instante; si falla se revierte.
+            const wasSaved = savedOffers.has(offerId);
+            if (wasSaved) savedOffers.delete(offerId); else savedOffers.add(offerId);
+            currentModalOfferId = Number(offerId);
             renderModalSaveState();
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                },
+                credentials: 'same-origin',
+            })
+                .then((res) => res.json().then((body) => ({ ok: res.ok, status: res.status, body })))
+                .then(({ ok, status, body }) => {
+                    if (ok) return; // el estado optimista es el correcto
+
+                    // Revertir el cambio optimista
+                    if (wasSaved) savedOffers.add(offerId); else savedOffers.delete(offerId);
+                    renderModalSaveState();
+
+                    const msg = (body && body.message) ||
+                        'No se pudo guardar la oferta. Probá de nuevo.';
+                    showGeoAlert(msg);
+                })
+                .catch(() => {
+                    // Revertir el cambio optimista
+                    if (wasSaved) savedOffers.add(offerId); else savedOffers.delete(offerId);
+                    renderModalSaveState();
+                    showGeoAlert('No se pudo guardar la oferta. Verificá tu conexión e intentá de nuevo.');
+                });
         }
         window.toggleSaveOffer = toggleSaveOffer;
 
@@ -286,6 +426,12 @@ if (mapEl && typeof L !== 'undefined') {
         if (distanceRange && distanceValue) {
             distanceRange.addEventListener('input', (e) => {
                 distanceValue.textContent = e.target.value + ' km';
+                // RF-07: el círculo de radio se actualiza en tiempo real
+                // mientras el usuario mueve el slider.
+                userState.radiusKm = parseFloat(e.target.value);
+                if (userState.circle) {
+                    userState.circle.setRadius(userState.radiusKm * 1000);
+                }
             });
         }
 
@@ -303,6 +449,400 @@ if (mapEl && typeof L !== 'undefined') {
                 chip.classList.add('active');
             }
         });
+
+        // ============================================
+        // GEOLOCALIZACIÓN DEL USUARIO (RF-07 / RNF-04)
+        // API nativa navigator.geolocation. Sin plugins.
+        // - watchPosition con alta precisión (se actualiza
+        //   si el usuario se mueve).
+        // - Marcador distintivo (círculo azul + persona).
+        // - L.circle con el radio elegido en el slider.
+        // - Si se deniega el permiso, aviso y el mapa
+        //   sigue funcionando con normalidad.
+        // ============================================
+        const initialKm = distanceRange ? parseFloat(distanceRange.value) : 10;
+
+        const userState = {
+            lat: null,
+            lng: null,
+            radiusKm: initialKm,
+            marker: null,
+            circle: null,
+        };
+
+        // Ícono distintivo: círculo azul con ícono de persona.
+        const userIcon = L.divIcon({
+            html: '<div class="wn-user-marker">' +
+                      '<div class="wn-user-marker-pulse"></div>' +
+                      '<div class="wn-user-marker-dot"><i class="bi bi-person-fill"></i></div>' +
+                  '</div>',
+            className: '',
+            iconSize: [36, 36],
+            iconAnchor: [18, 18],
+        });
+
+        function updateUserLocation(lat, lng) {
+            const firstFix = userState.lat === null;
+            userState.lat = lat;
+            userState.lng = lng;
+
+            // Con la primera ubicación concreta, el aviso de
+            // "Obteniendo tu ubicación…" deja de ser necesario.
+            hideGeoAlert();
+
+            if (!userState.marker) {
+                userState.marker = L.marker([lat, lng], {
+                    icon: userIcon,
+                    zIndexOffset: 1000, // siempre por encima de las ofertas
+                    keyboard: false,
+                    interactive: false,
+                    title: 'Tu ubicación actual',
+                }).addTo(map);
+
+                userState.circle = L.circle([lat, lng], {
+                    radius: userState.radiusKm * 1000,
+                    className: 'wn-user-radius',
+                    color: 'rgba(13, 110, 253, 0.9)',
+                    weight: 2,
+                    dashArray: '6 6',
+                    fillColor: 'rgba(13, 110, 253, 1)',
+                    fillOpacity: 0.08,
+                    interactive: false,
+                }).addTo(map);
+
+                // Solo se centra en el primer fixed para no
+                // "pelear" con el usuario si se mueve.
+                if (!mapEl.dataset.focus) {
+                    map.setView([lat, lng], Math.max(map.getZoom(), 14));
+                }
+            } else {
+                userState.marker.setLatLng([lat, lng]);
+                userState.circle.setLatLng([lat, lng]);
+            }
+
+            // Recalcular todos los filtros con la posición nueva
+            // (por eso watchPosition).
+            applyAllFilters();
+        }
+
+        function getOffersWithinRadius() {
+            if (userState.lat === null) return null; // sin ubicación: sin filtro
+            const center = L.latLng(userState.lat, userState.lng);
+            const radiusMeters = userState.radiusKm * 1000;
+
+            const within = new Set();
+            markers.forEach((marker) => {
+                // Método nativo de Leaflet: distancia en metros.
+                const distance = center.distanceTo(marker.getLatLng());
+                if (distance <= radiusMeters) within.add(String(marker.offerId));
+            });
+            return within;
+        }
+
+        function updateResultsCount(count) {
+            const el = document.getElementById('resultsCount');
+            if (el) el.textContent = String(count);
+        }
+
+        // ============================================
+        // FILTROS COMPLETOS (100% funcionales)
+        // Búsqueda de texto, área laboral, modalidad,
+        // tipo de contrato, remuneración mínima y
+        // distancia máxima. Se combinan (AND) en cada
+        // "Aplicar".
+        // ============================================
+        const filterSearch = document.getElementById('filterSearch');
+        const filterArea = document.getElementById('filterArea');
+        const filterContract = document.getElementById('filterContract');
+        const filterSalary = document.getElementById('filterSalary');
+        const modalityInputs = Array.from(document.querySelectorAll('input[name="modality"]'));
+
+        // Normaliza texto: minúsculas + sin tildes, para que
+        // "diseño" y "diseno" sonen igual al filtrar.
+        function normalizeText(value) {
+            return String(value || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+        }
+
+        // Valores del <select> de contrato → texto de la oferta.
+        const CONTRACT_LABELS = {
+            'tiempo-completo': 'tiempo completo',
+            'medio-tiempo': 'medio tiempo',
+            'pasantia': 'pasantia',
+            'contrato': 'por contrato',
+            'freelance': 'freelance',
+        };
+
+        // "Gs. 7.000.000 - 9.000.000" → 7000000.
+        // Texto sin números ("A convenir") → null.
+        function parseSalary(value) {
+            const digits = String(value || '').replace(/[^\d]/g, '');
+            return digits ? parseInt(digits, 10) : null;
+        }
+
+        function getOfferByMarker(marker) {
+            return offers.find((o) => String(o.id) === String(marker.offerId));
+        }
+
+        // Todas las condiciones del panel sobre una oferta.
+        // userWithin: true | false | 'unknown' (sin ubicación).
+        function offerMatchesFilters(offer, userWithin) {
+            // 1) Búsqueda por texto (cargo, empresa, descripción, lugar)
+            const query = normalizeText(filterSearch ? filterSearch.value : '').trim();
+            if (query) {
+                const haystack = normalizeText([
+                    offer.title,
+                    offer.company,
+                    offer.shortDescription,
+                    offer.location,
+                ].join(' '));
+                if (!haystack.includes(query)) return false;
+            }
+
+            // 2) Área laboral (campo area de la oferta)
+            if (filterArea && filterArea.value && offer.area !== filterArea.value) {
+                return false;
+            }
+
+            // 3) Modalidad (chips presencial / remoto / híbrido)
+            const selectedModalities = modalityInputs
+                .filter((input) => input.checked)
+                .map((input) => input.value);
+            if (selectedModalities.length > 0) {
+                if (!selectedModalities.includes(normalizeText(offer.modality))) {
+                    return false;
+                }
+            }
+
+            // 4) Tipo de contrato
+            if (filterContract && filterContract.value) {
+                const expected = CONTRACT_LABELS[filterContract.value];
+                if (normalizeText(offer.contractType) !== expected) return false;
+            }
+
+            // 5) Remuneración mínima (Gs.). Las ofertas con
+            //    "A convenir" (salaryMin null) se ocultan cuando
+            //    el usuario fijó un mínimo, porque no lo cumplen.
+            if (filterSalary) {
+                const min = parseSalary(filterSalary.value);
+                if (min !== null &&
+                    (offer.salaryMin === null || offer.salaryMin === undefined ||
+                     offer.salaryMin < min)) {
+                    return false;
+                }
+            }
+
+            // 6) Distancia máxima respecto a la ubicación del
+            //    usuario (solo se filtra si ya la tenemos).
+            if (userWithin === false) return false;
+
+            return true;
+        }
+
+        function applyAllFilters() {
+            const withoutLocation = userState.lat === null;
+            // Sin ubicación: el filtro de distancia queda deshabilitado
+            // ('unknown' = no restrinige); con ubicación: set de IDs
+            // dentro del radio elegido.
+            const withinIds = withoutLocation ? null : getOffersWithinRadius();
+
+            let visible = 0;
+            markers.forEach((marker) => {
+                const offer = getOfferByMarker(marker);
+                const userWithin = withoutLocation
+                    ? 'unknown'
+                    : withinIds.has(String(marker.offerId));
+
+                const shouldShow = offer && offerMatchesFilters(offer, userWithin);
+                if (shouldShow) {
+                    if (!map.hasLayer(marker)) marker.addTo(map);
+                    visible++;
+                } else if (map.hasLayer(marker)) {
+                    marker.closePopup();
+                    map.removeLayer(marker);
+                }
+            });
+
+            updateResultsCount(visible);
+        }
+
+        // Botón "Aplicar": ejecuta los filtros del panel.
+        const filtersApply = document.getElementById('filtersApply');
+        if (filtersApply) {
+            filtersApply.addEventListener('click', () => {
+                if (userState.lat === null) {
+                    showGeoAlert(GEO_ERROR_MSG);
+                }
+                applyAllFilters();
+            });
+        }
+
+        // Buscar al presionar Enter (atajo conocido).
+        if (filterSearch) {
+            filterSearch.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (filtersApply) filtersApply.click();
+                }
+            });
+        }
+
+        // Botón "Limpiar": resetea el panel completo y vuelve a
+        // mostrar todas las ofertas.
+        const filtersClear = document.getElementById('filtersClear');
+        if (filtersClear) {
+            filtersClear.addEventListener('click', () => {
+                if (filterSearch) filterSearch.value = '';
+                if (filterArea) filterArea.value = '';
+                if (filterContract) filterContract.value = '';
+                if (filterSalary) filterSalary.value = '';
+                modalityInputs.forEach((input) => { input.checked = false; });
+                document.querySelectorAll('.wn-filter-chip').forEach((chip) => {
+                    chip.classList.remove('active');
+                });
+
+                if (distanceRange && distanceValue) {
+                    distanceRange.value = '10';
+                    distanceValue.textContent = '10 km';
+                }
+                userState.radiusKm = 10;
+                if (userState.circle) userState.circle.setRadius(10000);
+
+                applyAllFilters();
+            });
+        }
+
+        // Aviso del estado de la geolocalización (persistente,
+        // con botón de cierre; reemplaza a alert que bloquea el mapa).
+        let geoAlertTimeout = null;
+
+        function showGeoAlert(message, options = {}) {
+            const {
+                persistent = true,
+                dismissible = true,
+                icon = 'bi-geo-alt',
+                kind = 'warning', // 'warning' | 'info'
+            } = options;
+
+            let alertEl = document.querySelector('.wn-geo-alert');
+            if (!alertEl) {
+                alertEl = document.createElement('div');
+                alertEl.className = 'wn-geo-alert';
+                alertEl.innerHTML =
+                    '<i class="bi bi-geo-alt"></i>' +
+                    '<span></span>' +
+                    '<button class="wn-geo-alert-close" type="button" aria-label="Cerrar aviso">' +
+                    '<i class="bi bi-x-lg"></i></button>';
+                document.body.appendChild(alertEl);
+                alertEl.querySelector('.wn-geo-alert-close')
+                    .addEventListener('click', hideGeoAlert);
+            }
+
+            alertEl.classList.toggle('info', kind === 'info');
+            alertEl.querySelector('i').className = 'bi ' + icon;
+            alertEl.querySelector('span').textContent = message;
+            alertEl.classList.add('shown');
+
+            clearTimeout(geoAlertTimeout);
+            if (!persistent) {
+                geoAlertTimeout = setTimeout(hideGeoAlert, 6000);
+            }
+        }
+
+        function hideGeoAlert() {
+            const alertEl = document.querySelector('.wn-geo-alert');
+            if (alertEl) alertEl.classList.remove('shown');
+            clearTimeout(geoAlertTimeout);
+        }
+
+        const GEO_ERROR_MSG =
+            'No se pudo obtener tu ubicación. El filtro de distancia está deshabilitado.';
+        const GEO_DENIED_MSG =
+            'Ubicación bloqueada: en la barra de direcciones (ícono 📍) elegí "Permitir" y recargá la página. El filtro de distancia está deshabilitado.';
+        let geoDeniedReported = false;
+
+        // Permisos / seguimiento de la posición real.
+        if ('geolocation' in navigator) {
+            showGeoAlert('Obteniendo tu ubicación…', {
+                persistent: true,
+                dismissible: false,
+                icon: 'bi-geo-alt-fill',
+                kind: 'info',
+            });
+
+            // Detección inmediata si el permiso ya está denegado
+            // (evita esperar el timeout de watchPosition).
+            if (navigator.permissions && navigator.permissions.query) {
+                navigator.permissions.query({ name: 'geolocation' }).then((status) => {
+                    if (status.state === 'denied' && userState.lat === null) {
+                        geoDeniedReported = true;
+                        showGeoAlert(GEO_DENIED_MSG);
+                    }
+                    status.addEventListener('change', () => {
+                        if (status.state === 'denied' && userState.lat === null) {
+                            geoDeniedReported = true;
+                            showGeoAlert(GEO_DENIED_MSG);
+                        }
+                    });
+                }).catch(() => {});
+            }
+
+            const onGeoSuccess = (position) => {
+                geoDeniedReported = false;
+                updateUserLocation(position.coords.latitude, position.coords.longitude);
+            };
+
+            const onGeoFinalError = (err) => {
+                // No repetir el aviso en cada reintento de watchPosition.
+                if (geoDeniedReported || userState.lat !== null) return;
+                geoDeniedReported = true;
+                console.warn('[Work.net] Geolocalización:', err.code, err.message);
+                showGeoAlert(err.code === err.PERMISSION_DENIED ? GEO_DENIED_MSG : GEO_ERROR_MSG);
+            };
+
+            // Estrategia en 2 intentos:
+            // 1º) alta precisión (GPS/mini-BSSID), timeout corto — el caso ideal;
+            // 2º) si expira o no hay proveedores de posición (típico en PC de
+            //     escritorio de red cableada), reintento por red con tolerancia
+            //     de caché: más lento pero mucho más probable que resuelva.
+            let lowAccuracyRetry = false;
+            let watchId = navigator.geolocation.watchPosition(
+                onGeoSuccess,
+                (err) => {
+                    if (userState.lat !== null) return;
+                    console.warn('[Work.net] Geolocalización (1er intento):', err.code, err.message);
+
+                    if (!lowAccuracyRetry &&
+                        (err.code === err.TIMEOUT || err.code === err.POSITION_UNAVAILABLE)) {
+                        lowAccuracyRetry = true;
+                        navigator.geolocation.clearWatch(watchId);
+                        showGeoAlert('Se está tardando en obtener tu ubicación… Reintentando por red.', {
+                            persistent: true,
+                            dismissible: false,
+                            icon: 'bi-geo-alt-fill',
+                            kind: 'info',
+                        });
+                        watchId = navigator.geolocation.watchPosition(
+                            onGeoSuccess,
+                            onGeoFinalError,
+                            { enableHighAccuracy: false, timeout: 25000, maximumAge: 60000 }
+                        );
+                        return;
+                    }
+
+                    onGeoFinalError(err);
+                },
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+            );
+        } else {
+            showGeoAlert('Tu navegador no soporta geolocalización. El filtro de distancia está deshabilitado.');
+        }
+
+        // Gancho de prueba: permite simular la ubicación del
+        // usuario sin permisos del navegador (solo pruebas).
+        window.setUserLocation = (lat, lng) => updateUserLocation(lat, lng);
 
         // ============================================
         // RESPONSIVE

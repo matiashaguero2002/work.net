@@ -737,6 +737,142 @@ body:has(#map) {
         }
 
         /* ============================================
+           UBICACIÓN DEL USUARIO (RF-07)
+           Marcador distintivo: círculo azul con ícono
+           de persona + pulso. Diferente a los pines
+           de ofertas para no confundirlos.
+           ============================================ */
+        .wn-user-marker {
+            position: relative;
+            width: 36px;
+            height: 36px;
+        }
+
+        .wn-user-marker-dot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(13, 110, 253, 0.95);
+            border: 3px solid #ffffff;
+            box-shadow: 0 4px 14px rgba(13, 110, 253, 0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 0.85rem;
+            z-index: 2;
+        }
+
+        .wn-user-marker-pulse {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(13, 110, 253, 0.55);
+            animation: userMarkerPulse 2s ease-out infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes userMarkerPulse {
+            0% {
+                width: 30px;
+                height: 30px;
+                opacity: 0.7;
+            }
+            100% {
+                width: 96px;
+                height: 96px;
+                opacity: 0;
+            }
+        }
+
+        /* Círculo de radio de búsqueda (L.circle) */
+        .wn-user-radius {
+            stroke: rgba(13, 110, 253, 0.9);
+            stroke-width: 2;
+            stroke-dasharray: 6 6;
+            fill: rgba(13, 110, 253, 0.08);
+        }
+
+        /* Aviso de geolocalización no intrusivo
+           (permiso denegado / sin soporte). Estilo oscuro
+           para concordar con el resto de la interfaz. */
+        .wn-geo-alert {
+            position: fixed;
+            bottom: 88px;
+            left: 50%;
+            transform: translate(-50%, 16px);
+            z-index: 1400;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: min(520px, calc(100vw - 48px));
+            padding: 12px 18px;
+            background: var(--wn-bg-dark);
+            border: 1px solid var(--wn-border);
+            border-left: 4px solid #f59e0b;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(2, 12, 27, 0.5);
+            font-size: 0.88rem;
+            color: var(--wn-text);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        .wn-geo-alert.shown {
+            opacity: 1;
+            transform: translate(-50%, 0);
+            pointer-events: auto;
+        }
+
+        /* Variante info: "obteniendo ubicación…" */
+        .wn-geo-alert.info {
+            border-left-color: var(--wn-accent);
+        }
+
+        .wn-geo-alert.info i {
+            color: var(--wn-accent);
+        }
+
+        .wn-geo-alert i {
+            color: #f59e0b;
+            font-size: 1.05rem;
+            flex: none;
+        }
+
+        .wn-geo-alert-close {
+            flex: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            margin-left: 2px;
+            padding: 0;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--wn-text-muted);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .wn-geo-alert-close:hover {
+            background-color: rgba(230, 237, 243, 0.08);
+            color: var(--wn-text);
+        }
+
+        /* ============================================
            POPUP MINI
            ============================================ */
         .leaflet-popup-content-wrapper {
@@ -1550,3 +1686,13 @@ body:has(#map) {
     .wn-user-info { justify-content: center; }
 }
     
+/* Postularme/Retirar en el popup: estado aplicado */
+.wn-popup-btn-primary.applied {
+    background-color: transparent;
+    border: 1px solid rgba(218, 54, 51, 0.35);
+    color: var(--wn-danger) !important;
+}
+.wn-popup-btn-primary.applied:hover {
+    background-color: rgba(218, 54, 51, 0.15);
+    color: var(--wn-danger) !important;
+}

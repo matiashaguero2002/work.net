@@ -14,13 +14,13 @@
             <label class="wn-filter-label">Buscar</label>
             <div class="wn-filter-search">
                 <i class="bi bi-search"></i>
-                <input type="text" class="wn-filter-input" placeholder="Cargo, empresa...">
+                <input type="text" class="wn-filter-input" id="filterSearch" placeholder="Cargo, empresa...">
             </div>
         </div>
 
         <div class="wn-filter-group">
             <label class="wn-filter-label">Área laboral</label>
-            <select class="wn-filter-select">
+            <select class="wn-filter-select" id="filterArea">
                 <option value="">Todas las áreas</option>
                 <option value="informatica" selected>Informática / TI</option>
                 <option value="diseno">Diseño</option>
@@ -33,15 +33,15 @@
             <label class="wn-filter-label">Modalidad</label>
             <div class="wn-filter-chips">
                 <label class="wn-filter-chip">
-                    <input type="checkbox" value="presencial">
+                    <input type="checkbox" name="modality" value="presencial">
                     <i class="bi bi-building"></i> Presencial
                 </label>
                 <label class="wn-filter-chip">
-                    <input type="checkbox" value="remoto" checked>
+                    <input type="checkbox" name="modality" value="remoto" checked>
                     <i class="bi bi-house"></i> Remoto
                 </label>
                 <label class="wn-filter-chip">
-                    <input type="checkbox" value="hibrido">
+                    <input type="checkbox" name="modality" value="hibrido">
                     <i class="bi bi-arrow-left-right"></i> Híbrido
                 </label>
             </div>
@@ -49,7 +49,7 @@
 
         <div class="wn-filter-group">
             <label class="wn-filter-label">Tipo de contrato</label>
-            <select class="wn-filter-select">
+            <select class="wn-filter-select" id="filterContract">
                 <option value="">Todos</option>
                 <option value="tiempo-completo">Tiempo completo</option>
                 <option value="medio-tiempo">Medio tiempo</option>
@@ -61,7 +61,7 @@
 
         <div class="wn-filter-group">
             <label class="wn-filter-label">Remuneración mínima (Gs.)</label>
-            <input type="text" class="wn-filter-input" placeholder="Ej: 5.000.000">
+            <input type="text" class="wn-filter-input" id="filterSalary" inputmode="numeric" placeholder="Ej: 5.000.000">
         </div>
 
         <div class="wn-filter-group">
@@ -76,10 +76,10 @@
     </div>
 
     <div class="wn-filters-actions">
-        <button class="btn-wn-secondary" type="button">
+        <button class="btn-wn-secondary" type="button" id="filtersClear">
             <i class="bi bi-x-lg"></i> Limpiar
         </button>
-        <button class="btn-wn-primary" type="button">
+        <button class="btn-wn-primary" type="button" id="filtersApply">
             <i class="bi bi-search"></i> Aplicar
         </button>
     </div>

@@ -7,7 +7,7 @@
 
     @include('partials.wn-navbar')
 
-    <main class="wn-main">
+    <main class="wn-main wn-page-interviews">
 
         <header class="wn-header">
             <div class="wn-header-left">
@@ -18,16 +18,20 @@
 
         {{-- Tabs --}}
         <div class="wn-tabs">
-            <button class="wn-tab active" type="button">Próximas <span class="count">{{ $upcomingCount }}</span></button>
-            <button class="wn-tab" type="button">Realizadas <span class="count">{{ $pastCount }}</span></button>
-            <button class="wn-tab" type="button">Canceladas <span class="count">{{ $cancelledCount }}</span></button>
+            <button class="wn-tab active" type="button" data-filter="scheduled">Próximas <span class="count">{{ $upcomingCount }}</span></button>
+            <button class="wn-tab" type="button" data-filter="past">Realizadas <span class="count">{{ $pastCount }}</span></button>
+            <button class="wn-tab" type="button" data-filter="cancelled">Canceladas <span class="count">{{ $cancelledCount }}</span></button>
         </div>
 
         {{-- Lista --}}
-        <div class="wn-interviews" data-map-url="{{ route('map.index') }}">
+        <div class="wn-interviews"
+             data-map-url="{{ route('map.index') }}"
+             data-cancel-url="{{ route('interviews.cancel', [':idEntrevista']) }}"
+             data-negotiate-url="{{ route('interviews.negotiate', [':idEntrevista']) }}">
 
-            @foreach($interviews as $interview)
-                <article class="wn-interview-card {{ $interview['status'] !== 'scheduled' ? $interview['status'] : '' }}" data-status="{{ $interview['status'] }}">
+            @forelse($interviews as $interview)
+                <article class="wn-interview-card {{ $interview['status'] !== 'scheduled' ? $interview['status'] : '' }}{{ isset($interview['negotiating']) && $interview['negotiating'] ? ' negotiating' : '' }}"
+                         data-status="{{ $interview['status'] }}">
                     <div class="wn-date-block {{ $interview['status'] !== 'scheduled' ? $interview['status'] : '' }}">
                         <span class="day">{{ $interview['day'] }}</span>
                         <span class="month">{{ $interview['month'] }}</span>
@@ -37,7 +41,7 @@
                     <div class="wn-interview-content">
                         <div class="wn-interview-header">
                             <h3 class="wn-interview-title">{{ $interview['title'] }}</h3>
-                            <span class="wn-interview-status wn-status-{{ $interview['status'] }}">
+                            <span class="wn-interview-status wn-status-{{ $interview['negotiating'] ?? false ? 'negotiating' : $interview['status'] }}">
                                 <i class="bi bi-{{ $interview['statusIcon'] }}"></i> {{ $interview['statusLabel'] }}
                             </span>
                         </div>
@@ -71,7 +75,7 @@
 
                         @if($interview['notes'])
                             <div class="wn-interview-notes">
-                                <strong>Notas del empleador</strong>
+                                <strong>Notas de la entrevista</strong>
                                 {{ $interview['notes'] }}
                             </div>
                         @endif
@@ -90,28 +94,48 @@
                                 <i class="bi bi-geo-alt-fill"></i> Ver en mapa
                             </a>
                             @if($interview['status'] === 'scheduled')
-                                <button class="wn-action-btn wn-action-btn-danger" type="button">
-                                    <i class="bi bi-x-circle"></i> Cancelar
-                                </button>
+                                <form method="POST" action="" class="wn-interview-cancel-form" data-id="{{ $interview['id'] }}" data-cancel="{{ route('interviews.cancel', $interview['id']) }}" data-company="{{ $interview['company'] }}">
+                                    @csrf
+                                    <button class="wn-action-btn wn-action-btn-danger" type="submit">
+                                        <i class="bi bi-x-circle"></i> Cancelar
+                                    </button>
+                                </form>
                                 <button class="wn-action-btn wn-action-btn-secondary" type="button"
                                         data-negotiate
-                                        data-date="{{ $interview['day'] }} de {{ $interview['monthName'] }}, {{ $interview['timeStart'] }}"
+                                        data-id="{{ $interview['id'] }}"
+                                        data-date="{{ $interview['date'] }}"
                                         data-company="{{ $interview['company'] }}"
-                                        data-position="{{ $interview['position'] }}">
+                                        data-position="{{ $interview['position'] }}"
+                                        data-notes="{{ $interview['notes'] }}">
                                     <i class="bi bi-calendar-plus"></i> Negociar horario
                                 </button>
                             @endif
                         </div>
                     </div>
                 </article>
-            @endforeach
+            @empty
+                <div class="wn-empty-state">
+                    <i class="bi bi-calendar-x"></i>
+                    <h3>Todavía no tenés entrevistas</h3>
+                    <p>Cuando una empresa te convoque, la entrevista aparecerá acá con su fecha, lugar y notas.</p>
+                    <a href="{{ route('map.index') }}" class="btn-wn-primary">
+                        <i class="bi bi-map"></i> Ir al mapa de ofertas
+                    </a>
+                </div>
+            @endforelse
+
+                {{-- Mensaje cuando un filtro quedó sin resultados --}}
+                <div class="wn-empty-state" id="interviewsEmptyFilter" hidden>
+                    <i class="bi bi-funnel"></i>
+                    <h3>No hay entrevistas en esta categoría</h3>
+                </div>
 
         </div>
 
     </main>
 
-    {{-- MODAL REAGENDAR / NEGOCIAR HORARIO
-         (specs/modal - Reagendar.html) --}}
+    {{-- MODAL REAGENDAR / NEGOCIAR HORARIO (RN-19): la propuesta se
+         envía a la BD (estado "negociando" + notas + notificación). --}}
     <div class="wn-modal-backdrop wn-negotiate" id="negotiateModal" role="dialog" aria-modal="true" aria-labelledby="negotiateModalTitle">
         <div class="wn-modal">
 
@@ -130,58 +154,36 @@
                 <div class="wn-alert-info">
                     <i class="bi bi-info-circle-fill"></i>
                     <div>
-                        <p>Entrevista actual: <strong id="negotiateCurrentDate"></strong></p>
-                        <p>Con: <strong id="negotiateCompany"></strong> (<span id="negotiatePosition"></span>)</p>
+                        <p>Entrevista con: <strong id="negotiateCompany"></strong></p>
+                        <p>Puesto: <strong id="negotiatePosition"></strong></p>
                     </div>
                 </div>
 
                 {{-- Formulario de propuesta --}}
                 <div>
-                    <h3 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 12px;">Proponer nueva fecha y hora</h3>
+                    <h3 class="wn-modal-subtitle">Proponer nueva fecha y hora</h3>
                     <div class="wn-form-row">
                         <div>
-                            <label class="wn-label" for="negotiateDate">Nueva fecha <span style="color: var(--wn-danger);">*</span></label>
-                            <input type="date" class="wn-input" id="negotiateDate" name="nueva_fecha" value="2026-10-20">
+                            <label class="wn-label" for="negotiateDate">Nueva fecha <span class="wn-required">*</span></label>
+                            <input type="date" class="wn-input" id="negotiateDate" name="nueva_fecha">
                         </div>
                         <div>
-                            <label class="wn-label" for="negotiateTime">Nueva hora <span style="color: var(--wn-danger);">*</span></label>
-                            <input type="time" class="wn-input" id="negotiateTime" name="nueva_hora" value="15:30">
+                            <label class="wn-label" for="negotiateTime">Nueva hora <span class="wn-required">*</span></label>
+                            <input type="time" class="wn-input" id="negotiateTime" name="nueva_hora">
                         </div>
                     </div>
-                    <div style="margin-top: 16px;">
-                        <label class="wn-label" for="negotiateMessage">Mensaje (Opcional)</label>
-                        <textarea class="wn-textarea" id="negotiateMessage" name="mensaje" rows="2" placeholder="Ej: Me surgió un imprevisto, ¿podemos pasar la entrevista para el martes?"></textarea>
+                    <div class="wn-form-row mb-none">
+                        <div>
+                            <label class="wn-label" for="negotiateMessage">Mensaje (opcional)</label>
+                            <textarea class="wn-textarea" id="negotiateMessage" name="mensaje" rows="2" placeholder="Ej: Me surgió un imprevisto, ¿podemos pasar la entrevista para el martes?"></textarea>
+                        </div>
                     </div>
                 </div>
 
-                {{-- Historial de conversación (RN-19) --}}
-                <div class="wn-chat-history">
-                    <h3 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 4px;">Historial de la entrevista</h3>
-
-                    {{-- Mensaje del empleador --}}
-                    <div class="wn-chat-bubble received">
-                        <div class="wn-chat-meta">
-                            <strong>Tech Solutions</strong>
-                            <span>Hace 2 días</span>
-                        </div>
-                        <p style="margin: 0;">Hola Juan, te confirmo la entrevista para el 15 de octubre a las 10:00 hs en nuestra oficina.</p>
-                    </div>
-
-                    {{-- Propuesta del candidato --}}
-                    <div class="wn-chat-bubble sent">
-                        <div class="wn-chat-meta">
-                            <strong>Vos (Candidato)</strong>
-                            <span>Hace 1 hora</span>
-                        </div>
-                        <p style="margin: 0;">Buen día, lamentablemente tengo un examen en la facultad a esa hora. ¿Podríamos pasar la entrevista al jueves 17 a las 15:00 hs?</p>
-
-                        {{-- Botones de acción para el empleador (si el que mira es el empleador) --}}
-                        <div class="wn-chat-status">
-                            <button class="wn-chat-btn" type="button" style="background-color: var(--wn-success); color: white;"><i class="bi bi-check-lg"></i> Aceptar</button>
-                            <button class="wn-chat-btn" type="button" style="background-color: var(--wn-bg-dark); color: var(--wn-text-muted); border: 1px solid var(--wn-border);"><i class="bi bi-arrow-left-right"></i> Contra-proponer</button>
-                            <button class="wn-chat-btn" type="button" style="background-color: rgba(218, 54, 51, 0.15); color: var(--wn-danger);"><i class="bi bi-x-lg"></i> Rechazar</button>
-                        </div>
-                    </div>
+                {{-- Historial: notas reales del empleador / propuesta anterior --}}
+                <div class="wn-chat-history" id="negotiateChat" hidden>
+                    <h3 class="wn-modal-subtitle">Historial de la entrevista</h3>
+                    <div class="wn-chat-history-items" id="negotiateChatItems"></div>
                 </div>
 
             </div>

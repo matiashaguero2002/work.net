@@ -8,9 +8,16 @@
     @include('partials.wn-navbar')
 
     <main class="wn-main wn-page-employer">
+        @if (session('error'))
+            <div class="wn-flash-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ session('error') }}</div>
+        @endif
+        @if (session('success'))
+            <div class="wn-flash-success"><i class="bi bi-check-circle-fill"></i> {{ session('success') }}</div>
+        @endif
+
         <header class="wn-header">
             <div class="wn-header-left">
-                <h1>¡Hola, {{ auth()->user()->company_name ?? 'Tech Solutions' }}!</h1>
+                <h1>¡Hola, {{ auth()->user()->empleador?->nombre_empresa ?? 'Mi empresa' }}!</h1>
                 <p>Tenés <strong>{{ $stats[0]['value'] }} ofertas activas</strong> con <strong>{{ $stats[1]['value'] }} postulaciones</strong> pendientes de revisión.</p>
             </div>
             <div class="wn-header-actions">

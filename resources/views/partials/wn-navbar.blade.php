@@ -2,7 +2,7 @@
     // Determinar el rol del usuario
     if (auth()->check()) {
         // Hay sesión real → usar el rol del usuario
-        $role = auth()->user()->role;
+        $role = auth()->user()->rol;
     } elseif (request()->routeIs('employer.*')) {
         // No hay sesión pero estamos en ruta de empleador → modo demo
         $role = 'empleador';
@@ -141,7 +141,10 @@
                 <a href="{{ route('notifications.index') }}" class="{{ request()->routeIs('notifications.*') ? 'active' : '' }}" title="Notificaciones">
             @endif
                 <i class="bi bi-bell"></i> <span>Notificaciones</span>
-                <span class="badge bg-danger ms-auto" style="font-size:0.65rem;">3</span>
+                <?php $unreadNotifications = auth()->check() ? auth()->user()->notificaciones()->where('leida', false)->count() : 0; ?>
+                @if ($unreadNotifications > 0)
+                    <span class="badge bg-danger ms-auto" style="font-size:0.65rem;">{{ $unreadNotifications }}</span>
+                @endif
             </a>
         </li>
         @endif
@@ -150,21 +153,39 @@
     @php
         // Datos del usuario para el footer
         if ($role === 'admin') {
-            $userName = auth()->check() ? (auth()->user()->name ?? 'Admin General') : 'Admin General';
-            $userInitials = auth()->check() ? (auth()->user()->initials ?? 'AD') : 'AD';
-            $userRole = 'Administrador';
-            $userEmail = auth()->check() ? (auth()->user()->email ?? 'admin@work.net') : 'admin@work.net';
+            $userName = 'Admin General';
+            $userEmail = 'admin@work.net';
         } elseif ($role === 'empleador') {
-            $userName = auth()->check() ? (auth()->user()->company_name ?? 'Tech Solutions') : 'Tech Solutions';
-            $userInitials = auth()->check() ? (auth()->user()->company_initials ?? 'TS') : 'TS';
-            $userRole = 'Empleador';
-            $userEmail = auth()->check() ? (auth()->user()->email ?? 'contacto@techsolutions.com') : 'contacto@techsolutions.com';
+            $userName = 'Tech Solutions';
+            $userEmail = 'contacto@techsolutions.com';
         } else {
-            $userName = auth()->check() ? (auth()->user()->name ?? 'Juan Pérez') : 'Juan Pérez';
-            $userInitials = auth()->check() ? (auth()->user()->initials ?? 'JP') : 'JP';
-            $userRole = 'Candidato';
-            $userEmail = auth()->check() ? (auth()->user()->email ?? 'juan.perez@email.com') : 'juan.perez@email.com';
+            $userName = 'Juan Pérez';
+            $userEmail = 'juan.perez@email.com';
         }
+
+        // Si hay sesión real, mostrar los datos del usuario autenticado
+        if (auth()->check()) {
+            $authUser = auth()->user();
+            $userEmail = $authUser->email;
+            if ($role === 'empleador') {
+                $empresa = $authUser->empleador;
+                $userName = ($empresa && $empresa->nombre_empresa) ? $empresa->nombre_empresa : $authUser->nombre;
+            } else {
+                $userName = $authUser->nombre;
+            }
+        }
+
+        // Iniciales a partir del nombre
+        $parts = preg_split('/\s+/u', trim($userName));
+        $userInitials = strtoupper(
+            mb_substr($parts[0] ?? 'W', 0, 1) . mb_substr($parts[1] ?? 'N', 0, 1)
+        );
+
+        $userRole = match ($role) {
+            'admin' => 'Administrador',
+            'empleador' => 'Empleador',
+            default => 'Candidato',
+        };
     @endphp
 
     <div class="wn-navbar-footer">
@@ -190,7 +211,10 @@
             <a href="#" class="wn-user-dropdown-item"><i class="bi bi-gear"></i> Configuración</a>
             <a href="#" class="wn-user-dropdown-item"><i class="bi bi-question-circle"></i> Ayuda</a>
             <div class="wn-user-dropdown-divider"></div>
-            <a href="{{ route('auth.role') }}" class="wn-user-dropdown-item danger"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="wn-user-dropdown-item danger"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</button>
+            </form>
         </div>
     </div>
 </nav>

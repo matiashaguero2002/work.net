@@ -120,11 +120,17 @@ body.wn-page-saved::-webkit-scrollbar {
 }
 
 /* Botón quitar (los estilos base de .wn-offer-card se
-   reutilizan de worknet-dashboard.css) */
-.wn-offer-remove {
+   reutilizan de worknet-dashboard.css). RF-08: el botón vive
+   ahora dentro del form DELETE; el form se ancla y el botón
+   queda estático dentro de él. */
+.wn-offer-remove-form {
     position: absolute;
     top: 12px;
     right: 12px;
+    z-index: 2;
+    line-height: 0;
+}
+.wn-offer-remove {
     width: 32px; height: 32px;
     border-radius: 8px;
     background-color: rgba(218, 54, 51, 0.1);
@@ -134,7 +140,6 @@ body.wn-page-saved::-webkit-scrollbar {
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.9rem;
-    z-index: 2;
 }
 .wn-offer-remove:hover {
     background-color: var(--wn-danger);
@@ -259,3 +264,15 @@ body.wn-page-saved::-webkit-scrollbar {
     .wn-offer-action { width: 100%; }
 }
 /* (prefers-reduced-motion se reutiliza de los CSS previos) */
+
+/* ====== Postularme / Retirar desde Guardadas (form transparente) ====== */
+.wn-offer-actions form { display: contents; }
+
+.wn-offer-action.withdraw {
+    background-color: transparent;
+    border: 1px solid rgba(218, 54, 51, 0.3);
+    color: var(--wn-danger) !important;
+}
+.wn-offer-action.withdraw:hover {
+    background-color: rgba(218, 54, 51, 0.15);
+}

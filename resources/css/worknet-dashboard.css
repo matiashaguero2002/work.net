@@ -108,6 +108,7 @@ body.navbar-collapsed .wn-main {
     margin: 0; font-size: 0.9rem;
 }
 .wn-page-dashboard .wn-header-left p strong { color: var(--wn-text); font-weight: 600; }
+.wn-page-dashboard .wn-header-left { display: block; flex: none; min-width: 0; }
 
 /* HEADER (notificaciones: mismos valores que entrevistas) */
 .wn-header {
@@ -119,6 +120,30 @@ body.navbar-collapsed .wn-main {
     padding-bottom: 20px;
     border-bottom: 1px solid var(--wn-border);
     flex-wrap: wrap;
+}
+.wn-header-left h1 {
+    font-size: 1.75rem; font-weight: 700;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.5px;
+}
+.wn-header-left p {
+    color: var(--wn-text-muted);
+    margin: 0; font-size: 0.9rem;
+}
+.wn-header-left p strong { color: var(--wn-text); font-weight: 600; }
+.wn-header-actions {
+    display: flex; gap: 10px; flex-wrap: wrap;
+}
+
+/* Subtítulo debajo del título en todas las vistas del candidato (igual que admin) */
+.wn-page-dashboard .wn-header-left,
+.wn-page-saved .wn-header-left,
+.wn-page-applications .wn-header-left,
+.wn-page-notifications .wn-header-left,
+.wn-page-interviews .wn-header-left {
+    display: block;
+    flex: none;
+    min-width: 0;
 }
 .wn-header-left h1 {
     font-size: 1.75rem; font-weight: 700;
@@ -201,6 +226,38 @@ body.navbar-collapsed .wn-main {
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 16px;
 }
+
+/* Estado vacío de Guardadas (RF-08) */
+.wn-empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 56px 24px;
+    background-color: var(--wn-bg-dark);
+    border: 1px dashed var(--wn-border);
+    border-radius: 14px;
+    text-align: center;
+}
+.wn-empty-state i {
+    font-size: 2.4rem;
+    color: var(--wn-accent);
+    margin-bottom: 4px;
+}
+.wn-empty-state h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--wn-text);
+    margin: 0;
+}
+.wn-empty-state p {
+    color: var(--wn-text-muted);
+    font-size: 0.92rem;
+    max-width: 420px;
+    margin: 0 0 12px 0;
+}
+
 .wn-offer-card {
     background-color: var(--wn-bg-dark);
     border: 1px solid var(--wn-border);
@@ -716,4 +773,84 @@ body.navbar-collapsed .wn-main {
     .wn-main, .wn-offer-card, .wn-stat-card,
     .wn-progress-fill, .wn-application-item, .wn-saved-item,
     .wn-notification { transition: none; }
+}
+
+/* ====== M�dulo candidato funcional ====== */
+/* Enlace interior del item de guardadas (dashboard) */
+.wn-saved-link {
+    display: flex; align-items: center; gap: 10px;
+    flex: 1; min-width: 0;
+    text-decoration: none; color: inherit;
+}
+
+/* [hidden] respeta los display definidos arriba */
+.wn-saved-item [hidden], .wn-date-header[hidden], .wn-notification[hidden], .wn-empty-state[hidden] { display: none; }
+
+
+/* ====== Afinidad de las ofertas recomendadas (algoritmo de matching) ====== */
+.wn-offer-match {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wn-offer-match .wn-progress-bar {
+    height: 5px;
+    flex: 1;
+    min-width: 0;
+}
+
+.wn-offer-match-pct {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--wn-text-muted);
+    background-color: var(--wn-bg-elevated);
+}
+
+.wn-offer-match-pct i {
+    color: var(--wn-text-muted);
+    font-size: 0.75rem;
+}
+
+.wn-offer-match-pct[data-high="1"] {
+    color: var(--wn-success);
+    background-color: rgba(35, 134, 54, 0.12);
+}
+
+.wn-offer-match-pct[data-high="1"] i {
+    color: var(--wn-success);
+}
+
+.wn-offer-reasons {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 10px 12px;
+    background-color: rgba(31, 111, 235, 0.07);
+    border: 1px dashed rgba(31, 111, 235, 0.35);
+    border-radius: 10px;
+}
+
+.wn-offer-reasons li {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 0.74rem;
+    color: var(--wn-text-muted);
+    line-height: 1.45;
+}
+
+.wn-offer-reasons li i {
+    color: var(--wn-accent);
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    margin-top: 1px;
 }

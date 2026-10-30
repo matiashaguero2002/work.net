@@ -3,169 +3,207 @@
 namespace App\Http\Controllers\Candidate;
 
 use App\Http\Controllers\Controller;
+use App\Models\Entrevista;
+use App\Models\Notificacion;
+use App\Models\Oferta;
+use App\Models\Postulacion;
+use App\Models\OfertaGuardada;
+use App\Services\OfertaRecomendador;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
     /**
-     * Muestra el dashboard del candidato.
-     *
-     * SOLO FRONTEND: los datos son mock hardcodeados,
-     * copiados textualmente del prototipo specs/dashboard.html
-     * (proyecto C:\Users\NB\Desktop\work-net).
-     * No hay consultas a base de datos.
+     * Dashboard del candidato con datos REALES de la BD:
+     * contadores, ofertas recomendadas, últimas postulaciones,
+     * próximas entrevistas, progreso de perfil y guardadas.
      */
     public function index(): View
     {
-        $newOffers = 7;
-        $scheduledInterviews = 2;
+        $candidato = Auth::user()?->candidato;
+        $idCandidato = $candidato?->id_candidato ?? 0;
+
+        $hoy = now();
+
+        // Ofertas nuevas: activas publicadas en los últimos 7 días.
+        $newOffers = Oferta::query()
+            ->where('id_estado_oferta', 1)
+            ->where('fecha_publicacion', '>=', $hoy->copy()->subDays(7))
+            ->count();
+
+        // Entrevistas programadas (pendientes a futuro).
+        $scheduledInterviews = Entrevista::query()
+            ->whereHas('postulacion', fn ($q) => $q->where('id_candidato', $idCandidato))
+            ->whereIn('estado', ['pendiente', 'negociando'])
+            ->where('fecha_hora', '>=', $hoy)
+            ->count();
+
+        // ---- Stats (4 tarjetas) ----
+        $counts = Postulacion::query()
+            ->where('id_candidato', $idCandidato)
+            ->selectRaw('count(*) as total')
+            ->selectRaw("count(*) filter (where id_estado_post = 2 or id_estado_post = 6) as en_revision")
+            ->first();
 
         $stats = [
-            ['icon' => 'file-earmark-text', 'modifier' => '', 'value' => 5, 'label' => 'Postulaciones'],
-            ['icon' => 'hourglass-split', 'modifier' => 'warning', 'value' => 3, 'label' => 'En revisión'],
-            ['icon' => 'calendar-check', 'modifier' => 'success', 'value' => 2, 'label' => 'Entrevistas'],
-            ['icon' => 'bookmark', 'modifier' => 'purple', 'value' => 4, 'label' => 'Guardadas'],
+            ['icon' => 'file-earmark-text', 'modifier' => '', 'value' => Postulacion::query()->where('id_candidato', $idCandidato)->where('id_estado_post', '!=', 5)->count(), 'label' => 'Postulaciones'],
+            ['icon' => 'hourglass-split', 'modifier' => 'warning', 'value' => (int) ($counts->en_revision ?? 0), 'label' => 'En revisión'],
+            ['icon' => 'calendar-check', 'modifier' => 'success', 'value' => $scheduledInterviews, 'label' => 'Entrevistas'],
+            ['icon' => 'bookmark', 'modifier' => 'purple', 'value' => OfertaGuardada::query()->where('id_candidato', $idCandidato)->count(), 'label' => 'Guardadas'],
         ];
 
-        // Ofertas recomendadas (offerId/coords enlazan con MapController
-        // para el deep-link "Ver en mapa": centra y abre la tarjeta).
-        $recommendedOffers = [
-            [
-                'offerId' => 1,
-                'title' => 'Desarrollador Full Stack Laravel',
-                'company' => 'Concesionaria San Miguel',
-                'companyInitials' => 'SM',
-                'location' => 'Encarnación',
-                'modality' => 'Presencial',
-                'contractType' => 'Tiempo completo',
-                'shortDescription' => 'Buscamos desarrollador con experiencia en PHP 8.3 y Laravel 12 para unirse a nuestro equipo.',
-                'salary' => 'Gs. 7 - 9M',
-                'isNew' => true,
-                'coords' => [-27.3306, -55.8667],
-            ],
-            [
-                'offerId' => 2,
-                'title' => 'Analista de Sistemas',
-                'company' => 'DataCorp S.A.',
-                'companyInitials' => 'DC',
-                'location' => 'Encarnación',
-                'modality' => 'Híbrido',
-                'contractType' => 'Tiempo completo',
-                'shortDescription' => 'Analista funcional para proyectos de transformación digital con metodologías ágiles.',
-                'salary' => 'Gs. 6 - 8M',
-                'isNew' => false,
-                'coords' => [-27.3256, -55.8600],
-            ],
-            [
-                'offerId' => 5,
-                'title' => 'Administrador de Base de Datos',
-                'company' => 'Banco Regional',
-                'companyInitials' => 'BR',
-                'location' => 'Encarnación',
-                'modality' => 'Presencial',
-                'contractType' => 'Tiempo completo',
-                'shortDescription' => 'DBA con experiencia en PostgreSQL, replicación y alta disponibilidad.',
-                'salary' => 'Gs. 8 - 10M',
-                'isNew' => false,
-                'coords' => [-27.3350, -55.8700],
-            ],
-            [
-                'offerId' => 6,
-                'title' => 'Desarrollador Mobile Flutter',
-                'company' => 'App Factory',
-                'companyInitials' => 'AF',
-                'location' => 'Encarnación',
-                'modality' => 'Remoto',
-                'contractType' => 'Tiempo completo',
-                'shortDescription' => 'Desarrollo de apps móviles multiplataforma con Flutter y Firebase.',
-                'salary' => 'Gs. 6.5 - 8.5M',
-                'isNew' => false,
-                'coords' => [-27.3280, -55.8800],
-            ],
-        ];
+        // ---- Ofertas recomendadas: activas que aún no postulé ----
+        // Con datos de perfil → ranking por afinidad (OfertaRecomendador).
+        // Sin datos (cold start) → las 3 más recientes.
+        $idsPostuladas = Postulacion::query()
+            ->where('id_candidato', $idCandidato)
+            ->where('id_estado_post', '!=', 5)
+            ->pluck('id_oferta');
 
-        $recentApplications = [
-            [
-                'companyInitials' => 'TS',
-                'title' => 'Desarrollador Laravel',
-                'companyLine' => 'Tech Solutions S.A. · Postulado hace 2 días',
-                'statusClass' => 'review',
-                'statusIcon' => 'eye',
-                'statusLabel' => 'En revisión',
-            ],
-            [
-                'companyInitials' => 'DC',
-                'title' => 'Analista de Sistemas',
-                'companyLine' => 'DataCorp S.A. · Postulado hace 5 días',
-                'statusClass' => 'accepted',
-                'statusIcon' => 'check-circle',
-                'statusLabel' => 'Aceptada',
-            ],
-            [
-                'companyInitials' => 'CS',
-                'title' => 'Ingeniero DevOps',
-                'companyLine' => 'Cloud Solutions · Postulado hace 1 semana',
-                'statusClass' => 'registered',
-                'statusIcon' => 'send',
-                'statusLabel' => 'Registrada',
-            ],
-            [
-                'companyInitials' => 'TH',
-                'title' => 'Soporte Técnico IT',
-                'companyLine' => 'Tech Help Paraguay · Postulado hace 2 semanas',
-                'statusClass' => 'rejected',
-                'statusIcon' => 'x-circle',
-                'statusLabel' => 'Rechazada',
-            ],
-        ];
+        $ofertasRecomendables = Oferta::query()
+            ->where('id_estado_oferta', 1)
+            ->whereNotIn('id_oferta', $idsPostuladas->count() ? $idsPostuladas : [0])
+            ->with(['empleador', 'ubicacion', 'modalidad', 'tipoContrato'])
+            ->orderByDesc('fecha_publicacion')
+            ->get();
 
-        $profileProgress = [
-            'percentage' => 60,
-            'checklist' => [
-                ['label' => 'Datos personales', 'done' => true],
-                ['label' => 'Experiencia laboral', 'done' => true],
-                ['label' => 'Formación académica', 'done' => true],
-                ['label' => 'Cargar CV en PDF', 'done' => false],
-                ['label' => 'Agregar habilidades', 'done' => false],
-            ],
-        ];
+        $senales = $candidato ? OfertaRecomendador::senales($candidato) : null;
 
-        $upcomingInterviews = [
-            [
-                'day' => '15',
-                'month' => 'Oct',
-                'title' => 'Entrevista técnica - DataCorp S.A.',
-                'time' => '10:00 hs',
+        if ($senales) {
+            $rankeadas = $ofertasRecomendables
+                ->map(fn (Oferta $oferta) => [
+                    'oferta' => $oferta,
+                    'match' => OfertaRecomendador::scoreOferta($senales, $oferta),
+                ])
+                ->sort(function ($a, $b) {
+                    return $b['match']['score'] <=> $a['match']['score']
+                        ?: ($b['oferta']->fecha_publicacion <=> $a['oferta']->fecha_publicacion);
+                })
+                ->take(3);
+        } else {
+            $rankeadas = $ofertasRecomendables
+                ->take(3)
+                ->map(fn (Oferta $oferta) => ['oferta' => $oferta, 'match' => null]);
+        }
+
+        $recommendedOffers = $rankeadas
+            ->map(fn (array $item) => [
+                'offerId' => $item['oferta']->id_oferta,
+                'title' => $item['oferta']->titulo,
+                'company' => $item['oferta']->empleador->nombre_empresa ?? '—',
+                'companyInitials' => SavedOfferController::initials($item['oferta']->empleador->nombre_empresa ?? ''),
+                'location' => SavedOfferController::locationLabel($item['oferta']),
+                'modality' => $item['oferta']->modalidad?->nombre ?? '—',
+                'contractType' => $item['oferta']->tipoContrato?->nombre ?? '—',
+                'shortDescription' => Str::limit(strip_tags($item['oferta']->descripcion), 110),
+                'salary' => SavedOfferController::salaryLabel($item['oferta']),
+                'isNew' => $item['oferta']->fecha_publicacion && Carbon::parse($item['oferta']->fecha_publicacion) >= $hoy->copy()->subDays(3),
+                'matchScore' => $item['match']['score'] ?? null,
+                'matchReasons' => $item['match']['razones'] ?? [],
+                'coords' => [
+                    (float) $item['oferta']->ubicacion->latitud,
+                    (float) $item['oferta']->ubicacion->longitud,
+                ],
+            ])
+            ->all();
+
+        // ---- Postulaciones recientes (últimas 4 activas) ----
+        $recentApplications = Postulacion::query()
+            ->where('id_candidato', $idCandidato)
+            ->where('id_estado_post', '!=', 5)
+            ->with(['oferta.empleador', 'oferta.ubicacion', 'estadoPostulacion'])
+            ->orderByDesc('fecha_postulacion')
+            ->limit(4)
+            ->get()
+            ->map(fn (Postulacion $postulacion) => $this->presentacionPostulacion($postulacion))
+            ->all();
+
+        // ---- Próximas entrevistas (widget) ----
+        $upcomingInterviews = Entrevista::query()
+            ->whereHas('postulacion', fn ($q) => $q->where('id_candidato', $idCandidato))
+            ->whereIn('estado', ['pendiente', 'negociando'])
+            ->where('fecha_hora', '>=', $hoy)
+            ->with(['postulacion.oferta', 'postulacion.oferta.empleador'])
+            ->orderBy('fecha_hora')
+            ->limit(3)
+            ->get()
+            ->map(fn (Entrevista $entrevista) => [
+                'day' => Carbon::parse($entrevista->fecha_hora)->format('d'),
+                'month' => Carbon::parse($entrevista->fecha_hora)->locale('es')->translatedFormat('M'),
+                'title' => $entrevista->postulacion->oferta->titulo ?? 'Entrevista',
+                'time' => Carbon::parse($entrevista->fecha_hora)->format('H:i') . ' hs',
                 'timeIcon' => 'clock',
-                'place' => 'Av. Irrazábal 1234, Encarnación',
-                'placeIcon' => 'geo-alt-fill',
-            ],
-            [
-                'day' => '18',
-                'month' => 'Oct',
-                'title' => 'Entrevista RRHH - Tech Solutions',
-                'time' => '15:30 hs',
-                'timeIcon' => 'clock',
-                'place' => 'Videollamada',
-                'placeIcon' => 'camera-video',
-            ],
-        ];
+                'place' => $entrevista->modalidad ?? 'Por confirmar',
+                'placeIcon' => str_contains(strtolower($entrevista->modalidad ?? ''), 'video') || str_contains(strtolower($entrevista->modalidad ?? ''), 'remoto') ? 'camera-video' : 'geo-alt',
+            ])
+            ->all();
 
-        $savedOffers = [
-            ['title' => 'Desarrollador Full Stack Laravel', 'company' => 'Concesionaria San Miguel'],
-            ['title' => 'Ingeniero DevOps', 'company' => 'Cloud Solutions'],
-            ['title' => 'Diseñador UX/UI', 'company' => 'Creative Studio'],
-        ];
+        // ---- Guardadas (widget) ----
+        $savedOffers = OfertaGuardada::query()
+            ->where('id_candidato', $idCandidato)
+            ->with(['oferta.empleador'])
+            ->orderByDesc('fecha_guardado')
+            ->limit(5)
+            ->get()
+            ->filter(fn ($guardada) => $guardada->oferta)
+            ->map(fn ($guardada) => [
+                'offerId' => $guardada->oferta->id_oferta,
+                'title' => $guardada->oferta->titulo,
+                'company' => $guardada->oferta->empleador->nombre_empresa ?? '—',
+                'coords' => [
+                    (float) ($guardada->oferta->ubicacion?->latitud ?? 0),
+                    (float) ($guardada->oferta->ubicacion?->longitud ?? 0),
+                ],
+            ])
+            ->values()
+            ->all();
+
+        $profileProgress = \App\Http\Controllers\Candidate\ProfileController::progresoPerfil($candidato);
 
         return view('candidate.dashboard', compact(
-            'newOffers',
-            'scheduledInterviews',
-            'stats',
-            'recommendedOffers',
-            'recentApplications',
-            'profileProgress',
-            'upcomingInterviews',
-            'savedOffers'
+            'newOffers', 'scheduledInterviews', 'stats',
+            'recommendedOffers', 'recentApplications',
+            'upcomingInterviews', 'savedOffers', 'profileProgress',
         ));
+    }
+
+    // ============================================
+    // Privados
+    // ============================================
+
+    /**
+     * Traduce la fila de postulacion al formato compacto del widget.
+     */
+    private function presentacionPostulacion(Postulacion $postulacion): array
+    {
+        $oferta = $postulacion->oferta;
+        $empresa = $oferta?->empleador?->nombre_empresa ?? '—';
+        $ciudad = $oferta?->ubicacion?->ciudad;
+
+        [$statusClass, $statusIcon, $statusLabel] = match ((int) $postulacion->id_estado_post) {
+            3 => ['accepted', 'check-circle-fill', 'Aceptada'],
+            4 => ['rejected', 'x-circle-fill', 'Rechazada'],
+            6 => ['review', 'calendar-event', 'Entrevista'],
+            2 => ['review', 'hourglass-split', 'En revisión'],
+            default => ['registered', 'send', 'Registrada'],
+        };
+
+        return [
+            'title' => $oferta->titulo ?? 'Oferta eliminada',
+            'companyLine' => $ciudad ? $empresa . ' · ' . $ciudad : $empresa,
+            'companyInitials' => SavedOfferController::initials($oferta?->empleador->nombre_empresa ?? ''),
+            'statusClass' => $statusClass,
+            'statusIcon' => $statusIcon,
+            'statusLabel' => $statusLabel,
+            'href' => $oferta?->ubicacion ? route('map.index', [
+                'lat' => $oferta->ubicacion->latitud,
+                'lng' => $oferta->ubicacion->longitud,
+                'zoom' => 17,
+                'offer' => $oferta->id_oferta,
+            ]) : route('candidate.applications.index'),
+        ];
     }
 }

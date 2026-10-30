@@ -3,81 +3,184 @@
 namespace App\Http\Controllers\Candidate;
 
 use App\Http\Controllers\Controller;
+use App\Models\Oferta;
+use App\Models\OfertaGuardada;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class SavedOfferController extends Controller
 {
     /**
-     * Muestra las ofertas guardadas del candidato.
-     *
-     * SOLO FRONTEND: los datos son mock hardcodeados,
-     * copiados textualmente del prototipo specs/guardadas.html
-     * (proyecto C:\Users\NB\Desktop\work-net).
-     * No hay consultas a base de datos.
+     * Muestra las ofertas guardadas del candidato (RF-08).
+     * Los datos vienen de la base de datos (oferta_guardada ->
+     * oferta -> empleador/ubicacion/catálogos).
      */
     public function index(): View
     {
-        // Ofertas guardadas (offerId/coords enlazan con MapController
-        // para el deep-link "Mapa": centra y abre la tarjeta).
-        $savedOffers = [
-            [
-                'id' => 1,
-                'offerId' => 1,
-                'title' => 'Desarrollador Full Stack Laravel',
-                'company' => 'Concesionaria San Miguel',
-                'companyInitials' => 'SM',
-                'location' => 'Encarnación',
-                'modality' => 'Presencial',
-                'contractType' => 'Tiempo completo',
-                'shortDescription' => 'Buscamos desarrollador con experiencia en PHP 8.3 y Laravel 12 para unirse a nuestro equipo de tecnología.',
-                'salary' => 'Gs. 7 - 9M',
-                'savedAt' => 'Guardada hace 2 días',
-                'coords' => [-27.3306, -55.8667],
-            ],
-            [
-                'id' => 7,
-                'offerId' => 7,
-                'title' => 'Ingeniero DevOps',
-                'company' => 'Cloud Solutions',
-                'companyInitials' => 'CS',
-                'location' => 'Encarnación',
-                'modality' => 'Híbrido',
-                'contractType' => 'Tiempo completo',
-                'shortDescription' => 'Automatización de pipelines CI/CD y gestión de infraestructura en la nube con Docker, Kubernetes y AWS.',
-                'salary' => 'Gs. 9 - 12M',
-                'savedAt' => 'Guardada hace 4 días',
-                'coords' => [-27.3220, -55.8650],
-            ],
-            [
-                'id' => 5,
-                'offerId' => 5,
-                'title' => 'Administrador de Base de Datos',
-                'company' => 'Banco Regional',
-                'companyInitials' => 'BR',
-                'location' => 'Encarnación',
-                'modality' => 'Presencial',
-                'contractType' => 'Tiempo completo',
-                'shortDescription' => 'DBA con experiencia en PostgreSQL, replicación, backups y tuning para infraestructura crítica.',
-                'salary' => 'Gs. 8 - 10M',
-                'savedAt' => 'Guardada hace 1 semana',
-                'coords' => [-27.3350, -55.8700],
-            ],
-            [
-                'id' => 6,
-                'offerId' => 6,
-                'title' => 'Desarrollador Mobile Flutter',
-                'company' => 'App Factory',
-                'companyInitials' => 'AF',
-                'location' => 'Encarnación',
-                'modality' => 'Remoto',
-                'contractType' => 'Tiempo completo',
-                'shortDescription' => 'Desarrollo de apps móviles multiplataforma con Flutter, Dart, Firebase y APIs REST.',
-                'salary' => 'Gs. 6.5 - 8.5M',
-                'savedAt' => 'Guardada hace 2 semanas',
-                'coords' => [-27.3280, -55.8800],
-            ],
-        ];
+        $candidato = auth()->user()?->candidato;
 
-        return view('candidate.saved', compact('savedOffers'));
+        $savedOffers = [];
+        if ($candidato) {
+            $guardadas = OfertaGuardada::query()
+                ->where('id_candidato', $candidato->id_candidato)
+                ->orderByDesc('fecha_guardado')
+                ->with(['oferta.empleador', 'oferta.ubicacion', 'oferta.modalidad', 'oferta.tipoContrato'])
+                ->get();
+
+            foreach ($guardadas as $guardada) {
+                $oferta = $guardada->oferta;
+                if (! $oferta) {
+                    continue; // oferta eliminada (CASCADE la quita igual)
+                }
+
+                $savedOffers[] = [
+                    'id' => $guardada->id_oferta_guardada,
+                    'offerId' => $oferta->id_oferta,
+                    'title' => $oferta->titulo,
+                    'company' => $oferta->empleador->nombre_empresa ?? '—',
+                    'companyInitials' => static::initials($oferta->empleador->nombre_empresa ?? ''),
+                    'location' => static::locationLabel($oferta),
+                    'modality' => $oferta->modalidad?->nombre ?? '—',
+                    'contractType' => $oferta->tipoContrato?->nombre ?? '—',
+                    'shortDescription' => Str::limit(strip_tags($oferta->descripcion), 140),
+                    'salary' => static::salaryLabel($oferta),
+                    'salaryMin' => $oferta->remuneracion_min ?: $oferta->remuneracion_max ?: 0,
+                    'savedAtTs' => $guardada->fecha_guardado ? Carbon::parse($guardada->fecha_guardado)->getTimestamp() : 0,
+                    'savedAt' => 'Guardada ' . Carbon::parse($guardada->fecha_guardado)
+                        ->locale('es')->diffForHumans(),
+                    'coords' => [
+                        (float) $oferta->ubicacion->latitud,
+                        (float) $oferta->ubicacion->longitud,
+                    ],
+                ];
+            }
+        }
+
+        // ¿Dónde ya está postulado? Para el botón Postularme/Retirar.
+        $postulatedIds = [];
+        if ($candidato) {
+            $postulatedIds = \App\Models\Postulacion::query()
+                ->where('id_candidato', $candidato->id_candidato)
+                ->where('id_estado_post', '!=', 5)
+                ->pluck('id_oferta')
+                ->all();
+        }
+
+        return view('candidate.saved', compact('savedOffers', 'postulatedIds'));
+    }
+
+    /**
+     * Guarda una oferta (POST, AJAX desde el modal del mapa).
+     * Idempotente: la clave única (id_candidato, id_oferta) evita duplicados.
+     */
+    public function store(Request $request, int $idOferta): JsonResponse
+    {
+        $candidato = auth()->user()?->candidato;
+
+        if (! $candidato) {
+            return response()->json([
+                'saved' => false,
+                'message' => 'Solo los candidatos pueden guardar ofertas.',
+            ], 403);
+        }
+
+        $oferta = Oferta::query()->find($idOferta);
+        if (! $oferta) {
+            return response()->json([
+                'saved' => false,
+                'message' => 'La oferta no existe.',
+            ], 404);
+        }
+
+        OfertaGuardada::query()->firstOrCreate([
+            'id_candidato' => $candidato->id_candidato,
+            'id_oferta' => $oferta->id_oferta,
+        ], [
+            // Explícito: evita que el default NOW() de Postgres
+            // (hora local del servidor) desalinee con Carbon (UTC).
+            'fecha_guardado' => now(),
+        ]);
+
+        return response()->json([
+            'saved' => true,
+            'message' => 'Oferta guardada correctamente.',
+        ]);
+    }
+
+    /**
+     * Quita una oferta de guardadas (DELETE).
+     * - AJAX (mapa): responde JSON con el nuevo estado.
+     * - Formulario (página Guardadas): redirige hacia atrás.
+     */
+    public function destroy(Request $request, int $idOferta): JsonResponse|RedirectResponse
+    {
+        $candidato = auth()->user()?->candidato;
+
+        if ($candidato) {
+            OfertaGuardada::query()
+                ->where('id_candidato', $candidato->id_candidato)
+                ->where('id_oferta', $idOferta)
+                ->delete();
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'saved' => false,
+                'message' => 'Oferta quitada de guardadas.',
+            ]);
+        }
+
+        return redirect()->route('candidate.saved.index');
+    }
+
+    // ============================================
+    // Helpers de presentación (existentes para que las
+    // tarjetas sigan con el formato del prototipo)
+    // ============================================
+
+    /** "Concesionaria San Miguel" -> "CS" (iniciales para el logo). */
+    public static function initials(string $nombre): string
+    {
+        $palabras = preg_split('/\s+/', trim($nombre)) ?: [];
+        $iniciales = '';
+        foreach ($palabras as $palabra) {
+            if ($palabra === '') continue;
+            if (mb_strtolower($palabra) === 'de' || mb_strtolower($palabra) === 'y') continue;
+            $iniciales .= mb_strtoupper(mb_substr($palabra, 0, 1));
+            if (mb_strlen($iniciales) >= 2) break;
+        }
+
+        return $iniciales !== '' ? $iniciales : Str::substr($nombre, 0, 1);
+    }
+
+    /** Ubicación para el badge: ciudad + comuna si difiere. */
+    public static function locationLabel($oferta): string
+    {
+        $ubicacion = $oferta->ubicacion;
+
+        return $ubicacion?->ciudad ?? '—';
+    }
+
+    /** Remuneración tipo prototipo: "Gs. 7 - 9M" / "Gs. 9 - 12M" / "A convenir". */
+    public static function salaryLabel($oferta): string
+    {
+        if (! $oferta->mostrar_remuneracion || (! $oferta->remuneracion_min && ! $oferta->remuneracion_max)) {
+            return 'A convenir';
+        }
+
+        $fmt = static fn ($v) => rtrim(rtrim(number_format($v / 1000000, 1, '.', ''), '0'), '.');
+
+        if ($oferta->remuneracion_min && $oferta->remuneracion_max && $oferta->remuneracion_min != $oferta->remuneracion_max) {
+            return 'Gs. ' . $fmt($oferta->remuneracion_min) . ' - ' . $fmt($oferta->remuneracion_max) . 'M';
+        }
+
+        // Solo un extremo definido
+        $solo = $oferta->remuneracion_min ?: $oferta->remuneracion_max;
+
+        return 'Gs. ' . number_format($solo, 0, '', '.');
     }
 }

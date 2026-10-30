@@ -94,7 +94,7 @@
             <button class="btn-wn-secondary" onclick="closeModal(event)">
                 <i class="bi bi-x-lg"></i> Cerrar
             </button>
-            <button class="btn-wn-primary">
+            <button class="btn-wn-primary" id="modalApply" data-apply-offer="">
                 <i class="bi bi-send"></i> Postularme a esta oferta
             </button>
         </div>

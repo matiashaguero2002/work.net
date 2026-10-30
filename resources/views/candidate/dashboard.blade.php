@@ -9,10 +9,17 @@
 
     <main class="wn-main wn-page-dashboard">
 
+        @if (session('error'))
+            <div class="wn-flash-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ session('error') }}</div>
+        @endif
+        @if (session('success'))
+            <div class="wn-flash-success"><i class="bi bi-check-circle-fill"></i> {{ session('success') }}</div>
+        @endif
+
         {{-- HEADER (sin botones, sin emoji) --}}
         <header class="wn-header">
             <div class="wn-header-left">
-                <h1>¡Hola, Juan!</h1>
+                <h1>¡Hola, {{ auth()->user()->nombre ?? 'Candidato' }}!</h1>
                 <p>Tenés <strong>{{ $newOffers }} ofertas nuevas</strong> y <strong>{{ $scheduledInterviews }} entrevistas</strong> programadas.</p>
             </div>
         </header>
@@ -55,12 +62,34 @@
                                 <p class="wn-offer-company">{{ $offer['company'] }}</p>
                             </div>
                         </div>
+                        @if (!is_null($offer['matchScore']))
+                            <div class="wn-offer-match">
+                                <div class="wn-progress-bar wn-match-bar">
+                                    <div class="wn-progress-fill" style="width: {{ $offer['matchScore'] }}%;"></div>
+                                </div>
+                                <span class="wn-offer-match-pct" @if($offer['matchScore'] >= 60) data-high="1" @endif>
+                                    <i @if($offer['matchScore'] > 0) class="bi bi-stars" @else class="bi bi-slash-circle" @endif></i>
+                                    @if ($offer['matchScore'] > 0)
+                                        {{ $offer['matchScore'] }}% de afinidad
+                                    @else
+                                        Sin coincidencias
+                                    @endif
+                                </span>
+                            </div>
+                        @endif
                         <div class="wn-offer-badges">
                             <span class="wn-offer-badge"><i class="bi bi-geo-alt-fill"></i> {{ $offer['location'] }}</span>
                             <span class="wn-offer-badge"><i class="bi bi-laptop"></i> {{ $offer['modality'] }}</span>
                             <span class="wn-offer-badge"><i class="bi bi-clock"></i> {{ $offer['contractType'] }}</span>
                         </div>
                         <p class="wn-offer-description">{{ $offer['shortDescription'] }}</p>
+                        @if (!empty($offer['matchReasons']))
+                            <ul class="wn-offer-reasons">
+                                @foreach($offer['matchReasons'] as $razon)
+                                    <li><i class="bi bi-check2-circle"></i> {{ $razon }}</li>
+                                @endforeach
+                            </ul>
+                        @endif
                         <div class="wn-offer-footer">
                             <span class="wn-offer-salary">
                                 <i class="bi bi-cash-coin"></i> {{ $offer['salary'] }}
@@ -81,14 +110,15 @@
                     <i class="bi bi-clock-history"></i>
                     Mis postulaciones recientes
                 </h2>
-                <a href="#" class="wn-link">
+                <a href="{{ route('candidate.applications.index') }}" class="wn-link">
                     Ver todas <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
 
             <div class="wn-applications">
-                @foreach($recentApplications as $application)
-                    <a href="#" class="wn-application-item">
+                @if(count($recentApplications))
+                    @foreach($recentApplications as $application)
+                        <a href="{{ $application['href'] }}" class="wn-application-item">
                         <div class="wn-application-logo">{{ $application['companyInitials'] }}</div>
                         <div class="wn-application-info">
                             <p class="wn-application-title">{{ $application['title'] }}</p>
@@ -98,7 +128,15 @@
                             <i class="bi bi-{{ $application['statusIcon'] }}"></i> {{ $application['statusLabel'] }}
                         </span>
                     </a>
-                @endforeach
+                    @endforeach
+                @else
+                    <div class="wn-application-item">
+                        <div class="wn-application-info">
+                            <p class="wn-application-title">Aún no te postulaste a ninguna oferta</p>
+                            <p class="wn-application-company">Explorá el mapa para empezar.</p>
+                        </div>
+                    </div>
+                @endif
             </div>
         </section>
 
@@ -128,7 +166,7 @@
                     @endforeach
                 </ul>
 
-                <a href="#" class="btn-wn-primary" style="margin-top: 4px;">
+                <a href="{{ route('candidate.profile') }}" class="btn-wn-primary" style="margin-top: 4px;">
                     <i class="bi bi-pencil"></i> Completar perfil
                 </a>
             </div>
@@ -171,28 +209,84 @@
                     <i class="bi bi-bookmark-fill"></i>
                     Ofertas guardadas
                 </h2>
-                <a href="#" class="wn-link">
+                <a href="{{ route('candidate.saved.index') }}" class="wn-link">
                     Ver todas <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
 
             <div class="wn-widget">
                 <div class="wn-saved-list">
-                    @foreach($savedOffers as $saved)
-                        <a href="#" class="wn-saved-item">
-                            <div class="wn-saved-dot"></div>
-                            <div class="wn-saved-info">
-                                <p class="wn-saved-title">{{ $saved['title'] }}</p>
-                                <p class="wn-saved-company">{{ $saved['company'] }}</p>
+                    @if(count($savedOffers))
+                        @foreach($savedOffers as $saved)
+                            <div class="wn-saved-item">
+                                <a href="{{ route('map.index', ['lat' => $saved['coords'][0], 'lng' => $saved['coords'][1], 'zoom' => 17, 'offer' => $saved['offerId']]) }}" class="wn-saved-link">
+                                    <div class="wn-saved-dot"></div>
+                                    <div class="wn-saved-info">
+                                        <p class="wn-saved-title">{{ $saved['title'] }}</p>
+                                        <p class="wn-saved-company">{{ $saved['company'] }}</p>
+                                    </div>
+                                </a>
+                                <form method="POST" action="{{ route('candidate.saved.destroy', $saved['offerId']) }}"
+                                      class="wn-saved-remove-form" data-offer-title="{{ $saved['title'] }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="wn-saved-remove" title="Quitar de guardadas" type="submit">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </form>
                             </div>
-                            <button class="wn-saved-remove" title="Quitar de guardadas" type="button">
-                                <i class="bi bi-x-lg"></i>
-                            </button>
-                        </a>
-                    @endforeach
+                        @endforeach
+                    @else
+                        <div class="wn-saved-item">
+                            <div class="wn-saved-info">
+                                <p class="wn-saved-title">Aún no guardaste ninguna oferta</p>
+                                <p class="wn-saved-company">Tocá "Guardar" en el mapa.</p>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </section>
 
     </main>
 @endsection
+
+@push('scripts')
+    <script>
+        // Toggle del navbar (map.js solo lo registra cuando existe #map).
+        (function () {
+            const navbar = document.getElementById('navbar');
+            const navbarToggle = document.getElementById('navbarToggle');
+            const navbarBrandTrigger = document.getElementById('navbarBrandTrigger');
+            if (navbar && navbarToggle) {
+                navbarToggle.addEventListener('click', () => {
+                    navbar.classList.add('collapsed');
+                    document.body.classList.add('navbar-collapsed');
+                });
+            }
+            if (navbar && navbarBrandTrigger) {
+                navbarBrandTrigger.addEventListener('click', () => {
+                    if (navbar.classList.contains('collapsed')) {
+                        navbar.classList.remove('collapsed');
+                        document.body.classList.remove('navbar-collapsed');
+                    }
+                });
+            }
+        })();
+
+        // Quitar de guardadas (RF-08) desde el dashboard:
+        // confirmación + fade, luego el form DELETE borra la fila en la BD.
+        document.querySelectorAll('.wn-page-dashboard .wn-saved-remove-form button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const form = btn.closest('form');
+                if (!confirm('¿Querés quitar "' + (form.dataset.offerTitle || 'esta oferta') + '" de tus guardadas?')) return;
+
+                const item = form.closest('.wn-saved-item');
+                item.style.transition = 'opacity 0.3s ease';
+                item.style.opacity = '0';
+                setTimeout(() => form.submit(), 280);
+            });
+        });
+    </script>
+@endpush

@@ -173,9 +173,26 @@ if (mapEl && typeof L !== 'undefined') {
         // ============================================
         // MODAL
         // ============================================
+        // Estado "guardado" del modal (mock, en memoria):
+        // recuerda qué ofertas marcó el usuario durante la sesión.
+        const savedOffers = new Set();
+        let currentModalOfferId = null;
+
+        function renderModalSaveState() {
+            const btn = document.getElementById('modalSave');
+            if (!btn || currentModalOfferId === null) return;
+            const saved = savedOffers.has(String(currentModalOfferId));
+            btn.classList.toggle('saved', saved);
+            btn.querySelector('i').className = saved ? 'bi bi-bookmark-fill' : 'bi bi-bookmark';
+            btn.querySelector('span').textContent = saved ? 'Guardada' : 'Guardar';
+        }
+
         function openModal(offerId) {
             const offer = offers.find(o => o.id === offerId);
             if (!offer) return;
+
+            currentModalOfferId = offerId;
+            renderModalSaveState();
 
             document.getElementById('modalImage').src = offer.image;
             document.getElementById('modalImage').alt = offer.company;
@@ -230,6 +247,20 @@ if (mapEl && typeof L !== 'undefined') {
 
         window.openModal = openModal;
         window.closeModal = closeModal;
+
+        // Botón "Guardar" del modal de oferta (mock, en memoria).
+        function toggleSaveOffer(event) {
+            if (event) event.stopPropagation();
+            if (currentModalOfferId === null) return;
+            const key = String(currentModalOfferId);
+            if (savedOffers.has(key)) {
+                savedOffers.delete(key);
+            } else {
+                savedOffers.add(key);
+            }
+            renderModalSaveState();
+        }
+        window.toggleSaveOffer = toggleSaveOffer;
 
         // ============================================
         // TOGGLE DEL PANEL DE FILTROS

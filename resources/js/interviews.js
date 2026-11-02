@@ -49,6 +49,48 @@
     });
 
     // ============================================
+    // MODAL REAGENDAR / NEGOCIAR HORARIO
+    // (specs/modal - Reagendar.html; se abre con [data-negotiate])
+    // ============================================
+    const negotiateModal = document.getElementById('negotiateModal');
+
+    if (negotiateModal) {
+        const negotiateDate = document.getElementById('negotiateCurrentDate');
+        const negotiateCompany = document.getElementById('negotiateCompany');
+        const negotiatePosition = document.getElementById('negotiatePosition');
+        const negotiateSend = document.getElementById('negotiateSend');
+
+        const openNegotiate = (btn) => {
+            negotiateDate.textContent = btn.dataset.date || '';
+            negotiateCompany.textContent = btn.dataset.company || '';
+            negotiatePosition.textContent = btn.dataset.position || '';
+            negotiateModal.classList.add('show');
+        };
+
+        const closeNegotiate = () => negotiateModal.classList.remove('show');
+
+        document.querySelectorAll('[data-negotiate]').forEach((btn) => {
+            btn.addEventListener('click', () => openNegotiate(btn));
+        });
+
+        negotiateModal.querySelectorAll('[data-negotiate-close]').forEach((el) => {
+            el.addEventListener('click', closeNegotiate);
+        });
+
+        // Click en el fondo (fuera del modal) → cierra.
+        negotiateModal.addEventListener('click', (e) => {
+            if (e.target === negotiateModal) closeNegotiate();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && negotiateModal.classList.contains('show')) closeNegotiate();
+        });
+
+        // "Enviar Propuesta" (mock: solo cierra el modal).
+        if (negotiateSend) negotiateSend.addEventListener('click', closeNegotiate);
+    }
+
+    // ============================================
     // MINI MAPAS (Leaflet no interactivo).
     // Coordenadas vía data-lat / data-lng; la URL del
     // mapa principal vía data-map-url del contenedor.

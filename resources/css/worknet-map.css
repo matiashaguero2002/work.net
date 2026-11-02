@@ -1013,6 +1013,48 @@ body:has(#map) {
             transform: rotate(90deg);
         }
 
+        /* Botón "Guardar" del modal de oferta — mismo diseño que
+           el ítem "Guardadas" del navbar (.wn-navbar-menu a):
+           ícono 1.1rem/20px + label, radio 8px, hover elevado. */
+        .wn-modal-save {
+            position: absolute;
+            top: 16px;
+            right: 64px; /* 16 (borde) + 38 (cerrar) + 10 */
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 14px;
+            background-color: rgba(13, 17, 23, 0.85);
+            border: 1px solid var(--wn-border);
+            border-radius: 8px;
+            color: var(--wn-text-muted);
+            font-size: 0.9rem;
+            font-family: inherit;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            z-index: 2;
+            transition: all 0.2s ease;
+        }
+
+        .wn-modal-save i {
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .wn-modal-save:hover {
+            background-color: var(--wn-bg-elevated);
+            color: var(--wn-text);
+        }
+
+        .wn-modal-save.saved {
+            background-color: var(--wn-accent);
+            border-color: var(--wn-accent);
+            color: #ffffff;
+        }
+
         .wn-modal-logo-badge {
             position: absolute;
             bottom: -28px;

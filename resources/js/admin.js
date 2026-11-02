@@ -8,8 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const navbar = document.getElementById('navbar');
     const navbarToggle = document.getElementById('navbarToggle');
     const navbarBrandTrigger = document.getElementById('navbarBrandTrigger');
-    const userInfoTrigger = document.getElementById('userInfoTrigger');
-    const userDropdown = document.getElementById('userDropdown');
 
     /* ===== NAVBAR ===== */
     if (navbar && navbarToggle) {
@@ -26,19 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    if (userInfoTrigger && userDropdown) {
-        userInfoTrigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            userInfoTrigger.classList.toggle('open');
-            userDropdown.classList.toggle('show');
-        });
-        document.addEventListener('click', (e) => {
-            if (!userInfoTrigger.contains(e.target) && !userDropdown.contains(e.target)) {
-                userInfoTrigger.classList.remove('open');
-                userDropdown.classList.remove('show');
-            }
-        });
-    }
+    // Nota: el dropdown de usuario (userInfoTrigger / userDropdown) lo
+    // maneja dashboard.js, que se carga globalmente vía app.js.
 
     /* ===== FILTROS + TABS (genérico, según página) ===== */
     const list = document.getElementById('reportsList')
@@ -230,10 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         actionModalNo.addEventListener('click', closeActionModal);
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeActionModal();
-                if (userInfoTrigger) { userInfoTrigger.classList.remove('open'); userDropdown.classList.remove('show'); }
-            }
+            if (e.key === 'Escape') closeActionModal();
         });
         actionModal.addEventListener('click', (e) => { if (e.target === actionModal) closeActionModal(); });
 

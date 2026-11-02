@@ -457,3 +457,151 @@ body.navbar-collapsed .wn-main {
 @media (prefers-reduced-motion: reduce) {
     .wn-main, .wn-interview-card { transition: none; }
 }
+
+/* ============================================
+   MODAL REAGENDAR / NEGOCIAR HORARIO
+   (specs/modal - Reagendar.html)
+   Scope .wn-negotiate en el propio backdrop: evita chocar
+   con .wn-modal* de worknet-map.css (ofertas) y con los
+   modales scopeados de empleador/admin.
+   El padding-top 60px = 40px (body) + 20px (backdrop) del prototipo.
+   ============================================ */
+.wn-modal-backdrop.wn-negotiate {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 60px 20px 20px;
+    overflow-y: auto;
+}
+.wn-modal-backdrop.wn-negotiate.show { display: flex; }
+
+.wn-negotiate .wn-modal {
+    background-color: var(--wn-bg-panel);
+    background-image: none;
+    border: 1px solid var(--wn-border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 600px;
+    max-height: calc(100vh - 80px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: none;
+}
+
+/* Header del modal */
+.wn-negotiate .wn-modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--wn-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--wn-bg-elevated);
+    flex-shrink: 0;
+}
+.wn-negotiate .wn-modal-title { font-size: 1.2rem; font-weight: 700; margin: 0; letter-spacing: normal; }
+.wn-negotiate .wn-modal-title i { margin-right: 8px; }
+.wn-negotiate .wn-modal-close {
+    position: static;
+    top: auto;
+    right: auto;
+    width: auto;
+    height: auto;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+    color: var(--wn-text-muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+    backdrop-filter: none;
+    transform: none;
+}
+.wn-negotiate .wn-modal-close:hover { background: none; color: var(--wn-text); transform: none; }
+
+/* Body del modal */
+.wn-negotiate .wn-modal-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: 70vh;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* Alerta de fecha actual */
+.wn-negotiate .wn-alert-info {
+    background-color: rgba(31, 111, 235, 0.1);
+    border: 1px solid rgba(31, 111, 235, 0.3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+.wn-negotiate .wn-alert-info i { color: var(--wn-accent); font-size: 1.2rem; }
+.wn-negotiate .wn-alert-info p { margin: 0; font-size: 0.85rem; color: var(--wn-text-muted); }
+.wn-negotiate .wn-alert-info strong { color: var(--wn-text); }
+
+/* Formulario */
+.wn-negotiate .wn-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.wn-negotiate .wn-label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--wn-text); margin-bottom: 6px; }
+.wn-negotiate .wn-input,
+.wn-negotiate .wn-select,
+.wn-negotiate .wn-textarea {
+    width: 100%;
+    background-color: var(--wn-bg-dark);
+    border: 1px solid var(--wn-border);
+    color: var(--wn-text);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    font-family: inherit;
+}
+.wn-negotiate .wn-input:focus,
+.wn-negotiate .wn-select:focus,
+.wn-negotiate .wn-textarea:focus { outline: none; border-color: var(--wn-accent); box-shadow: none; }
+.wn-negotiate .wn-textarea { min-height: 0; }
+
+/* Historial de mensajes (RN-19) */
+.wn-negotiate .wn-chat-history {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+    padding-top: 20px;
+    border-top: 1px solid var(--wn-border);
+}
+.wn-negotiate .wn-chat-bubble { padding: 12px; border-radius: 12px; font-size: 0.85rem; max-width: 85%; }
+.wn-negotiate .wn-chat-bubble.received { background-color: var(--wn-bg-elevated); align-self: flex-start; border-bottom-left-radius: 2px; }
+.wn-negotiate .wn-chat-bubble.sent { background-color: rgba(31, 111, 235, 0.15); border: 1px solid rgba(31, 111, 235, 0.3); align-self: flex-end; border-bottom-right-radius: 2px; }
+.wn-negotiate .wn-chat-meta { font-size: 0.7rem; color: var(--wn-text-muted); margin-bottom: 4px; display: flex; justify-content: space-between; gap: 10px; }
+.wn-negotiate .wn-chat-status { display: flex; gap: 8px; margin-top: 8px; }
+.wn-negotiate .wn-chat-btn {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    font-weight: 600;
+    font-family: inherit;
+}
+
+/* Footer del modal */
+.wn-negotiate .wn-modal-footer {
+    padding: 20px 24px;
+    border-top: 1px solid var(--wn-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background-color: var(--wn-bg-elevated);
+}
+.wn-negotiate .wn-modal-footer .btn-wn-primary { flex: none; width: auto; padding: 10px 20px; font-size: 1rem; border-radius: 8px; font-weight: 600; }
+.wn-negotiate .wn-modal-footer .btn-wn-secondary { flex: none; width: auto; padding: 10px 20px; font-size: 1rem; border-radius: 8px; font-weight: 600; }

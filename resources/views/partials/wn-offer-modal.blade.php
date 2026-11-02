@@ -2,6 +2,9 @@
     <div class="wn-modal" onclick="event.stopPropagation()">
         <div class="wn-modal-image-wrapper">
             <img src="" alt="" class="wn-modal-image" id="modalImage">
+            <button class="wn-modal-save" id="modalSave" type="button" onclick="toggleSaveOffer(event)" aria-label="Guardar oferta">
+                <i class="bi bi-bookmark" id="modalSaveIcon"></i> <span id="modalSaveText">Guardar</span>
+            </button>
             <button class="wn-modal-close" onclick="closeModal(event)" aria-label="Cerrar">
                 <i class="bi bi-x-lg"></i>
             </button>

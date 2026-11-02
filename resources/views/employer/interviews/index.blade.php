@@ -223,7 +223,7 @@
         </div>
 
         {{-- MODAL CANCELAR --}}
-        <div class="wn-modal-backdrop wn-page-interviews" id="cancelModal" role="dialog" aria-modal="true" aria-labelledby="cancelModalTitle">
+        <div class="wn-modal-backdrop wn-page-employer" id="cancelModal" role="dialog" aria-modal="true" aria-labelledby="cancelModalTitle">
             <div class="wn-modal">
                 <div class="wn-modal-icon">
                     <i class="bi bi-exclamation-triangle-fill"></i>

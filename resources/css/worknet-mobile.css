@@ -1,0 +1,246 @@
+/* ============================================================
+   WORK.NET — Ajustes de móvil
+   (SOLO reglas dentro de media queries: la versión de escritorio
+   queda intacta; este archivo se importa al final para ganar
+   la cascada sobre los ajustes responsive previos)
+   ============================================================ */
+
+/* ============================================================
+   ≤ 992px — Navbar lateral → dock inferior de la app
+   (incluye el rango al que cae la ventana al abrir F12)
+   ============================================================ */
+@media (max-width: 992px) {
+
+    /* ---------- NAVBAR → DOCK INFERIOR ---------- */
+    .wn-navbar {
+        top: auto;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 10px calc(6px + env(safe-area-inset-bottom, 0px));
+        border-radius: 0;
+        border: none;
+        border-top: 1px solid var(--wn-border);
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.55);
+    }
+    .wn-navbar.collapsed {
+        width: 100%;
+    }
+
+    /* El logo/marca desaparece: el dock es solo navegación */
+    .wn-navbar-brand,
+    .wn-navbar-toggle {
+        display: none;
+    }
+
+    /* Menú horizontal con icono + etiqueta chica */
+    .wn-navbar-menu {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        flex: 1;
+        gap: 2px;
+    }
+    .wn-navbar-menu li {
+        flex: 1;
+        margin: 0;
+        min-width: 0;
+    }
+    .wn-navbar-menu a {
+        flex-direction: column;
+        justify-content: center;
+        gap: 3px;
+        padding: 7px 3px;
+        font-size: 0.55rem;
+        border-radius: 10px;
+        text-align: center;
+    }
+    .wn-navbar-menu a span {
+        display: block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .wn-navbar-menu a i {
+        font-size: 1.05rem;
+        width: auto;
+    }
+
+    /* Badge de notificaciones: punto sobre el icono */
+    .wn-navbar-menu .badge {
+        position: absolute;
+        top: 2px;
+        right: 10%;
+        margin: 0;
+        padding: 1px 5px;
+        font-size: 0.56rem;
+    }
+
+    /* Los items ocupan todo el ancho disponible del dock */
+    .wn-navbar-menu li {
+        display: flex;
+    }
+    .wn-navbar-menu a {
+        flex: 1;
+    }
+
+    /* Perfil: el hint de progreso es flex sin wrap y sus <strong>
+       (cada uno un flex item) desbordaban la pantalla */
+    .wn-profile-progress-hint {
+        display: block;
+    }
+
+    /* Usuario: solo el avatar; el dropdown se abre hacia arriba */
+    .wn-navbar-footer {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        border-top: none;
+        margin-left: 2px;
+        flex-shrink: 0;
+    }
+    .wn-user-info {
+        padding: 6px;
+    }
+    .wn-user-info > div:not(.wn-avatar),
+    .wn-user-chevron {
+        display: none;
+    }
+    .wn-navbar.collapsed .wn-user-dropdown,
+    .wn-user-dropdown {
+        left: auto;
+        right: 6px;
+        bottom: calc(100% + 12px);
+        width: 220px;
+        margin: 0;
+    }
+
+    /* ---------- CONTENIDO GENERAL ---------- */
+    .wn-main {
+        margin: 10px 10px calc(76px + env(safe-area-inset-bottom, 0px));
+        margin-left: 10px;
+        margin-right: 10px;
+        padding: 20px 16px;
+        border-radius: 14px;
+    }
+    body.navbar-collapsed .wn-main {
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+
+    /* ---------- MAPA (Buscar) ---------- */
+    .wn-filters,
+    body.navbar-collapsed .wn-filters {
+        top: auto;
+        left: 10px;
+        right: 10px;
+        bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+        width: auto;
+    }
+
+    /* Cerrado: el cuerpo y los botones NO ocupan altura
+       (el max-height: 50vh del prototipo pisaba el estado cerrado) */
+    .wn-filters:not(.open) .wn-filters-body,
+    .wn-filters:not(.open) .wn-filters-actions {
+        max-height: 0;
+        opacity: 0;
+    }
+    /* Abierto: hoja inferior compacta y con scroll */
+    .wn-filters.open .wn-filters-body {
+        max-height: 48vh;
+    }
+
+    .wn-results-badge {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        bottom: auto;
+        justify-content: center;
+    }
+    .wn-geo-alert {
+        bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+        max-width: calc(100vw - 20px);
+        font-size: 0.78rem;
+        padding: 10px 14px;
+    }
+    .leaflet-popup-content {
+        width: calc(100vw - 48px) !important;
+        max-width: 260px !important;
+    }
+    .leaflet-control-zoom {
+        bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* ---------- MODALES (perfil / entrevistas / módulos) ----------
+       El ancho lo controla el backdrop (padding 10px) y el modal
+       pasa a width:100%: calc(100vw-…) desbordaba porque 100vw no
+       descuenta el padding del backdrop (recorte en pantalla). */
+    .wn-page-profile .wn-modal-backdrop,
+    .wn-page-employer .wn-modal-backdrop,
+    .wn-page-admin .wn-modal-backdrop {
+        padding: 10px;
+    }
+    .wn-modal-backdrop.wn-negotiate {
+        padding: 60px 10px 10px;
+    }
+    .wn-page-profile .wn-modal,
+    .wn-page-employer .wn-modal,
+    .wn-page-admin .wn-modal,
+    .wn-negotiate .wn-modal {
+        width: 100%;
+        max-width: none;
+    }
+    .wn-page-profile .wn-modal {
+        max-height: calc(100dvh - 20px);
+    }
+    .wn-form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================
+   ≤ 480px — dock solo con iconos y más aire
+   ============================================================ */
+@media (max-width: 480px) {
+
+    .wn-navbar-menu a span {
+        display: none;
+    }
+    .wn-navbar-menu a {
+        padding: 9px 6px;
+        justify-content: center;
+    }
+    .wn-navbar-menu .badge {
+        top: 0;
+        right: 22%;
+    }
+    .wn-main {
+        margin: 8px 8px calc(66px + env(safe-area-inset-bottom, 0px));
+        margin-left: 8px;
+        margin-right: 8px;
+        padding: 16px 12px;
+    }
+    body.navbar-collapsed .wn-main {
+        margin-left: 8px;
+        margin-right: 8px;
+    }
+
+    /* Dashboard: los tracks 1fr respetan el min-content de las
+       tarjetas y desbordaban la pantalla; minmax(0,1fr) los obliga
+       a encoger y la etiqueta pasa a dos líneas */
+    .wn-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .wn-stat-label {
+        white-space: normal;
+    }
+
+    /* Perfil: el bloque del CV tenía min-width 200px fijo */
+    .wn-cv-info {
+        min-width: 0;
+    }
+}

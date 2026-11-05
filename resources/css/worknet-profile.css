@@ -576,3 +576,98 @@ body:has(.wn-profile-header) {
 .wn-profile-actions .btn-wn-secondary {
     width: auto;
 }
+
+
+/* ====== Modales del perfil (coherentes con entrevistas/empleador) ====== */
+.wn-page-profile .wn-modal-backdrop {
+    position: fixed; inset: 0; z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px;
+}
+.wn-page-profile .wn-modal-backdrop.show { display: flex; }
+
+.wn-page-profile .wn-modal {
+    width: 100%; max-width: 560px; max-height: calc(100vh - 60px);
+    background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border);
+    border-radius: 16px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    display: flex; flex-direction: column; overflow: hidden;
+}
+
+.wn-page-profile .wn-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--wn-border);
+}
+.wn-page-profile .wn-modal-title { margin: 0; font-size: 1rem; font-weight: 700; color: var(--wn-text); }
+
+.wn-page-profile .wn-modal-close {
+    background-color: transparent; border: none; cursor: pointer;
+    color: var(--wn-text-muted); font-size: 1.1rem; line-height: 1; padding: 4px; border-radius: 8px;
+}
+.wn-page-profile .wn-modal-close:hover { color: var(--wn-text); background-color: var(--wn-bg-elevated); }
+
+.wn-page-profile .wn-modal-body { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+
+.wn-page-profile .wn-modal-footer {
+    display: flex; justify-content: flex-end; gap: 8px;
+    padding: 14px 20px; border-top: 1px solid var(--wn-border);
+}
+
+/* Fila de dos campos */
+.wn-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.wn-form-row > div { display: flex; flex-direction: column; gap: 6px; }
+.wn-modal-body > div:not(.wn-form-row) { display: flex; flex-direction: column; gap: 6px; }
+
+/* Checkbox con etiqueta */
+.wn-check { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--wn-text); cursor: pointer; }
+.wn-check input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--wn-accent); cursor: pointer; }
+
+/* ====== Flash de error de las operaciones del perfil ====== */
+.wn-flash-error {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 12px 16px; margin-bottom: 20px;
+    border: 1px solid rgba(218, 54, 51, 0.35);
+    background-color: rgba(218, 54, 51, 0.12);
+    color: var(--wn-danger);
+    border-radius: 10px;
+    font-size: 0.85rem;
+}
+.wn-flash-error span { display: block; }
+
+/* ====== Extras de tarjetas y chips ====== */
+.wn-tag-type {
+    display: inline-block; margin-left: 6px; padding: 2px 8px;
+    font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px;
+    color: var(--wn-accent); background-color: rgba(31, 111, 235, 0.12);
+    border: 1px solid rgba(31, 111, 235, 0.3); border-radius: 20px; vertical-align: middle;
+}
+
+.wn-certified { color: var(--wn-success); font-size: 0.85rem; margin-left: 6px; }
+
+.wn-chip-level { margin-left: 6px; font-size: 0.72rem; color: var(--wn-text-muted); }
+
+.wn-chip-form { display: inline-flex; }
+
+/* ====== CV ====== */
+.wn-cv-upload-form { display: contents; }
+
+.wn-cv-input-file { display: none; }
+
+.wn-cv-pick { cursor: pointer; }
+
+.wn-empty-upload { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 30px 20px; }
+
+.wn-empty-upload input[type=file] { display: none; }
+
+@media (max-width: 640px) {
+    .wn-form-row { grid-template-columns: 1fr; }
+}
+
+/* ====== Modal abierto: el fondo difumina también el navbar ======
+   El navbar (z-index 100) es hermano de .wn-main (z-index 1): cualquier
+   modal dentro de main quedaba por debajo del navbar al difuminar.
+   Al abrirse un modal, subimos main por encima del navbar para que el
+   backdrop (fixed, inset 0) cubra toda la pantalla. */
+.wn-main:has(.wn-modal-backdrop.show) {
+    z-index: 101;
+}

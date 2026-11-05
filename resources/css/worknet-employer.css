@@ -157,6 +157,18 @@ body:has(.wn-page-employer) {
 
 .wn-badge-pill { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; background-color: var(--wn-bg-dark); border: 1px solid var(--wn-border); border-radius: 20px; font-size: 0.75rem; color: var(--wn-text-muted); font-weight: 500; }
 
+/* Subtítulo del header (igual que admin y candidato) */
+.wn-page-employer .wn-header-left p { color: var(--wn-text-muted); margin: 0; font-size: 0.9rem; }
+.wn-page-employer .wn-header-left p strong { color: var(--wn-text); font-weight: 600; }
+
+/* Título + subtítulo uno debajo del otro en todas las vistas del empleador
+   (excepto el detalle de oferta, que usa logo y se mantiene en fila) */
+.wn-page-employer .wn-header-left:not(:has(.wn-header-logo)) {
+    display: block;
+    flex: none;
+    min-width: 0;
+}
+
 .wn-badge-pill i { color: var(--wn-accent); font-size: 0.8rem; }
 
 .wn-badge-pill.status-active { background-color: rgba(35, 134, 54, 0.15); border-color: rgba(35, 134, 54, 0.3); color: var(--wn-success); }

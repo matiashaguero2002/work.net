@@ -1262,3 +1262,69 @@ body:has(.wn-page-employer) {
 }
 
 /* .wn-notification-icon.interview: idéntica a worknet-dashboard.css, no se duplica */
+
+/* ============================================================
+   PERFIL DE EMPRESA (Mi empresa) — modales y extras
+   Scope: .wn-page-company (el .wn-page-employer .wn-modal
+   existente queda reservado para el modal de confirmación)
+   ============================================================ */
+
+.wn-page-company .wn-modal {
+    width: 100%; max-width: 560px; max-height: calc(100vh - 60px);
+    background-color: var(--wn-bg-panel); border: 1px solid var(--wn-border);
+    border-radius: 16px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    padding: 0; gap: 0;
+    display: flex; flex-direction: column; overflow: hidden;
+    animation: wnAdminModalIn 0.2s ease;
+}
+
+.wn-page-company .wn-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--wn-border);
+}
+.wn-page-company .wn-modal-title { margin: 0; font-size: 1rem; font-weight: 700; color: var(--wn-text); }
+
+.wn-page-company .wn-modal-close {
+    background-color: transparent; border: none; cursor: pointer;
+    color: var(--wn-text-muted); font-size: 1.1rem; line-height: 1; padding: 4px; border-radius: 8px;
+}
+.wn-page-company .wn-modal-close:hover { color: var(--wn-text); background-color: var(--wn-bg-elevated); }
+
+.wn-page-company .wn-modal-body { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+
+.wn-page-company .wn-modal-footer {
+    display: flex; justify-content: flex-end; gap: 8px;
+    padding: 14px 20px; border-top: 1px solid var(--wn-border);
+}
+
+/* El form "quitar logo" vive dentro del mismo modal, bajo el form principal */
+.wn-page-company .wn-logo-remove-form .wn-modal-footer { border-top: none; padding-top: 0; }
+
+.wn-page-company .wn-modal-text { font-size: 0.85rem; color: var(--wn-text-muted); margin: 0; line-height: 1.55; }
+
+.wn-page-company .wn-field-hint { font-size: 0.74rem; color: var(--wn-text-muted); margin: 2px 0 0; line-height: 1.4; }
+
+.wn-page-company .wn-modal-body > div:not(.wn-form-row) { display: flex; flex-direction: column; gap: 6px; }
+
+/* Logo cargado: reemplaza al recuadro con iniciales */
+.wn-page-company .wn-company-logo-img {
+    width: 100px; height: 100px;
+    border-radius: 20px; object-fit: cover;
+    border: 4px solid var(--wn-bg-panel);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    background-color: var(--wn-bg-elevated);
+}
+
+/* Fila de datos extra de la sede (nombre / horario) */
+.wn-page-company .wn-location-extra { margin-top: -4px; }
+.wn-page-company .wn-location-extra span { color: var(--wn-text-muted); font-size: 0.8rem; }
+
+/* Sede sin cargar: estado vacío con acción */
+.wn-page-company .wn-location-empty {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wn-page-company .wn-modal { animation: none; }
+}
+

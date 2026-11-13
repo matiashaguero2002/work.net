@@ -141,6 +141,11 @@ Route::prefix('empleador')->name('employer.')->middleware(['auth', 'role:emplead
 
     // Empresa
     Route::get('/empresa', [CompanyController::class, 'profile'])->name('company.profile');
+    Route::post('/empresa', [CompanyController::class, 'update'])->name('company.update');
+    Route::post('/empresa/descripcion', [CompanyController::class, 'descripcionUpdate'])->name('company.descripcion');
+    Route::post('/empresa/logo', [CompanyController::class, 'logoUpdate'])->name('company.logo');
+    Route::post('/empresa/logo/eliminar', [CompanyController::class, 'logoDestroy'])->name('company.logo.destroy');
+    Route::post('/empresa/ubicacion', [CompanyController::class, 'ubicacionUpdate'])->name('company.ubicacion');
 
     // Entrevistas (convocar)
     Route::get('/entrevistas/crear/{applicantId?}', [EmployerInterviewController::class, 'create'])->name('interviews.create');

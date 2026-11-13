@@ -189,12 +189,14 @@
     }
     .wn-page-profile .wn-modal,
     .wn-page-employer .wn-modal,
+    .wn-page-company .wn-modal,
     .wn-page-admin .wn-modal,
     .wn-negotiate .wn-modal {
         width: 100%;
         max-width: none;
     }
-    .wn-page-profile .wn-modal {
+    .wn-page-profile .wn-modal,
+    .wn-page-company .wn-modal {
         max-height: calc(100dvh - 20px);
     }
     .wn-form-row {

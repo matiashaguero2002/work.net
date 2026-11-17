@@ -129,14 +129,50 @@
             negotiateTimeInput.value = '';
             negotiateMessageInput.value = '';
 
-            // Historial real: notas de la entrevista (texto simple,
-            // líneas que empiezan con [Propuesta del candidato] se ven como "Vos").
+            // Historial real: notas de la entrevista.
+            //   [Propuesta del X]: … (enviado …)  → burbuja
+            //   [Visto por X] …                    → recibo en la burbuja previa
+            //   [Aceptada por X] / [Rechazada por X] → chip de estado
             negotiateChatItems.innerHTML = '';
             const notes = btn.dataset.notes || '';
+            let ultimaPropuestaAjena = false;
+
             if (notes.trim() !== '') {
                 negotiateChat.hidden = false;
-                notes.trim().split('\n').forEach((line, i, arr) => {
-                    const esPropuesta = line.startsWith('[Propuesta del candidato]');
+                let ultimaBurbuja = null;
+
+                notes.trim().split('\n').forEach((line) => {
+                    const limpia = line.trim();
+                    if (limpia === '') return;
+
+                    const esPropuesta = limpia.startsWith('[Propuesta del candidato]');
+                    const esVisto = limpia.startsWith('[Visto por ');
+                    const esAceptada = limpia.startsWith('[Aceptada por ');
+                    const esRechazada = limpia.startsWith('[Rechazada por ');
+
+                    // Recibo de lectura / estado: chip sobre la última burbuja.
+                    if (esVisto || esAceptada || esRechazada) {
+                        if (ultimaBurbuja) {
+                            const chip = document.createElement('span');
+                            chip.className = 'wn-chat-receipt';
+                            const cuando = limpia.match(/\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}/);
+                            const hora = cuando ? ' · ' + cuando[0] : '';
+                            chip.textContent = esVisto
+                                ? 'Visto ✓' + hora
+                                : (esAceptada ? 'Aceptada por el candidato' + hora : 'Rechazada por el candidato' + hora);
+                            ultimaBurbuja.appendChild(chip);
+                        }
+                        return;
+                    }
+
+                    if (!limpia.startsWith('[Propuesta del ')) return;
+
+                    // Cuerpo: sin el prefijo ni el timestamp de envío.
+                    const enviadoMatch = limpia.match(/\(enviado (\d{2}\/\d{2}\/\d{4} \d{2}:\d{2})\)/);
+                    const cuerpo = limpia
+                        .replace(/^\[Propuesta del (candidato|empleador)\]:\s*/, '')
+                        .replace(/\s*\(enviado \d{2}\/\d{2}\/\d{4} \d{2}:\d{2}\)$/, '');
+
                     const bubble = document.createElement('div');
                     bubble.className = 'wn-chat-bubble ' + (esPropuesta ? 'sent' : 'received');
 
@@ -145,19 +181,108 @@
                     const author = document.createElement('strong');
                     author.textContent = esPropuesta ? 'Vos (Candidato)' : (btn.dataset.company || 'Empleador');
                     meta.appendChild(author);
+                    // Fecha PROPUESTA (a la derecha).
+                    const fechaMatch = cuerpo.match(/\d{2}\/\d{2}\/\d{4} a las \d{2}:\d{2}/);
+                    if (fechaMatch) {
+                        const cuando = document.createElement('span');
+                        cuando.textContent = fechaMatch[0];
+                        meta.appendChild(cuando);
+                    }
 
                     const text = document.createElement('p');
                     text.style.margin = '0';
-                    text.textContent = esPropuesta ? line.replace('[Propuesta del candidato] ', '') : line;
+                    text.textContent = cuerpo;
+
                     bubble.appendChild(meta);
                     bubble.appendChild(text);
+
+                    // Timestamp real de envío (punto 4).
+                    if (enviadoMatch) {
+                        const pie = document.createElement('span');
+                        pie.className = 'wn-chat-time';
+                        pie.textContent = 'Enviado el ' + enviadoMatch[1];
+                        bubble.appendChild(pie);
+                    }
+
                     negotiateChatItems.appendChild(bubble);
+                    ultimaBurbuja = bubble;
+                    ultimaPropuestaAjena = !esPropuesta;
                 });
             } else {
                 negotiateChat.hidden = true;
+                ultimaPropuestaAjena = false;
             }
 
+            // Acciones: si el último mensaje es una propuesta del EMPLEADOR
+            // y la entrevista sigue "negociando", puedo aceptarla o rechazarla.
+            const responderUrl = (btn.dataset.responderUrl || '').replace(':idEntrevista', btn.dataset.id || '');
+            const hayAcciones = btn.dataset.estado === 'negotiating' && ultimaPropuestaAjena && responderUrl;
+            renderAcciones(hayAcciones ? responderUrl : null);
+
             negotiateModal.classList.add('show');
+
+            // Recibo de lectura: aviso al servidor que vi la propuesta (punto 4).
+            const vistoUrl = (btn.dataset.vistoUrl || '').replace(':idEntrevista', btn.dataset.id || '');
+            if (vistoUrl && ultimaPropuestaAjena) {
+                fetch(vistoUrl, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrfToken(), 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                    credentials: 'same-origin',
+                }).catch(() => {});
+            }
+        };
+
+        // Barra Aceptar / Rechazar propuesta (RN-19).
+        const renderAcciones = (url) => {
+            document.getElementById('negotiateActions')?.remove();
+            if (!url) return;
+
+            const bar = document.createElement('div');
+            bar.className = 'wn-chat-actions';
+            bar.id = 'negotiateActions';
+
+            const aceptar = document.createElement('button');
+            aceptar.className = 'btn-wn-primary';
+            aceptar.type = 'button';
+            aceptar.innerHTML = '<i class="bi bi-check-lg"></i> Aceptar propuesta';
+            aceptar.addEventListener('click', () => responder(url, 'aceptar'));
+
+            const rechazar = document.createElement('button');
+            rechazar.className = 'btn-wn-secondary';
+            rechazar.type = 'button';
+            rechazar.textContent = 'Rechazar';
+            rechazar.addEventListener('click', () => {
+                if (window.confirm('¿Rechazás la propuesta? La entrevista mantiene su fecha original.')) {
+                    responder(url, 'rechazar');
+                }
+            });
+
+            bar.appendChild(rechazar);
+            bar.appendChild(aceptar);
+            negotiateChatItems.after(bar);
+        };
+
+        const responder = (url, accion) => {
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken(),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json',
+                },
+                body: new URLSearchParams({ accion: accion }).toString(),
+                credentials: 'same-origin',
+            })
+                .then((res) => res.json().then((body) => ({ ok: res.ok, body })))
+                .then(({ ok, body }) => {
+                    if (!ok) {
+                        alert(body.message || 'No se pudo responder la propuesta.');
+                        return;
+                    }
+                    window.location.reload();
+                })
+                .catch(() => alert('No se pudo responder la propuesta. Verificá tu conexión.'));
         };
 
         const closeNegotiate = () => negotiateModal.classList.remove('show');

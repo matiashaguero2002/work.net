@@ -81,11 +81,14 @@
                         </div>
                         <div class="wn-offer-actions">
                             @if($offer['status'] === 'paused')
-                                <a href="#" class="wn-offer-action primary">
-                                    <i class="bi bi-play"></i> Reactivar
-                                </a>
+                                <form method="POST" action="{{ route('employer.offers.reactivate', $offer['id']) }}">
+                                    @csrf
+                                    <button type="submit" class="wn-offer-action primary">
+                                        <i class="bi bi-play"></i> Reactivar
+                                    </button>
+                                </form>
                             @else
-                                <a href="{{ route('employer.applicants.index') }}" class="wn-offer-action primary">
+                                <a href="{{ route('employer.applicants.index', ['oferta' => $offer['id']]) }}" class="wn-offer-action primary">
                                     <i class="bi bi-inbox"></i> Ver postulantes
                                 </a>
                             @endif
@@ -111,7 +114,7 @@
 
             <div class="wn-applications">
                 @foreach($recentApplications as $application)
-                    <a href="#" class="wn-application-item">
+                    <a href="{{ route('employer.applicants.show', $application['id']) }}" class="wn-application-item">
                         <div class="wn-app-avatar">{{ $application['initials'] }}</div>
                         <div class="wn-app-info">
                             <p class="wn-app-name">{{ $application['name'] }}</p>
@@ -148,7 +151,7 @@
                     @endforeach
                 </ul>
 
-                <a href="#" class="btn-wn-primary" style="margin-top: 4px;">
+                <a href="{{ route('employer.company.profile') }}" class="btn-wn-primary" style="margin-top: 4px;">
                     <i class="bi bi-pencil"></i> Completar empresa
                 </a>
             </div>
@@ -174,7 +177,13 @@
                     </div>
                 @endforeach
 
-                <a href="#" class="btn-wn-secondary" style="margin-top: 4px;">
+                @empty($upcomingInterviews)
+                    <p style="font-size: 0.8rem; color: var(--wn-text-muted); margin: 6px 0;">
+                        Todavía no tenés entrevistas programadas. Convocá a un postulante desde "Postulantes".
+                    </p>
+                @endempty
+
+                <a href="{{ route('employer.interviews.index') }}" class="btn-wn-secondary" style="margin-top: 4px;">
                     <i class="bi bi-calendar3"></i> Ver todas las entrevistas
                 </a>
             </div>

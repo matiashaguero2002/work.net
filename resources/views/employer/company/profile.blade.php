@@ -333,6 +333,28 @@
                                 <input class="wn-input" id="u-tel" type="text" name="sede_telefono" value="{{ old('sede_telefono', $sede?->telefono) }}" maxlength="20">
                             </div>
                         </div>
+
+                        {{-- Selector de ubicación: búsqueda de dirección + mapa --}}
+                        {{-- con marcador arrastrable (idéntico a "Publicar oferta") --}}
+                        <div class="wn-location-search">
+                            <i class="bi bi-search"></i>
+                            <input class="wn-input" id="u-search" type="text" placeholder="Buscar dirección y elegir del listado..." autocomplete="off">
+                            <div class="wn-search-results" id="u-search-results" hidden></div>
+                        </div>
+
+                        <div class="wn-location-map" id="u-map"></div>
+
+                        <div class="wn-location-coords">
+                            <div>
+                                <label class="wn-label" for="u-lat">Latitud *</label>
+                                <input class="wn-input" id="u-lat" type="number" step="any" name="latitud" value="{{ old('latitud', $sede?->ubicacion?->latitud) }}" required placeholder="Ej: -27.3306">
+                            </div>
+                            <div>
+                                <label class="wn-label" for="u-lng">Longitud *</label>
+                                <input class="wn-input" id="u-lng" type="number" step="any" name="longitud" value="{{ old('longitud', $sede?->ubicacion?->longitud) }}" required placeholder="Ej: -55.8667">
+                            </div>
+                        </div>
+
                         <div>
                             <label class="wn-label" for="u-dir">Dirección *</label>
                             <input class="wn-input" id="u-dir" type="text" name="direccion" value="{{ old('direccion', $sede?->ubicacion?->direccion) }}" required maxlength="200" placeholder="Ej: Av. Irrazábal 1234">
@@ -349,16 +371,6 @@
                         </div>
                         <div class="wn-form-row">
                             <div>
-                                <label class="wn-label" for="u-lat">Latitud *</label>
-                                <input class="wn-input" id="u-lat" type="number" step="any" name="latitud" value="{{ old('latitud', $sede?->ubicacion?->latitud) }}" required placeholder="Ej: -27.3306">
-                            </div>
-                            <div>
-                                <label class="wn-label" for="u-lng">Longitud *</label>
-                                <input class="wn-input" id="u-lng" type="number" step="any" name="longitud" value="{{ old('longitud', $sede?->ubicacion?->longitud) }}" required placeholder="Ej: -55.8667">
-                            </div>
-                        </div>
-                        <div class="wn-form-row">
-                            <div>
                                 <label class="wn-label" for="u-ref">Referencia</label>
                                 <input class="wn-input" id="u-ref" type="text" name="referencia" value="{{ old('referencia', $sede?->ubicacion?->referencia) }}" maxlength="255" placeholder="Ej: A media cuadra de la Costanera">
                             </div>
@@ -367,7 +379,7 @@
                                 <input class="wn-input" id="u-horario" type="text" name="sede_horario" value="{{ old('sede_horario', $sede?->horario) }}" maxlength="100" placeholder="Ej: Lun a Vie 08:00 - 17:00">
                             </div>
                         </div>
-                        <p class="wn-field-hint">Usá las coordenadas donde está la sede: los candidatos las ven en el mapa de tu perfil.</p>
+                        <p class="wn-field-hint">Buscá la dirección (o arrastrá el marcador en el mapa): los candidatos la ven en el mapa de tu perfil y de tus ofertas.</p>
                     </div>
                     <div class="wn-modal-footer">
                         <button class="btn-wn-secondary" type="button" data-modal-close>Cancelar</button>

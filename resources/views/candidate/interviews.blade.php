@@ -106,7 +106,10 @@
                                         data-date="{{ $interview['date'] }}"
                                         data-company="{{ $interview['company'] }}"
                                         data-position="{{ $interview['position'] }}"
-                                        data-notes="{{ $interview['notes'] }}">
+                                        data-notes="{{ $interview['notes'] }}"
+                                        data-estado="{{ ($interview['negotiating'] ?? false) ? 'negotiating' : 'pending' }}"
+                                        data-responder-url="{{ route('interviews.responder', $interview['id']) }}"
+                                        data-visto-url="{{ route('interviews.visto', $interview['id']) }}">
                                     <i class="bi bi-calendar-plus"></i> Negociar horario
                                 </button>
                             @endif

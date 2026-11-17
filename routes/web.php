@@ -61,6 +61,11 @@ Route::get('/', function () {
 // Mapa de ofertas (público: la exploración no requiere cuenta)
 Route::get('/mapa', [MapController::class, 'index'])->name('map.index');
 
+// Contador de visualizaciones (RF-05): cada vez que un candidato
+// autenticado abre el detalle de una oferta en el mapa.
+Route::post('/mapa/ofertas/{idOferta}/vista', [MapController::class, 'vista'])
+    ->middleware(['auth', 'role:candidato'])->name('map.vista');
+
 // Entrevistas del candidato (solo cuentas de candidato)
 Route::get('/entrevistas', [InterviewController::class, 'index'])
     ->middleware(['auth', 'role:candidato'])->name('interviews.index');
@@ -111,6 +116,7 @@ Route::prefix('candidato')->name('candidate.')->middleware(['auth', 'role:candid
 // Notificaciones del candidato (solo cuentas de candidato)
 Route::middleware(['auth', 'role:candidato'])->group(function () {
     Route::get('/notificaciones', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notificaciones/sin-leer', [NotificationController::class, 'sinLeer'])->name('notifications.unread');
     Route::post('/notificaciones/leer-todas', [NotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
     Route::post('/notificaciones/{idNotificacion}/leida', [NotificationController::class, 'markRead'])->name('notifications.markRead');
     Route::delete('/notificaciones/{idNotificacion}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
@@ -120,6 +126,8 @@ Route::middleware(['auth', 'role:candidato'])->group(function () {
 Route::prefix('candidato')->middleware(['auth', 'role:candidato'])->group(function () {
     Route::post('/entrevistas/{idEntrevista}/cancelar', [InterviewController::class, 'cancel'])->name('interviews.cancel');
     Route::post('/entrevistas/{idEntrevista}/negociar', [InterviewController::class, 'negotiate'])->name('interviews.negotiate');
+    Route::post('/entrevistas/{idEntrevista}/responder-propuesta', [InterviewController::class, 'responderPropuesta'])->name('interviews.responder');
+    Route::post('/entrevistas/{idEntrevista}/visto', [InterviewController::class, 'visto'])->name('interviews.visto');
 });
 
 // Módulo del empleador (solo cuentas de empresa)
@@ -134,10 +142,18 @@ Route::prefix('empleador')->name('employer.')->middleware(['auth', 'role:emplead
         Route::get('/{id}/editar', [OfferController::class, 'edit'])->name('edit');
         Route::put('/{id}', [OfferController::class, 'update'])->name('update');
         Route::delete('/{id}', [OfferController::class, 'destroy'])->name('destroy');
+        // Acciones de las tarjetas
+        Route::post('/{id}/pausar', [OfferController::class, 'pause'])->name('pause');
+        Route::post('/{id}/reactivar', [OfferController::class, 'reactivate'])->name('reactivate');
+        Route::post('/{id}/cerrar', [OfferController::class, 'close'])->name('close');
+        Route::post('/{id}/duplicar', [OfferController::class, 'duplicate'])->name('duplicate');
     });
 
     Route::get('/postulantes', [ApplicantController::class, 'index'])->name('applicants.index');
     Route::get('/postulantes/{id}', [ApplicantController::class, 'show'])->name('applicants.show');
+    Route::post('/postulantes/{id}/rechazar', [ApplicantController::class, 'reject'])->name('applicants.reject');
+    Route::post('/postulantes/{id}/estado', [ApplicantController::class, 'estado'])->name('applicants.estado');
+    Route::get('/postulantes/{id}/cv', [ApplicantController::class, 'cv'])->name('applicants.cv');
 
     // Empresa
     Route::get('/empresa', [CompanyController::class, 'profile'])->name('company.profile');
@@ -147,14 +163,21 @@ Route::prefix('empleador')->name('employer.')->middleware(['auth', 'role:emplead
     Route::post('/empresa/logo/eliminar', [CompanyController::class, 'logoDestroy'])->name('company.logo.destroy');
     Route::post('/empresa/ubicacion', [CompanyController::class, 'ubicacionUpdate'])->name('company.ubicacion');
 
-    // Entrevistas (convocar)
-    Route::get('/entrevistas/crear/{applicantId?}', [EmployerInterviewController::class, 'create'])->name('interviews.create');
-
-    // Notificaciones del empleador
-    Route::get('/notificaciones', [EmployerNotificationController::class, 'index'])->name('notifications.index');
-
-    // Entrevistas del empleador (listado)
+    // Entrevistas del empleador
     Route::get('/entrevistas', [EmployerInterviewController::class, 'index'])->name('interviews.index');
+    Route::get('/entrevistas/crear/{applicantId}', [EmployerInterviewController::class, 'create'])->name('interviews.create');
+    Route::post('/entrevistas/crear/{applicantId}', [EmployerInterviewController::class, 'store'])->name('interviews.store');
+    Route::post('/entrevistas/{idEntrevista}/cancelar', [EmployerInterviewController::class, 'cancel'])->name('interviews.cancel');
+    Route::post('/entrevistas/{idEntrevista}/negociar', [EmployerInterviewController::class, 'negotiate'])->name('interviews.negotiate');
+    Route::post('/entrevistas/{idEntrevista}/responder-propuesta', [EmployerInterviewController::class, 'responderPropuesta'])->name('interviews.responder');
+    Route::post('/entrevistas/{idEntrevista}/visto', [EmployerInterviewController::class, 'visto'])->name('interviews.visto');
+
+    // Notificaciones del empleador (mismo patrón AJAX que el candidato)
+    Route::get('/notificaciones', [EmployerNotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notificaciones/sin-leer', [EmployerNotificationController::class, 'sinLeer'])->name('notifications.unread');
+    Route::post('/notificaciones/leer-todas', [EmployerNotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
+    Route::post('/notificaciones/{idNotificacion}/leida', [EmployerNotificationController::class, 'markRead'])->name('notifications.markRead');
+    Route::delete('/notificaciones/{idNotificacion}', [EmployerNotificationController::class, 'destroy'])->name('notifications.destroy');
 });
 
 // Módulo del administrador (solo cuentas admin; datos mock hardcodeados en los controladores)

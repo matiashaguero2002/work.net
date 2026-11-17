@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Candidate;
 use App\Http\Controllers\Controller;
 use App\Models\Entrevista;
 use App\Models\Notificacion;
+use App\Services\PropuestaEntrevista;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -83,6 +84,12 @@ class InterviewController extends Controller
             return response()->json(['ok' => false, 'message' => 'Esta entrevista ya no se puede reagendar.'], 422);
         }
 
+        // No se puede encadenar otra propuesta mientras la última
+        // (propia) sigue esperando respuesta del empleador.
+        if (PropuestaEntrevista::propuestaPendiente($entrevista->notas, PropuestaEntrevista::CANDIDATO)) {
+            return response()->json(['ok' => false, 'message' => 'Ya enviaste una propuesta; esperá la respuesta del empleador antes de enviar otra.'], 422);
+        }
+
         $validated = $request->validate([
             'fecha' => ['required', 'date', 'after:today'],
             'hora' => ['required', 'date_format:H:i'],
@@ -91,16 +98,65 @@ class InterviewController extends Controller
 
         $propuesta = \Carbon\Carbon::parse($validated['fecha'])->locale('es')->translatedFormat('d/m/Y') . ' a las ' . $validated['hora'] . ' hs';
 
+        // Timestamp de envío (punto 4): queda registrado en la propia línea.
+        $enviado = ' (enviado ' . now()->locale('es')->translatedFormat('d/m/Y H:i') . ')';
+
         $notas = trim($entrevista->notas ?? '');
-        $notas .= ($notas !== '' ? "\n" : '') . '[Propuesta del candidato]: ' . $propuesta . ($validated['mensaje'] ? ' — "' . $validated['mensaje'] . '"' : '');
+        $notas .= ($notas !== '' ? "\n" : '') . '[Propuesta del candidato]: ' . $propuesta . ($validated['mensaje'] ? ' — "' . $validated['mensaje'] . '"' : '') . $enviado;
 
         $entrevista->notas = $notas;
         $entrevista->estado = 'negociando';
         $entrevista->save();
 
-        $this->notificarEmpleador($entrevista, 'Propuesta de reagendamiento', 'El candidato propuso reagendar la entrevista por ' . ($entrevista->postulacion->oferta->titulo ?? 'la oferta') . ' para el ' . $propuesta . '.');
+        $this->notificarEmpleador($entrevista, 'Propuesta de reagendamiento', 'El candidato propuso reagendar la entrevista por ' . ($entrevista->postulacion->oferta->titulo ?? 'la oferta') . ' para el ' . $propuesta . '. Revisala y aceptala o rechazala desde tus entrevistas.');
 
         return response()->json(['ok' => true, 'message' => 'Propuesta enviada. El empleador la revisará y te responderá.']);
+    }
+
+    /**
+     * Aceptar / Rechazar la última propuesta del EMPLEADOR (chat RN-19).
+     */
+    public function responderPropuesta(\Illuminate\Http\Request $request, int $idEntrevista): JsonResponse
+    {
+        $entrevista = $this->entrevistaPropia($idEntrevista);
+
+        if (! $entrevista) {
+            return response()->json(['ok' => false, 'message' => 'La entrevista no existe.'], 404);
+        }
+
+        if ($entrevista->estado !== 'negociando') {
+            return response()->json(['ok' => false, 'message' => 'No hay ninguna propuesta pendiente de respuesta.'], 422);
+        }
+
+        $accion = $request->validate(['accion' => ['required', 'in:aceptar,rechazar']])['accion'];
+
+        $ultima = PropuestaEntrevista::ultima($entrevista->notas);
+        if ($ultima === null || $ultima['autor'] !== PropuestaEntrevista::EMPLEADOR) {
+            return response()->json(['ok' => false, 'message' => 'No hay ninguna propuesta del empleador pendiente de respuesta.'], 422);
+        }
+
+        $resultado = $accion === 'aceptar'
+            ? PropuestaEntrevista::aceptar($entrevista, PropuestaEntrevista::CANDIDATO)
+            : PropuestaEntrevista::rechazar($entrevista, PropuestaEntrevista::CANDIDATO);
+
+        return response()->json(['ok' => $resultado['ok'], 'message' => $resultado['message']], $resultado['ok'] ? 200 : 422);
+    }
+
+    /**
+     * Recibo de lectura (punto 4): marca la última propuesta del empleador
+     * como vista cuando el candidato abre el chat. Idempotente.
+     */
+    public function visto(int $idEntrevista): JsonResponse
+    {
+        $entrevista = $this->entrevistaPropia($idEntrevista);
+
+        if (! $entrevista) {
+            return response()->json(['ok' => false], 404);
+        }
+
+        PropuestaEntrevista::marcarVisto($entrevista, PropuestaEntrevista::CANDIDATO);
+
+        return response()->json(['ok' => true]);
     }
 
     // ============================================

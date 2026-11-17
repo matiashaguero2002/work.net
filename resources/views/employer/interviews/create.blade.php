@@ -8,6 +8,16 @@
     @include('partials.wn-navbar')
 
     <main class="wn-main wn-page-employer">
+        @if (session('success'))
+            <div class="wn-flash-success"><i class="bi bi-check-circle-fill"></i> {{ session('success') }}</div>
+        @endif
+        @if ($errors->any())
+            <div class="wn-flash-error">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <div>@foreach ($errors->all() as $error)<span>{{ $error }}</span>@endforeach</div>
+            </div>
+        @endif
+
         <header class="wn-header">
             <div class="wn-header-left">
                 <h1>Convocar a entrevista</h1>
@@ -27,13 +37,12 @@
                 <p class="wn-candidate-position">{{ $applicant['position'] }}</p>
                 <div class="wn-candidate-meta">
                     <span><i class="bi bi-envelope-fill"></i> {{ $applicant['email'] }}</span>
-                    <span><i class="bi bi-telephone-fill"></i> {{ $applicant['phone'] }}</span>
                     <span><i class="bi bi-star-fill"></i> {{ $applicant['match'] }}% match</span>
                 </div>
             </div>
         </div>
 
-        <form class="wn-form" method="POST" action="#">
+        <form class="wn-form" method="POST" action="{{ route('employer.interviews.store', $applicant['id']) }}">
             @csrf
 
             <section class="wn-section">
@@ -48,11 +57,11 @@
                 <div class="wn-form-row">
                     <div class="wn-form-group">
                         <label class="wn-label">Fecha <span class="required">*</span></label>
-                        <input type="date" name="date" class="wn-input" required>
+                        <input type="date" name="date" class="wn-input" min="{{ now()->toDateString() }}" value="{{ old('date') }}" required>
                     </div>
                     <div class="wn-form-group">
                         <label class="wn-label">Hora de inicio <span class="required">*</span></label>
-                        <input type="time" name="time" class="wn-input" required>
+                        <input type="time" name="time" class="wn-input" value="{{ old('time') }}" required>
                     </div>
                 </div>
 
@@ -61,11 +70,11 @@
                         <label class="wn-label">Duración estimada <span class="required">*</span></label>
                         <select name="duration" class="wn-select" required>
                             <option value="">Seleccionar duración</option>
-                            <option value="30">30 minutos</option>
-                            <option value="45">45 minutos</option>
-                            <option value="60" selected>1 hora</option>
-                            <option value="90">1 hora 30 minutos</option>
-                            <option value="120">2 horas</option>
+                            <option value="30" @selected(old('duration') === '30')>30 minutos</option>
+                            <option value="45" @selected(old('duration') === '45')>45 minutos</option>
+                            <option value="60" @selected(old('duration', '60') === '60')>1 hora</option>
+                            <option value="90" @selected(old('duration') === '90')>1 hora 30 minutos</option>
+                            <option value="120" @selected(old('duration') === '120')>2 horas</option>
                         </select>
                     </div>
                 </div>
@@ -82,14 +91,14 @@
 
                 <div class="wn-radio-cards">
                     <div class="wn-radio-card">
-                        <input type="radio" name="modality" id="mod-presencial" value="presencial" checked>
+                        <input type="radio" name="modality" id="mod-presencial" value="presencial" @checked(old('modality', 'presencial') === 'presencial')>
                         <label for="mod-presencial">
                             <i class="bi bi-building"></i>
                             <span>Presencial</span>
                         </label>
                     </div>
                     <div class="wn-radio-card">
-                        <input type="radio" name="modality" id="mod-video" value="videollamada">
+                        <input type="radio" name="modality" id="mod-video" value="videollamada" @checked(old('modality') === 'videollamada')>
                         <label for="mod-video">
                             <i class="bi bi-camera-video"></i>
                             <span>Videollamada</span>
@@ -97,21 +106,16 @@
                     </div>
                 </div>
 
+                {{-- SIN apartado de Dirección: la entrevista presencial es
+                     SIEMPRE en la sede del perfil de empresa. --}}
                 <div id="locationSection" style="margin-top: 20px;">
-                    <div class="wn-form-group" style="margin-bottom: 16px;">
-                        <label class="wn-label">Dirección de la entrevista <span class="required">*</span></label>
-                        <input type="text" name="address" class="wn-input" placeholder="Ej: Av. Irrazábal 1234, Encarnación">
-                        <span class="wn-hint">Ajustá el marcador en el mapa si es necesario.</span>
-                    </div>
-                    <div class="wn-location-map" id="locationMap"></div>
-                    <div class="wn-location-coords">
-                        <div class="wn-form-group">
-                            <label class="wn-label">Latitud</label>
-                            <input type="text" class="wn-input" id="latInput" value="-27.3306" readonly>
-                        </div>
-                        <div class="wn-form-group">
-                            <label class="wn-label">Longitud</label>
-                            <input type="text" class="wn-input" id="lngInput" value="-55.8667" readonly>
+                    <div class="wn-info-box">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <div class="wn-info-box-text">
+                            <strong>Ubicación:</strong> la entrevista será en tu sede registrada en
+                            <strong>"Mi empresa"</strong>:
+                            {{ $sede?->ubicacion?->direccion ?? 'sin sede cargada' }},
+                            {{ $sede?->ubicacion?->ciudad ?? '—' }}.
                         </div>
                     </div>
                 </div>
@@ -119,7 +123,7 @@
                 <div id="videoSection" style="margin-top: 20px; display: none;">
                     <div class="wn-form-group">
                         <label class="wn-label">Enlace de la videollamada <span class="required">*</span></label>
-                        <input type="url" name="video_url" class="wn-input" placeholder="https://meet.google.com/abc-defg-hij">
+                        <input type="url" name="video_url" class="wn-input" placeholder="https://meet.google.com/abc-defg-hij" value="{{ old('video_url') }}">
                         <span class="wn-hint">Se enviará al candidato junto con la convocatoria.</span>
                     </div>
                 </div>
@@ -136,7 +140,7 @@
 
                 <div class="wn-form-group">
                     <label class="wn-label">Mensaje para el candidato <span class="optional">(opcional)</span></label>
-                    <textarea name="notes" class="wn-textarea" rows="4" placeholder="Ej: Traer CV impreso. La entrevista será con el Ing. Roberto Giménez."></textarea>
+                    <textarea name="notes" class="wn-textarea" rows="4" placeholder="Ej: Traer CV impreso. La entrevista será con el Ing. Roberto Giménez.">{{ old('notes') }}</textarea>
                     <span class="wn-hint">Este mensaje se incluirá en la notificación al candidato.</span>
                 </div>
 
@@ -153,9 +157,6 @@
                     <i class="bi bi-x-lg"></i> Cancelar
                 </a>
                 <div class="wn-form-actions-right">
-                    <button type="button" class="btn-wn-secondary">
-                        <i class="bi bi-file-earmark"></i> Guardar borrador
-                    </button>
                     <button type="submit" class="btn-wn-primary">
                         <i class="bi bi-send"></i> Enviar convocatoria
                     </button>
@@ -168,9 +169,9 @@
 @endsection
 
 @push('scripts')
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Toggle de modalidad (idéntico al prototipo)
+        // Toggle de modalidad (idéntico al prototipo). Sin mapa:
+        // la dirección presencial es la de la sede del perfil.
         const modPresencial = document.getElementById('mod-presencial');
         const modVideo = document.getElementById('mod-video');
         const locationSection = document.getElementById('locationSection');
@@ -188,27 +189,5 @@
 
         modPresencial.addEventListener('change', updateModalitySections);
         modVideo.addEventListener('change', updateModalitySections);
-
-        // Mapa
-        const map = L.map('locationMap').setView([-27.3306, -55.8667], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            subdomains: ['a', 'b', 'c'],
-            attribution: '© OpenStreetMap',
-            maxZoom: 19
-        }).addTo(map);
-
-        const marker = L.marker([-27.3306, -55.8667], { draggable: true }).addTo(map);
-
-        marker.on('dragend', (e) => {
-            const pos = e.target.getLatLng();
-            document.getElementById('latInput').value = pos.lat.toFixed(6);
-            document.getElementById('lngInput').value = pos.lng.toFixed(6);
-        });
-
-        map.on('click', (e) => {
-            marker.setLatLng(e.latlng);
-            document.getElementById('latInput').value = e.latlng.lat.toFixed(6);
-            document.getElementById('lngInput').value = e.latlng.lng.toFixed(6);
-        });
     </script>
 @endpush

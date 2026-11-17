@@ -270,6 +270,7 @@ if (mapEl && typeof L !== 'undefined') {
         }
         const saveUrlTemplate = mapEl.dataset.saveUrl || '';
         let currentModalOfferId = null;
+const openedForViews = new Set(); // ofertas ya contadas en esta carga (RF-05)
 
         // CSRF nativo de Laravel para las peticiones AJAX.
         function csrfToken() {
@@ -331,6 +332,18 @@ if (mapEl && typeof L !== 'undefined') {
 
             document.getElementById('offerModal').classList.add('active');
             document.body.style.overflow = 'hidden';
+
+            // RF-05: contador de visualizaciones. Si hay URL de registro
+            // (candidato autenticado), aviso al servidor una vez por carga.
+            const viewUrl = (mapEl.dataset.viewUrl || '').replace(':idOferta', String(offerId));
+            if (viewUrl && !openedForViews.has(offerId)) {
+                openedForViews.add(offerId);
+                fetch(viewUrl, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || '', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                    credentials: 'same-origin',
+                }).catch(() => {});
+            }
         }
 
         function closeModal(event) {

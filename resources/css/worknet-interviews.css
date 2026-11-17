@@ -606,7 +606,7 @@ body.navbar-collapsed .wn-main {
 .wn-negotiate .wn-modal-footer .btn-wn-primary { flex: none; width: auto; padding: 10px 20px; font-size: 1rem; border-radius: 8px; font-weight: 600; }
 .wn-negotiate .wn-modal-footer .btn-wn-secondary { flex: none; width: auto; padding: 10px 20px; font-size: 1rem; border-radius: 8px; font-weight: 600; }
 
-/* ====== Módulo candidato funcional ====== */
+/* ====== Mï¿½dulo candidato funcional ====== */
 /* El form de Cancelar es transparente dentro de la fila de acciones */
 .wn-interview-actions form { display: contents; }
 
@@ -616,19 +616,30 @@ body.navbar-collapsed .wn-main {
     color: var(--wn-warning);
 }
 
-/* Subtítulos y marcas del modal Reagendar (antes con style inline) */
+/* Subtï¿½tulos y marcas del modal Reagendar (antes con style inline) */
 .wn-modal-subtitle { font-size: 0.95rem; font-weight: 600; margin-bottom: 12px; }
+
+/* Timestamp de envÃ­o dentro de la burbuja (punto 4). */
+.wn-negotiate .wn-chat-time { display: block; font-size: 0.68rem; color: var(--wn-text-muted); margin-top: 6px; opacity: 0.85; }
+
+/* Recibo de lectura / estado (Visto âœ“ / Aceptada / Rechazada). */
+.wn-negotiate .wn-chat-receipt { display: inline-flex; align-items: center; gap: 4px; font-size: 0.66rem; font-weight: 600; color: var(--wn-text-muted); background: none; margin-top: 8px; }
+
+/* Barra Aceptar / Rechazar propuesta. */
+.wn-negotiate .wn-chat-actions { display: flex; gap: 10px; justify-content: flex-end; align-items: center; padding-top: 4px; }
+.wn-negotiate .wn-chat-actions .btn-wn-primary,
+.wn-negotiate .wn-chat-actions .btn-wn-secondary { width: auto; flex: none; padding: 9px 16px; font-size: 0.88rem; border-radius: 8px; }
 .wn-required { color: var(--wn-danger); }
 .wn-form-row.mb-none { margin-bottom: 0; }
 
-/* Historial dinámico del modal */
+/* Historial dinï¿½mico del modal */
 .wn-chat-history[hidden] { display: none; }
 .wn-chat-history-items { display: flex; flex-direction: column; gap: 12px; }
 
 /* Filtro de tabs */
 .wn-interview-card[hidden] { display: none; }
 
-/* ====== Inputs genéricos para modales (perfil y entrevistas) ====== */
+/* ====== Inputs genï¿½ricos para modales (perfil y entrevistas) ====== */
 .wn-label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--wn-text); margin-bottom: 6px; }
 
 .wn-input,

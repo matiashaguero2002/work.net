@@ -44,6 +44,12 @@ class NotificationController extends Controller
         ]);
     }
 
+    /** Contador de sin leer (polling del badge de la barra lateral). */
+    public function sinLeer(): JsonResponse
+    {
+        return response()->json(['ok' => true, 'unread' => $this->countSinLeer()]);
+    }
+
     /** Marca una notificación como leída (POST, AJAX). */
     public function markRead(int $idNotificacion): JsonResponse
     {

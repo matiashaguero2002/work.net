@@ -9,6 +9,7 @@
          data-saved='@json($savedOfferIds)'
          data-postulated='@json($postulatedOfferIds)'
          data-save-url="{{ route('candidate.saved.store', [':idOferta']) }}"
+         data-view-url="{{ auth()->check() && auth()->user()->candidato ? route('map.vista', [':idOferta']) : '' }}"
          data-post-url="{{ auth()->check() && auth()->user()->candidato ? route('candidate.applications.store', [':idOferta']) : '' }}"
          data-withdraw-url="{{ auth()->check() && auth()->user()->candidato ? route('candidate.applications.destroyByOffer', [':idOferta']) : '' }}"></div>
 

@@ -13,6 +13,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             UsuarioSeeder::class,
+            // Datos demo del módulo empleador (Tech Solutions) y del mapa.
+            EmployerDemoSeeder::class,
         ]);
     }
 }

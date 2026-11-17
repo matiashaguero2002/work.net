@@ -7,3 +7,4 @@ import './dashboard.js';
 import './admin.js';
 import './employer-interviews.js';
 import './company.js';
+import './notifications-badge.js';

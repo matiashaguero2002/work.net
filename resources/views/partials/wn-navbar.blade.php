@@ -136,15 +136,13 @@
         @if($role !== 'admin')
         <li>
             @if($role === 'empleador')
-                <a href="{{ route('employer.notifications.index') }}" class="{{ request()->routeIs('employer.notifications.*') ? 'active' : '' }}" title="Notificaciones">
+                <a href="{{ route('employer.notifications.index') }}" class="{{ request()->routeIs('employer.notifications.*') ? 'active' : '' }}" title="Notificaciones" @if(auth()->check()) data-unread-poll="{{ route('employer.notifications.unread') }}" @endif>
             @else
-                <a href="{{ route('notifications.index') }}" class="{{ request()->routeIs('notifications.*') ? 'active' : '' }}" title="Notificaciones">
+                <a href="{{ route('notifications.index') }}" class="{{ request()->routeIs('notifications.*') ? 'active' : '' }}" title="Notificaciones" @if(auth()->check()) data-unread-poll="{{ route('notifications.unread') }}" @endif>
             @endif
                 <i class="bi bi-bell"></i> <span>Notificaciones</span>
-                <?php $unreadNotifications = auth()->check() ? auth()->user()->notificaciones()->where('leida', false)->count() : 0; ?>
-                @if ($unreadNotifications > 0)
-                    <span class="badge bg-danger ms-auto" style="font-size:0.65rem;">{{ $unreadNotifications }}</span>
-                @endif
+                @php $unreadNotifications = auth()->check() ? auth()->user()->notificaciones()->where('leida', false)->count() : 0; @endphp
+                <span class="badge bg-danger ms-auto" style="font-size:0.65rem;{{ $unreadNotifications === 0 ? ' display:none;' : '' }}" data-unread-badge>{{ $unreadNotifications }}</span>
             </a>
         </li>
         @endif

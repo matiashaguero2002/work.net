@@ -427,6 +427,40 @@ body:has(.wn-page-employer) {
 
 .wn-location-coords { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
+/* Listado de resultados de la búsqueda de direcciones (Nominatim). */
+.wn-search-results {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 1200;
+    background: var(--wn-bg-elevated, #fff);
+    border: 1px solid var(--wn-border);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.wn-search-item {
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    border: none;
+    background: none;
+    text-align: left;
+    font-family: inherit;
+    font-size: 0.8rem;
+    color: var(--wn-text);
+    cursor: pointer;
+    border-bottom: 1px solid var(--wn-border);
+}
+
+.wn-search-item:last-child { border-bottom: none; }
+.wn-search-item:hover { background-color: rgba(31, 111, 235, 0.08); }
+.wn-search-item.muted { color: var(--wn-text-muted); cursor: default; }
+.wn-search-item.muted:hover { background: none; }
+
 
 
         /* === Barra de progreso del formulario === */
@@ -1236,6 +1270,13 @@ body:has(.wn-page-employer) {
 .wn-page-employer .wn-modal p { font-size: 0.85rem; color: var(--wn-text-muted); margin: 0; line-height: 1.55; }
 .wn-page-employer .wn-modal-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
 
+/* === Modal REPROGRAMAR (chat RN-19): el diseño vive en
+   worknet-interviews.css (.wn-negotiate), pero las reglas
+   genéricas de arriba (.wn-page-employer .wn-modal, importadas
+   después) lo pisan. Se re-declara con mayor especificidad. === */
+.wn-page-employer .wn-modal-backdrop.wn-negotiate { align-items: flex-start; justify-content: center; padding: 60px 20px 20px; overflow-y: auto; background-color: rgba(0, 0, 0, 0.8); }
+.wn-page-employer .wn-modal-backdrop.wn-negotiate .wn-modal { padding: 0; gap: 0; max-width: 600px; max-height: calc(100vh - 80px); overflow: hidden; animation: none; }
+
 /* === Responsive del listado de entrevistas === */
 @media (max-width: 1200px) {
     .wn-page-employer .wn-filters { grid-template-columns: 1fr 1fr 1fr; }
@@ -1290,7 +1331,23 @@ body:has(.wn-page-employer) {
 }
 .wn-page-company .wn-modal-close:hover { color: var(--wn-text); background-color: var(--wn-bg-elevated); }
 
-.wn-page-company .wn-modal-body { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+/* El form que envuelve al body también participa del flex, para que
+   los modales largos (ej. ubicación de la sede) hagan scroll. */
+.wn-page-company .wn-modal > form {
+    display: flex; flex-direction: column;
+    flex: 1 1 auto; min-height: 0; overflow: hidden; margin: 0;
+}
+
+/* El body puede encoger dentro del modal (min-height: 0) para que
+   los modales largos (ej. ubicación de la sede) hagan scroll. */
+.wn-page-company .wn-modal-header,
+.wn-page-company .wn-modal-footer { flex-shrink: 0; }
+
+/* Los bloques del body mantienen su altura natural: el body entero
+   es el que hace scroll (el mapa del selector no debe aplastarse). */
+.wn-page-company .wn-modal-body > * { flex-shrink: 0; }
+
+.wn-page-company .wn-modal-body { padding: 20px; overflow-y: auto; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 14px; }
 
 .wn-page-company .wn-modal-footer {
     display: flex; justify-content: flex-end; gap: 8px;

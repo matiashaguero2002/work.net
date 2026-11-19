@@ -8,6 +8,15 @@
             <button class="wn-modal-close" onclick="closeModal(event)" aria-label="Cerrar">
                 <i class="bi bi-x-lg"></i>
             </button>
+            <!-- Flechas para recorrer las ofertas de la misma empresa (sobre el banner). -->
+            <div class="wn-modal-nav" id="modalNav">
+                <button class="wn-modal-nav-btn wn-modal-nav-prev" type="button" id="modalNavPrev" onclick="navigateOffer(-1)" aria-label="Oferta anterior">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <button class="wn-modal-nav-btn wn-modal-nav-next" type="button" id="modalNavNext" onclick="navigateOffer(1)" aria-label="Siguiente oferta">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
             <div class="wn-modal-logo-badge" id="modalLogo">SM</div>
         </div>
 

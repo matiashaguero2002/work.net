@@ -1218,50 +1218,55 @@ body:has(#map) {
             object-fit: cover;
         }
 
-        /* Navegador sobre el marcador: flechas + contador de ofertas
-           activas de la empresa (solo se muestra si tiene más de una). */
-        .wn-marker-nav {
+        /* Flechas para recorrer las ofertas de la misma empresa:
+           círculos grises sobre el banner, mismo estilo que el botón de cerrar. */
+        .wn-modal-nav {
             position: absolute;
-            top: -14px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 50%;
+            left: 0;
+            right: 0;
             display: flex;
-            align-items: center;
-            gap: 2px;
-            z-index: 5;
+            justify-content: space-between;
+            padding: 0 16px;
+            transform: translateY(-50%);
+            z-index: 3;
             pointer-events: none;
-            white-space: nowrap;
         }
 
-        .wn-marker-nav-btn {
+        .wn-modal-nav-btn {
             pointer-events: auto;
-            width: 22px;
-            height: 22px;
-            padding: 0;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            background-color: rgba(13, 17, 23, 0.92);
+            background-color: rgba(13, 17, 23, 0.85);
             border: 1px solid var(--wn-border);
             color: var(--wn-text);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(8px);
             transition: all 0.2s ease;
+            font-size: 1.1rem;
             flex-shrink: 0;
         }
 
-        .wn-marker-nav-btn:hover {
-            background-color: var(--wn-accent);
-            border-color: var(--wn-accent);
+        .wn-modal-nav-btn:hover {
+            background-color: var(--wn-bg-elevated);
             color: white;
         }
 
-        .wn-marker-nav-btn i {
-            font-size: 0.65rem;
+        .wn-modal-nav-btn i {
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
         }
 
+        /* Contador de solicitudes activas de la empresa sobre su marcador. */
         .wn-marker-count {
+            position: absolute;
+            top: -6px;
+            right: -4px;
             min-width: 22px;
             height: 22px;
             padding: 0 5px;
@@ -1275,6 +1280,7 @@ body:has(#map) {
             text-align: center;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
             pointer-events: none;
+            z-index: 2;
         }
 
         .wn-modal-body {

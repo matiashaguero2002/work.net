@@ -40,7 +40,7 @@ class MapController extends Controller
         $ofertasPorEmpleador = $ofertas->countBy('id_empleador');
 
         $offers = $ofertas
-            ->map(function (Oferta $oferta, int $i) use ($imagenesPorArea, $areasSlug) {
+            ->map(function (Oferta $oferta, int $i) use ($imagenesPorArea, $areasSlug, $ofertasPorEmpleador) {
                 $empleador = $oferta->empleador;
                 $ubicacion = $oferta->ubicacion;
                 $idArea = $oferta->id_area;

@@ -36,6 +36,9 @@ class MapController extends Controller
 
         $areasSlug = [1 => 'informatica', 2 => 'diseno', 3 => 'marketing', 4 => 'admin'];
 
+        // Conteo de ofertas activas por empleador (para mostrar en el popup del mapa).
+        $ofertasPorEmpleador = $ofertas->countBy('id_empleador');
+
         $offers = $ofertas
             ->map(function (Oferta $oferta, int $i) use ($imagenesPorArea, $areasSlug) {
                 $empleador = $oferta->empleador;
@@ -94,6 +97,7 @@ class MapController extends Controller
                     'coords' => [(float) $ubicacion->latitud, (float) $ubicacion->longitud],
                     'image' => $imagenesPorArea[$idArea] ?? $imagenesPorArea[1],
                     'logoUrl' => $empleador?->logo ? Storage::url($empleador->logo) : null,
+                    'companyOfferCount' => (int) ($ofertasPorEmpleador[$empleador?->id_empleador ?? 0] ?? 0),
                     'isPrimary' => false,
                 ];
             })

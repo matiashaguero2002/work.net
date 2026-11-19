@@ -308,6 +308,17 @@ const openedForViews = new Set(); // ofertas ya contadas en esta carga (RF-05)
             document.getElementById('modalTitle').textContent = offer.title;
             document.getElementById('modalCompany').querySelector('span').textContent = offer.company;
 
+            // Contador de ofertas de la empresa en el popup del mapa.
+            const countEl = document.getElementById('modalCompanyCount');
+            const count = offer.companyOfferCount || 0;
+            if (count > 1) {
+                countEl.textContent = `· ${count} ofertas`;
+                countEl.style.display = 'inline';
+            } else {
+                countEl.textContent = '';
+                countEl.style.display = 'none';
+            }
+
             const badgesEl = document.getElementById('modalBadges');
             badgesEl.innerHTML = `
                 <span class="wn-modal-badge"><i class="bi bi-geo-alt-fill"></i> ${offer.location}</span>
@@ -351,6 +362,25 @@ const openedForViews = new Set(); // ofertas ya contadas en esta carga (RF-05)
             document.getElementById('offerModal').classList.remove('active');
             document.body.style.overflow = '';
         }
+
+        // Navegar entre ofertas del mapa desde el modal (flechas ← / →).
+        function navigateOffer(direction) {
+            if (!currentModalOfferId || offers.length === 0) return;
+
+            const idx = offers.findIndex(o => o.id === currentModalOfferId);
+            if (idx === -1) return;
+
+            const nextIdx = (idx + direction + offers.length) % offers.length;
+            const nextOffer = offers[nextIdx];
+
+            // Cierra y vuelve a abrir con la nueva oferta para animar el cambio.
+            document.getElementById('offerModal').classList.remove('active');
+            setTimeout(() => {
+                openModal(nextOffer.id);
+            }, 150);
+        }
+
+        window.navigateOffer = navigateOffer;
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {

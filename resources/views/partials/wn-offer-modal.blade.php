@@ -12,10 +12,21 @@
         </div>
 
         <div class="wn-modal-body">
+            <!-- Flechas de navegación entre ofertas del mapa -->
+            <div class="wn-modal-nav">
+                <button class="wn-modal-nav-btn wn-modal-nav-prev" type="button" id="modalNavPrev" onclick="navigateOffer(-1)" aria-label="Oferta anterior">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <button class="wn-modal-nav-btn wn-modal-nav-next" type="button" id="modalNavNext" onclick="navigateOffer(1)" aria-label="Siguiente oferta">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+
             <h2 class="wn-modal-title" id="modalTitle">Título del puesto</h2>
             <p class="wn-modal-company" id="modalCompany">
                 <i class="bi bi-building"></i>
                 <span>Nombre de la empresa</span>
+                <span class="wn-modal-company-count" id="modalCompanyCount"></span>
             </p>
 
             <div class="wn-modal-badges" id="modalBadges"></div>

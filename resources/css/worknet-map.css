@@ -1091,6 +1091,7 @@ body:has(#map) {
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            position: relative;
             box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7);
             animation: modalSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -1215,6 +1216,58 @@ body:has(#map) {
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        /* Flechas de navegación entre ofertas del mapa (carrusel del modal). */
+        .wn-modal-nav {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 24px;
+            transform: translateY(-50%);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .wn-modal-nav-btn {
+            pointer-events: auto;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: rgba(13, 17, 23, 0.85);
+            border: 1px solid var(--wn-border);
+            color: var(--wn-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s ease;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .wn-modal-nav-btn:hover {
+            background-color: var(--wn-accent);
+            border-color: var(--wn-accent);
+            color: white;
+        }
+
+        .wn-modal-nav-btn i {
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .wn-modal-company-count {
+            font-size: 0.85rem;
+            color: var(--wn-text-muted);
+            margin-left: 6px;
+            font-weight: 500;
+            white-space: nowrap;
         }
 
         .wn-modal-body {

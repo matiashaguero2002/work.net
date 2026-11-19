@@ -35,6 +35,12 @@ if (mapEl && typeof L !== 'undefined') {
                 ? `<img src="${offer.logoUrl}" alt="${offer.company}" onerror="this.parentElement.innerHTML='<span class=wn-marker-thumb-text>${offer.companyInitials}</span>'">`
                 : `<span class="wn-marker-thumb-text">${offer.companyInitials}</span>`;
 
+            // Si la empresa publicó más de una solicitud activa, el marcador
+            // muestra cuántas (en la "flechita" del pin).
+            const countBadge = (offer.companyOfferCount > 1)
+                ? `<div class="wn-marker-count">${offer.companyOfferCount}</div>`
+                : '';
+
             return L.divIcon({
                 html: `
                     <div class="wn-marker-wrapper">
@@ -44,6 +50,7 @@ if (mapEl && typeof L !== 'undefined') {
                                 ${thumbContent}
                             </div>
                         </div>
+                        ${countBadge}
                     </div>
                 `,
                 className: '',
@@ -308,16 +315,9 @@ const openedForViews = new Set(); // ofertas ya contadas en esta carga (RF-05)
             document.getElementById('modalTitle').textContent = offer.title;
             document.getElementById('modalCompany').querySelector('span').textContent = offer.company;
 
-            // Contador de ofertas de la empresa en el popup del mapa.
-            const countEl = document.getElementById('modalCompanyCount');
-            const count = offer.companyOfferCount || 0;
-            if (count > 1) {
-                countEl.textContent = `· ${count} ofertas`;
-                countEl.style.display = 'inline';
-            } else {
-                countEl.textContent = '';
-                countEl.style.display = 'none';
-            }
+            // Las flechas solo aparecen si la empresa publicó más de una oferta.
+            const showNav = (offer.companyOfferCount || 0) > 1;
+            document.getElementById('modalNav').style.display = showNav ? 'flex' : 'none';
 
             const badgesEl = document.getElementById('modalBadges');
             badgesEl.innerHTML = `
@@ -363,15 +363,22 @@ const openedForViews = new Set(); // ofertas ya contadas en esta carga (RF-05)
             document.body.style.overflow = '';
         }
 
-        // Navegar entre ofertas del mapa desde el modal (flechas ← / →).
+        // Navegar SOLO entre las ofertas de la misma empresa (flechas ← / →).
         function navigateOffer(direction) {
             if (!currentModalOfferId || offers.length === 0) return;
 
-            const idx = offers.findIndex(o => o.id === currentModalOfferId);
+            const current = offers.find(o => o.id === currentModalOfferId);
+            if (!current) return;
+
+            const employerId = current.employerId;
+            const sameCompany = offers.filter(o => o.employerId === employerId);
+            if (sameCompany.length <= 1) return;
+
+            const idx = sameCompany.findIndex(o => o.id === currentModalOfferId);
             if (idx === -1) return;
 
-            const nextIdx = (idx + direction + offers.length) % offers.length;
-            const nextOffer = offers[nextIdx];
+            const nextIdx = (idx + direction + sameCompany.length) % sameCompany.length;
+            const nextOffer = sameCompany[nextIdx];
 
             // Cierra y vuelve a abrir con la nueva oferta para animar el cambio.
             document.getElementById('offerModal').classList.remove('active');

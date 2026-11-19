@@ -8,12 +8,8 @@
             <button class="wn-modal-close" onclick="closeModal(event)" aria-label="Cerrar">
                 <i class="bi bi-x-lg"></i>
             </button>
-            <div class="wn-modal-logo-badge" id="modalLogo">SM</div>
-        </div>
-
-        <div class="wn-modal-body">
-            <!-- Flechas de navegación entre ofertas del mapa -->
-            <div class="wn-modal-nav">
+            <!-- Flechas para recorrer las ofertas de la misma empresa (sobre el banner). -->
+            <div class="wn-modal-nav" id="modalNav">
                 <button class="wn-modal-nav-btn wn-modal-nav-prev" type="button" id="modalNavPrev" onclick="navigateOffer(-1)" aria-label="Oferta anterior">
                     <i class="bi bi-chevron-left"></i>
                 </button>
@@ -21,12 +17,14 @@
                     <i class="bi bi-chevron-right"></i>
                 </button>
             </div>
+            <div class="wn-modal-logo-badge" id="modalLogo">SM</div>
+        </div>
 
+        <div class="wn-modal-body">
             <h2 class="wn-modal-title" id="modalTitle">Título del puesto</h2>
             <p class="wn-modal-company" id="modalCompany">
                 <i class="bi bi-building"></i>
                 <span>Nombre de la empresa</span>
-                <span class="wn-modal-company-count" id="modalCompanyCount"></span>
             </p>
 
             <div class="wn-modal-badges" id="modalBadges"></div>

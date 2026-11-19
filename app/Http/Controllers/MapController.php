@@ -97,6 +97,7 @@ class MapController extends Controller
                     'coords' => [(float) $ubicacion->latitud, (float) $ubicacion->longitud],
                     'image' => $imagenesPorArea[$idArea] ?? $imagenesPorArea[1],
                     'logoUrl' => $empleador?->logo ? Storage::url($empleador->logo) : null,
+                    'employerId' => (int) ($empleador?->id_empleador ?? 0),
                     'companyOfferCount' => (int) ($ofertasPorEmpleador[$empleador?->id_empleador ?? 0] ?? 0),
                     'isPrimary' => false,
                 ];

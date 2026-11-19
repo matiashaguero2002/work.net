@@ -36,9 +36,21 @@ if (mapEl && typeof L !== 'undefined') {
                 : `<span class="wn-marker-thumb-text">${offer.companyInitials}</span>`;
 
             // Si la empresa publicó más de una solicitud activa, el marcador
-            // muestra cuántas (en la "flechita" del pin).
-            const countBadge = (offer.companyOfferCount > 1)
-                ? `<div class="wn-marker-count">${offer.companyOfferCount}</div>`
+            // muestra cuántas y unas flechas para recorrerlas desde el mapa.
+            const countNav = (offer.companyOfferCount > 1)
+                ? `<div class="wn-marker-nav">
+                       <button type="button" class="wn-marker-nav-btn" title="Oferta anterior"
+                           onmousedown="event.stopPropagation()"
+                           onclick="event.stopPropagation(); window.navigateFromMarker(${offer.id}, -1)">
+                           <i class="bi bi-chevron-left"></i>
+                       </button>
+                       <span class="wn-marker-count">${offer.companyOfferCount}</span>
+                       <button type="button" class="wn-marker-nav-btn" title="Siguiente oferta"
+                           onmousedown="event.stopPropagation()"
+                           onclick="event.stopPropagation(); window.navigateFromMarker(${offer.id}, 1)">
+                           <i class="bi bi-chevron-right"></i>
+                       </button>
+                   </div>`
                 : '';
 
             return L.divIcon({
@@ -50,7 +62,7 @@ if (mapEl && typeof L !== 'undefined') {
                                 ${thumbContent}
                             </div>
                         </div>
-                        ${countBadge}
+                        ${countNav}
                     </div>
                 `,
                 className: '',
@@ -315,10 +327,6 @@ const openedForViews = new Set(); // ofertas ya contadas en esta carga (RF-05)
             document.getElementById('modalTitle').textContent = offer.title;
             document.getElementById('modalCompany').querySelector('span').textContent = offer.company;
 
-            // Las flechas solo aparecen si la empresa publicó más de una oferta.
-            const showNav = (offer.companyOfferCount || 0) > 1;
-            document.getElementById('modalNav').style.display = showNav ? 'flex' : 'none';
-
             const badgesEl = document.getElementById('modalBadges');
             badgesEl.innerHTML = `
                 <span class="wn-modal-badge"><i class="bi bi-geo-alt-fill"></i> ${offer.location}</span>
@@ -363,31 +371,27 @@ const openedForViews = new Set(); // ofertas ya contadas en esta carga (RF-05)
             document.body.style.overflow = '';
         }
 
-        // Navegar SOLO entre las ofertas de la misma empresa (flechas ← / →).
-        function navigateOffer(direction) {
-            if (!currentModalOfferId || offers.length === 0) return;
-
-            const current = offers.find(o => o.id === currentModalOfferId);
+        // Navegar entre las ofertas de la misma empresa desde las flechas
+        // del marcador del mapa (válido para cualquier empresa, incluidas
+        // las ofertas que se creen en el futuro).
+        function navigateFromMarker(offerId, direction) {
+            const current = offers.find(o => o.id === offerId);
             if (!current) return;
 
-            const employerId = current.employerId;
-            const sameCompany = offers.filter(o => o.employerId === employerId);
+            const sameCompany = offers.filter(o => o.employerId === current.employerId);
             if (sameCompany.length <= 1) return;
 
-            const idx = sameCompany.findIndex(o => o.id === currentModalOfferId);
+            const idx = sameCompany.findIndex(o => o.id === offerId);
             if (idx === -1) return;
 
             const nextIdx = (idx + direction + sameCompany.length) % sameCompany.length;
             const nextOffer = sameCompany[nextIdx];
 
-            // Cierra y vuelve a abrir con la nueva oferta para animar el cambio.
-            document.getElementById('offerModal').classList.remove('active');
-            setTimeout(() => {
-                openModal(nextOffer.id);
-            }, 150);
+            map.closePopup();
+            openModal(nextOffer.id);
         }
 
-        window.navigateOffer = navigateOffer;
+        window.navigateFromMarker = navigateFromMarker;
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {

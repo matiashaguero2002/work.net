@@ -46,12 +46,88 @@ class OfferController extends Controller
         $ofertasPausadas = Oferta::where('id_estado_oferta', 2)->count();
         $ofertasCerradas = Oferta::where('id_estado_oferta', 3)->count();
 
-        // Cargar relaciones necesarias para las tarjetas
-        $offers = $query
-            ->with(['empleador.usuario', 'areaLaboral', 'modalidad', 'tipoContrato'])
-            ->orderBy('fecha_publicacion', 'desc')
-            ->paginate(15)
-            ->withQueryString();
+        // Mapear ofertas Eloquent a arreglos para la vista (compatibilidad con sintaxis $offer['...'])
+        $offersMapped = $offers->getCollection()->map(function ($oferta) {
+            $empleador = $oferta->empleador;
+            $area = $oferta->areaLaboral;
+            $modalidad = $oferta->modalidad;
+            $contrato = $oferta->tipoContrato;
+            $ubicacion = $oferta->ubicacion;
+
+            $initials = $empleador ? substr($empleador->nombre_empresa ?? 'US', 0, 2) : 'US';
+
+            // Mapear estados de oferta
+            $statusMap = [1 => 'active', 2 => 'paused', 3 => 'closed'];
+            $statusLabelMap = [1 => 'Activa', 2 => 'Pausada', 3 => 'Cerrada'];
+            $estadoKey = $oferta->id_estado_oferta ?? 1;
+            $status = $statusMap[$estadoKey] ?? 'active';
+            $statusLabel = $statusLabelMap[$estadoKey] ?? 'Activa';
+
+            // Badges para la tarjeta
+            $badges = [];
+            if ($ubicacion) {
+                $badges[] = ['icon' => 'geo-alt-fill', 'text' => $ubicacion->ciudad ?? 'Encarnación'];
+            }
+            if ($modalidad) {
+                $badges[] = ['icon' => 'laptop', 'text' => $modalidad->nombre ?? 'Presencial'];
+            }
+            if ($contrato) {
+                $badges[] = ['icon' => 'clock', 'text' => $contrato->nombre ?? 'Tiempo completo'];
+            }
+
+            // Contar postulaciones activas (no retiradas)
+            $applicants = Postulacion::where('id_oferta', $oferta->id_oferta)
+                ->where('id_estado_post', '!=', 5)
+                ->count();
+
+            $views = $oferta->visualizaciones ?? 0;
+
+            // Acciones disponibles según estado
+            $actions = [];
+            if ($estadoKey === 1) {
+                $actions[] = 'pause';
+                $actions[] = 'delete';
+            } elseif ($estadoKey === 2) {
+                $actions[] = 'reactivate';
+                $actions[] = 'delete';
+            } elseif ($estadoKey === 3) {
+                $actions[] = 'delete';
+            }
+
+            // Reportes pendientes de esta oferta (usando conteo directo, sin relación)
+            $reportesCount = Reporte::where('id_oferta', $oferta->id_oferta)
+                ->where('estado', 'pendiente')
+                ->count();
+            $reported = $reportesCount > 0 ? ['text' => $reportesCount . ' reporte(s)'] : null;
+
+            return [
+                'id' => $oferta->id_oferta,
+                'initials' => strtoupper($initials),
+                'title' => $oferta->titulo ?? 'Sin título',
+                'company' => $empleador ? $empleador->nombre_empresa : 'Empresa',
+                'status' => $status,
+                'statusLabel' => $statusLabel,
+                'category' => $area ? strtolower(str_replace(' ', '-', $area->nombre)) : 'general',
+                'date' => $oferta->fecha_publicacion ? (string) \Carbon\Carbon::parse($oferta->fecha_publicacion)->format('Y-m-d') : '',
+                'badges' => $badges,
+                'reported' => $reported,
+                'description' => mb_strlen($oferta->descripcion ?? '') > 120
+                    ? mb_substr($oferta->descripcion ?? '', 0, 120) . '...'
+                    : ($oferta->descripcion ?? ''),
+                'applicants' => (string) $applicants,
+                'views' => (string) $views,
+                'actions' => $actions,
+            ];
+        })->all();
+
+        // Reconstruir paginador con arreglos mapeados
+        $offers = new \Illuminate\Pagination\LengthAwarePaginator(
+            $offersMapped,
+            $offers->total(),
+            $offers->perPage(),
+            $offers->currentPage(),
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
         $stats = [
             ['icon' => 'briefcase-fill', 'modifier' => '', 'value' => (string) $totalOfertas, 'label' => 'Ofertas totales'],

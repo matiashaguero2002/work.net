@@ -51,6 +51,9 @@ Route::post('/password/forgot', [PasswordResetController::class, 'sendResetCode'
 Route::get('/password/reset/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
 Route::post('/password/reset', [PasswordResetController::class, 'reset'])->name('password.reset.post');
 
+// Reportes de ofertas (RF-17): candidato puede reportar una oferta desde el mapa
+Route::post('/reportes', [App\Http\Controllers\ReportController::class, 'store'])->name('reportes.store');
+
 Route::get('/', function () {
     // Con sesión activa → panel según rol (RN-01)
     if (auth()->check()) {

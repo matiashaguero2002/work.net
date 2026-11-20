@@ -3,54 +3,113 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Oferta;
+use App\Models\Reporte;
+use App\Models\Usuario;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Panel principal de administración.
- *
- * SOLO FRONTEND: los datos son mock hardcodeados,
- * copiados del prototipo resources/views/prototypes/Administrador - Panel.html.
- * No hay consultas a base de datos.
+ * Conectado a la BD PostgreSQL Work_net.
  */
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Resumen general (stats)
+        // Resumen general (stats) - datos reales de la BD
+        $usuariosTotales = Usuario::count();
+        $ofertasActivas = Oferta::where('id_estado_oferta', 1)->count();
+        $reportesPendientes = Reporte::where('estado', 'pendiente')->count();
+
+        // Users con estado 'pendiente' (registrados pero sin activar aún)
+        $usuariosPendientes = Usuario::where('estado', 'pendiente')->count();
+
         $stats = [
-            ['icon' => 'people-fill', 'modifier' => '', 'value' => '1.248', 'label' => 'Usuarios totales'],
-            ['icon' => 'briefcase-fill', 'modifier' => 'success', 'value' => '87', 'label' => 'Ofertas activas'],
-            ['icon' => 'flag-fill', 'modifier' => 'warning', 'value' => '2', 'label' => 'Reportes pendientes'],
-            ['icon' => 'clock-history', 'modifier' => 'purple', 'value' => '3', 'label' => 'Usuarios pendientes'],
+            ['icon' => 'people-fill', 'modifier' => '', 'value' => (string) $usuariosTotales, 'label' => 'Usuarios totales'],
+            ['icon' => 'briefcase-fill', 'modifier' => 'success', 'value' => (string) $ofertasActivas, 'label' => 'Ofertas activas'],
+            ['icon' => 'flag-fill', 'modifier' => 'warning', 'value' => (string) $reportesPendientes, 'label' => 'Reportes pendientes'],
+            ['icon' => 'clock-history', 'modifier' => 'purple', 'value' => (string) $usuariosPendientes, 'label' => 'Usuarios pendientes'],
         ];
 
-        // Avisos del encabezado
-        $pendingUsers = 3;
-        $pendingReports = 2;
+        // Avisos del encabezado - datos reales
+        $pendingUsers = $usuariosPendientes;
+        $pendingReports = $reportesPendientes;
 
-        // Distribución por rol
+        // Distribución por rol - usando datos reales de la BD
+        $candidatos = Usuario::where('rol', 'candidato')->count();
+        $empleadores = Usuario::where('rol', 'empleador')->count();
+        $administradores = Usuario::where('rol', 'admin')->count();
+        $usuariosTotal = $usuariosTotales > 0 ? $usuariosTotales : 1; // evitar división por cero
+
         $roleDistribution = [
-            ['key' => 'candidate', 'icon' => 'person-fill', 'label' => 'Candidatos', 'value' => '1.087', 'share' => '87% del total'],
-            ['key' => 'employer', 'icon' => 'building-fill', 'label' => 'Empleadores', 'value' => '158', 'share' => '12.7% del total'],
-            ['key' => 'admin', 'icon' => 'shield-lock-fill', 'label' => 'Administradores', 'value' => '3', 'share' => '0.3% del total'],
+            ['key' => 'candidate', 'icon' => 'person-fill', 'label' => 'Candidatos', 'value' => (string) $candidatos, 'share' => number_format(($candidatos / $usuariosTotal) * 100, 1) . ' % del total'],
+            ['key' => 'employer', 'icon' => 'building-fill', 'label' => 'Empleadores', 'value' => (string) $empleadores, 'share' => number_format(($empleadores / $usuariosTotal) * 100, 1) . ' % del total'],
+            ['key' => 'admin', 'icon' => 'shield-lock-fill', 'label' => 'Administradores', 'value' => (string) $administradores, 'share' => number_format(($administradores / $usuariosTotal) * 100, 1) . ' % del total'],
         ];
 
-        // Últimos usuarios registrados
-        $recentUsers = [
-            ['initials' => 'JP', 'name' => 'Juan Pérez', 'email' => 'juan.perez@email.com', 'role' => 'candidato', 'roleLabel' => 'Candidato', 'status' => 'activo', 'statusLabel' => 'Activo', 'statusIcon' => 'check-circle-fill'],
-            ['initials' => 'TS', 'name' => 'Tech Solutions S.A.', 'email' => 'contacto@techsolutions.com', 'role' => 'empleador', 'roleLabel' => 'Empleador', 'status' => 'activo', 'statusLabel' => 'Activo', 'statusIcon' => 'check-circle-fill'],
-            ['initials' => 'MG', 'name' => 'María González', 'email' => 'maria.gonzalez@email.com', 'role' => 'candidato', 'roleLabel' => 'Candidato', 'status' => 'pendiente', 'statusLabel' => 'Pendiente', 'statusIcon' => 'hourglass-split'],
-            ['initials' => 'DC', 'name' => 'DataCorp S.A.', 'email' => 'rrhh@datacorp.com', 'role' => 'empleador', 'roleLabel' => 'Empleador', 'status' => 'activo', 'statusLabel' => 'Activo', 'statusIcon' => 'check-circle-fill'],
-            ['initials' => 'CR', 'name' => 'Carlos Ramírez', 'email' => 'carlos.ramirez@email.com', 'role' => 'candidato', 'roleLabel' => 'Candidato', 'status' => 'suspendido', 'statusLabel' => 'Suspendido', 'statusIcon' => 'x-circle-fill'],
-        ];
+        // Últimos usuarios registrados - reales de la BD
+        $recentUsers = Usuario::orderBy('fecha_registro', 'desc')
+            ->take(5)
+            ->get()->map(function ($user) {
+                return [
+                    'initials' => substr($user->nombre ?? 'US', 0, 2),
+                    'name' => $user->nombre ?? 'Sin nombre',
+                    'email' => $user->email,
+                    'role' => $user->rol,
+                    'roleLabel' => ucfirst($user->rol),
+                    'status' => $user->estado ?? 'activo',
+                    'statusLabel' => ucfirst($user->estado ?? 'activo'),
+                    'statusIcon' => in_array($user->estado, ['activo', null]) ? 'check-circle-fill' : 'hourglass-split',
+                ];
+            })
+            ->toArray();
 
-        // Actividad reciente
-        $activity = [
-            ['icon' => 'person-plus-fill', 'modifier' => 'success', 'actor' => 'Juan Pérez', 'action' => 'se registró como candidato.', 'time' => 'Hace 5 minutos'],
-            ['icon' => 'briefcase-fill', 'modifier' => '', 'actor' => 'Tech Solutions', 'action' => 'publicó una nueva oferta.', 'time' => 'Hace 20 minutos'],
-            ['icon' => 'flag-fill', 'modifier' => 'danger', 'actor' => null, 'action' => 'DataCorp S.A.|por contenido inapropiado', 'special' => 'report', 'time' => 'Hace 1 hora'],
-            ['icon' => 'person-x-fill', 'modifier' => 'warning', 'actor' => 'Carlos Ramírez', 'action' => 'fue suspendido por incumplir términos.', 'time' => 'Hace 3 horas'],
-            ['icon' => 'check-circle-fill', 'modifier' => 'success', 'actor' => 'María González', 'action' => 'fue aprobada como candidata.', 'time' => 'Hace 5 horas'],
-        ];
+        // Actividad reciente - ofertas publicadas y reportes
+        $ofertasRecientes = Oferta::where('id_estado_oferta', 1)
+            ->orderBy('fecha_publicacion', 'desc')
+            ->take(3)
+            ->get()->map(function ($oferta) {
+                $empleador = $oferta->empleador;
+                return [
+                    'icon' => 'briefcase-fill',
+                    'modifier' => '',
+                    'actor' => $empleador ? $empleador->nombre_empresa : 'Empresa',
+                    'action' => 'publicó una nueva oferta',
+                    'time' => $oferta->fecha_publicacion ? (string) $oferta->fecha_publicacion->locale('es')->diffForHumans() : 'Hace poco',
+                ];
+            });
+
+        $reportesRecientes = Reporte::with('usuario', 'oferta')
+            ->orderBy('fecha_creacion', 'desc')
+            ->take(2)
+            ->get()->map(function ($reporte) {
+                $usuario = $reporte->usuario;
+                $oferta = $reporte->oferta;
+                $actor = $usuario ? ($usuario->nombre ?? 'Anónimo') : 'Anónimo';
+                $accion = 'reportó';
+                $tiempo = $reporte->fecha_creacion ? (string) $reporte->fecha_creacion->locale('es')->diffForHumans() : 'Hace poco';
+                $ofertaTitulo = $oferta ? $oferta->titulo : 'Oferta';
+
+                return [
+                    'icon' => 'flag-fill',
+                    'modifier' => 'danger',
+                    'actor' => $actor,
+                    'action' => $accion . ' la oferta "' . $ofertaTitulo . '"',
+                    'time' => $tiempo,
+                ];
+            });
+
+        // Merge de actividad reciente (lo más reciente primero)
+        $activity = array_merge(
+            $ofertasRecientes->toArray(),
+            $reportesRecientes->toArray()
+        );
+        // Ordenar por tiempo (el más reciente primero)
+        usort($activity, function ($a, $b) {
+            $timeA = strtotime(str_replace('hace ', '', $a['time']));
+            $timeB = strtotime(str_replace('hace ', '', $b['time']));
+            return $timeB <=> $timeA;
+        });
 
         return view('admin.dashboard', compact('stats', 'pendingUsers', 'pendingReports', 'roleDistribution', 'recentUsers', 'activity'));
     }

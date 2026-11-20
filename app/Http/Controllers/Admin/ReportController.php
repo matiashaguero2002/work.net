@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
  * Moderación de reportes (admin).
  *
  * SOLO FRONTEND: los datos son mock hardcodeados,
- * copiados del prototipo specs/Administrador - Reportes.html.
+ * copiados del prototipo resources/views/prototypes/Administrador - Reportes.html.
  * No hay consultas a base de datos.
  */
 class ReportController extends Controller

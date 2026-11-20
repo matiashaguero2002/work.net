@@ -1,6 +1,6 @@
 /* ============================================
    WORK.NET — módulo entrevistas del candidato
-   (extraído de specs/entrevistas.html)
+   (extraído de resources/views/prototypes/entrevistas.html)
    Se excluyen :root, reset global y estilos del
    navbar (viven en worknet.css y worknet-map.css).
    ============================================ */
@@ -460,7 +460,7 @@ body.navbar-collapsed .wn-main {
 
 /* ============================================
    MODAL REAGENDAR / NEGOCIAR HORARIO
-   (specs/modal - Reagendar.html)
+   (resources/views/prototypes/modal - Reagendar.html)
    Scope .wn-negotiate en el propio backdrop: evita chocar
    con .wn-modal* de worknet-map.css (ofertas) y con los
    modales scopeados de empleador/admin.

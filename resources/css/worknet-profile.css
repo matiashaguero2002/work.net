@@ -1,6 +1,6 @@
 /* ============================================
    WORK.NET — módulo perfil del candidato
-   (extraído de specs/perfil.html)
+   (extraído de resources/views/prototypes/perfil.html)
    Excluidos: :root, reset, base html/body, navbar,
    fondo, dropdown (vive en worknet-map.css) y reglas
    duplicadas ya existentes (.wn-main, .btn-wn-*,

@@ -1,6 +1,6 @@
 /* ============================================
    WORK.NET — módulo ofertas guardadas del candidato
-   (extraído de specs/guardadas.html)
+   (extraído de resources/views/prototypes/guardadas.html)
    Se excluyen :root, reset global, estilos base de
    html/body y estilos del navbar (viven en worknet.css
    y worknet-map.css, que se reutilizan).

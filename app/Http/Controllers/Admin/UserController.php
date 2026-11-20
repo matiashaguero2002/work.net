@@ -8,8 +8,8 @@ use App\Http\Controllers\Controller;
  * Gestión de usuarios (admin).
  *
  * SOLO FRONTEND: los datos son mock hardcodeados,
- * copiados del prototipo specs/Administrador - Usuarios.html (listado)
- * y specs/Administrador - Detalle de usuarios.html (detalle).
+ * copiados del prototipo resources/views/prototypes/Administrador - Usuarios.html (listado)
+ * y resources/views/prototypes/Administrador - Detalle de usuarios.html (detalle).
  */
 class UserController extends Controller
 {

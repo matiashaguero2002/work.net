@@ -1,7 +1,7 @@
 /* ============================================
    WORK.NET — módulo dashboard del candidato +
-   notificaciones (extraído de specs/dashboard.html
-   y specs/notificaciones.html)
+   notificaciones (extraído de resources/views/prototypes/dashboard.html
+   y resources/views/prototypes/notificaciones.html)
    Se excluyen :root, reset global, estilos base de
    html/body y estilos del navbar (viven en worknet.css
    y worknet-map.css, que se reutilizan).
@@ -775,7 +775,7 @@ body.navbar-collapsed .wn-main {
     .wn-notification { transition: none; }
 }
 
-/* ====== M�dulo candidato funcional ====== */
+/* ====== M�dulo candidato funcional ====== */
 /* Enlace interior del item de guardadas (dashboard) */
 .wn-saved-link {
     display: flex; align-items: center; gap: 10px;

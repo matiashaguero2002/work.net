@@ -1,6 +1,6 @@
 /* ============================================
    WORK.NET â€” mÃ³dulo mis postulaciones del candidato
-   (extraÃ­do de specs/postulaciones.html)
+   (extraÃ­do de resources/views/prototypes/postulaciones.html)
    Se excluyen :root, reset global, estilos base de
    html/body y estilos del navbar (viven en worknet.css
    y worknet-map.css, que se reutilizan).
@@ -373,7 +373,7 @@ body.wn-page-applications::-webkit-scrollbar {
     .wn-application-card { transition: none; }
 }
 
-/* ====== Módulo candidato funcional ====== */
+/* ====== Mï¿½dulo candidato funcional ====== */
 /* El form de Retirar es transparente dentro de la fila de acciones */
 .wn-app-actions form { display: contents; }
 
@@ -384,7 +384,7 @@ body.wn-page-applications::-webkit-scrollbar {
 }
 .wn-application-card.withdrawn { opacity: 0.9; }
 
-/* Aviso de éxito (retirar/enviar postulación) */
+/* Aviso de ï¿½xito (retirar/enviar postulaciï¿½n) */
 .wn-flash-success {
     display: flex; align-items: center; gap: 8px;
     padding: 12px 16px; margin-bottom: 20px;

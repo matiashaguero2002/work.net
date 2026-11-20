@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
  * Panel principal de administración.
  *
  * SOLO FRONTEND: los datos son mock hardcodeados,
- * copiados del prototipo specs/Administrador - Panel.html.
+ * copiados del prototipo resources/views/prototypes/Administrador - Panel.html.
  * No hay consultas a base de datos.
  */
 class DashboardController extends Controller

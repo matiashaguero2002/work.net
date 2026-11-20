@@ -1,4 +1,4 @@
-// Work.net — mapa de ofertas (extraído de specs/mapa.html, adaptado).
+// Work.net — mapa de ofertas (extraído de resources/views/prototypes/mapa.html, adaptado).
 // Las ofertas llegan desde Blade vía data-offers del #map (@json($offers)),
 // con fallback a window.__OFFERS__ por compatibilidad.
 // Solo se ejecuta si existe el elemento #map (no rompe otras vistas).

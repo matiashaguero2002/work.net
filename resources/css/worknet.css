@@ -1,6 +1,6 @@
 /* ============================================
    WORK.NET — base compartida (paleta + reset + body)
-   Fuente: specs/login.html + specs/mapa.html (:root unificado)
+   Fuente: resources/views/prototypes/login.html + resources/views/prototypes/mapa.html (:root unificado)
    NO incluir estilos específicos de login ni de mapa.
    ============================================ */
 :root {

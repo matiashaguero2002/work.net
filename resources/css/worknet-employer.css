@@ -1,9 +1,9 @@
 /* ============================================
    WORK.NET — módulo empleador (dashboard, ofertas,
    detalle, publicar, postulantes). Unifica los <style>
-   de specs/dashboard-empleador.html, ofertas.html,
-   oferta-detalles.html, oferta-publicar.html y
-   postulantes.html.
+   de resources/views/prototypes/dashboard-empleador.html, resources/views/prototypes/ofertas.html,
+   resources/views/prototypes/oferta-detalles.html, resources/views/prototypes/oferta-publicar.html y
+   resources/views/prototypes/postulantes.html.
    Excluidos: :root, reset, base html/body, navbar,
    fondo, avatar/user/dropdown y reglas idénticas ya
    existentes en otros módulos.
@@ -1161,7 +1161,7 @@ body:has(.wn-page-employer) {
 
 /* ============================================================
    ENTREVISTAS — LISTADO DEL EMPLEADOR
-   (specs/empleador-Entrevistas.html)
+   (resources/views/prototypes/empleador-Entrevistas.html)
    Colisiones resueltas bajo scope:
    - .wn-filters/.wn-filter-* choca con worknet-map.css (panel fijo)
    - .wn-interview-card/-status/-actions choca con worknet-interviews.css

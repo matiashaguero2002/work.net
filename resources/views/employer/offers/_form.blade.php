@@ -1,5 +1,5 @@
 {{-- Partial compartido entre crear y editar oferta --}}
-{{-- Estructura idéntica al prototipo specs/oferta-publicar.html --}}
+{{-- Estructura idéntica al prototipo resources/views/prototypes/oferta-publicar.html --}}
 {{-- SIN apartado de Dirección: la ubicación de toda oferta es la --}}
 {{-- de la sede registrada en "Mi empresa" (regla del TFG). --}}
 @php($offer = $offer ?? [])

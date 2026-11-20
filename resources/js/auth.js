@@ -1,4 +1,4 @@
-// Work.net — módulo auth (navegación entre vistas del prototipo specs/login.html).
+// Work.net — módulo auth (navegación entre vistas del prototipo resources/views/prototypes/login.html).
 //
 // `showView()` se expone globalmente por compatibilidad con el prototipo.
 // En Laravel cada vista es una ruta propia; los listeners solo se activan

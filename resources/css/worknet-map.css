@@ -1,5 +1,5 @@
 /* ============================================
-   WORK.NET — módulo mapa (extraído VERBATIM de specs/mapa.html)
+   WORK.NET — módulo mapa (extraído VERBATIM de resources/views/prototypes/mapa.html)
    Se excluyen :root y reset global (viven en worknet.css).
    ============================================ */
 /* Coexistencia: el módulo auth fija el body en flex centrado;
@@ -1647,7 +1647,7 @@ body:has(#map) {
 
 /* ============================================
    DROPDOWN DE USUARIO EN EL NAVBAR
-   (extraído de specs/perfil.html)
+   (extraído de resources/views/prototypes/perfil.html)
    ============================================ */
 .wn-navbar-footer {
     padding-top: 16px;

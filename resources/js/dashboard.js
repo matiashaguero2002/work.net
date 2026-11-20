@@ -1,5 +1,5 @@
 // Work.net — dashboard del candidato + notificaciones
-// (extraído de specs/dashboard.html y specs/notificaciones.html, adaptado).
+// (extraído de resources/views/prototypes/dashboard.html y resources/views/prototypes/notificaciones.html, adaptado).
 // Solo se ejecuta si existe .wn-page-dashboard o .wn-page-notifications.
 // NOTA: el toggle del navbar vive aquí porque map.js solo lo registra
 // cuando existe #map (página del mapa). Estas páginas no tienen #map.
@@ -127,7 +127,7 @@
 
 // ============================================
 // DROPDOWN DE USUARIO EN EL NAVBAR
-// (extraído de specs/perfil.html; global: funciona en
+// (extraído de resources/views/prototypes/perfil.html; global: funciona en
 // todas las vistas porque dashboard.js se carga vía app.js)
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {

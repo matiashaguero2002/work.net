@@ -8,8 +8,8 @@ use App\Http\Controllers\Controller;
  * Supervisión de ofertas (admin).
  *
  * SOLO FRONTEND: los datos son mock hardcodeados,
- * copiados del prototipo specs/Administrador - Ofertas.html (listado)
- * y specs/Administrador - Detalle de ofertas.html (detalle).
+ * copiados del prototipo resources/views/prototypes/Administrador - Ofertas.html (listado)
+ * y resources/views/prototypes/Administrador - Detalle de ofertas.html (detalle).
  */
 class OfferController extends Controller
 {

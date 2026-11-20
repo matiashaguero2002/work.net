@@ -46,8 +46,15 @@ class OfferController extends Controller
         $ofertasPausadas = Oferta::where('id_estado_oferta', 2)->count();
         $ofertasCerradas = Oferta::where('id_estado_oferta', 3)->count();
 
+        // Cargar ofertas con relaciones (objeto paginador original)
+        $offersRaw = $query
+            ->with(['empleador.usuario', 'areaLaboral', 'modalidad', 'tipoContrato'])
+            ->orderBy('fecha_publicacion', 'desc')
+            ->paginate(15)
+            ->withQueryString();
+
         // Mapear ofertas Eloquent a arreglos para la vista (compatibilidad con sintaxis $offer['...'])
-        $offersMapped = $offers->getCollection()->map(function ($oferta) {
+        $offersMapped = $offersRaw->getCollection()->map(function ($oferta) {
             $empleador = $oferta->empleador;
             $area = $oferta->areaLaboral;
             $modalidad = $oferta->modalidad;
@@ -123,9 +130,9 @@ class OfferController extends Controller
         // Reconstruir paginador con arreglos mapeados
         $offers = new \Illuminate\Pagination\LengthAwarePaginator(
             $offersMapped,
-            $offers->total(),
-            $offers->perPage(),
-            $offers->currentPage(),
+            $offersRaw->total(),
+            $offersRaw->perPage(),
+            $offersRaw->currentPage(),
             ['path' => request()->url(), 'query' => request()->query()]
         );
 

@@ -18,7 +18,7 @@ use App\Http\Controllers\Employer\OfferController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\OfferController as AdminOfferController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
-use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\MapController;
 use Illuminate\Support\Facades\Route;
 
@@ -193,8 +193,8 @@ Route::prefix('empleador')->name('employer.')->middleware(['auth', 'role:emplead
 // Módulo del administrador (solo cuentas admin; datos mock hardcodeados en los controladores)
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/usuarios', [AdminUserController::class, 'index'])->name('users.index');
-    Route::get('/usuarios/{id}', [AdminUserController::class, 'show'])->name('users.show');
+    Route::get('/usuarios', [UserController::class, 'index'])->name('users.index');
+    Route::get('/usuarios/{id}', [UserController::class, 'show'])->name('users.show');
     Route::get('/ofertas', [AdminOfferController::class, 'index'])->name('offers.index');
     Route::get('/ofertas/{id}', [AdminOfferController::class, 'show'])->name('offers.show');
     Route::get('/reportes', [AdminReportController::class, 'index'])->name('reports.index');

@@ -47,7 +47,7 @@ class OfferController extends Controller
         $ofertasCerradas = Oferta::where('id_estado_oferta', 3)->count();
 
         // Cargar relaciones necesarias para las tarjetas
-        $ofertas = $query
+        $offers = $query
             ->with(['empleador.usuario', 'areaLaboral', 'modalidad', 'tipoContrato'])
             ->orderBy('fecha_publicacion', 'desc')
             ->paginate(15)

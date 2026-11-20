@@ -233,18 +233,8 @@ class OfferController extends Controller
             ->toArray();
 
         // Reportes recientes de esta oferta
-        $reportesRecientes = Reporte::where('id_oferta', $oferta->id_oferta)
-            ->orderBy('fecha_creacion', 'desc')
-            ->take(3)
-            ->get()->map(function ($r) {
-                $u = $r->usuario;
-                return [
-                    'by' => $u ? ($u->nombre ?: 'Anónimo') : 'Anónimo',
-                    'when' => $r->fecha_creacion ? (string) $r->fecha_creacion->locale('es')->diffForHumans() : 'Hace poco',
-                    'text' => mb_strlen($r->motivo) > 50 ? substr($r->motivo, 0, 50) . '...' : $r->motivo,
-                ];
-            })
-            ->toArray();
+        // Nota: la tabla 'reporte' no tiene columna 'id_oferta' en el esquema original
+        $reportesRecientes = [];
 
         return view('admin.offers.show', compact('oferta', 'postulantes', 'vistas', 'offerInfo', 'employerInfo', 'reportesRecientes', 'ultimasPostulaciones'));
     }

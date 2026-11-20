@@ -79,6 +79,11 @@ function createPopupHTML(offer) {
                     <div>
                         <h3 class="wn-popup-title">${offer.title}</h3>
                         <p class="wn-popup-company">${offer.company}</p>
+                        <button class="wn-popup-btn wn-popup-btn-danger wn-popup-btn-small" 
+                                onclick="openReportModal(${offer.id}, '${offer.title}', '${offer.company}')" 
+                                title="Reportar oferta">
+                            <i class="bi bi-exclamation-circle-fill"></i> !
+                        </button>
                     </div>
                 </div>
 
@@ -100,11 +105,6 @@ function createPopupHTML(offer) {
                     <button class="wn-popup-btn wn-popup-btn-secondary" 
                             onclick="openModal(${offer.id})">
                         <i class="bi bi-arrows-angle-expand"></i> Ver más
-                    </button>
-                    <button class="wn-popup-btn wn-popup-btn-danger" 
-                            onclick="openReportModal(${offer.id}, '${offer.title}', '${offer.company}')" 
-                            title="Reportar oferta">
-                        <i class="bi bi-exclamation-circle-fill"></i> !
                     </button>
                     <button class="wn-popup-btn wn-popup-btn-primary${postulatedOffers.has(String(offer.id)) ? ' applied' : ''}" 
                             data-apply-offer="${offer.id}"

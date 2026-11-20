@@ -191,8 +191,8 @@ class OfferController extends Controller
             ['label' => 'Tipo de contrato', 'value' => $oferta->tipoContrato?->nombre ?? 'Sin definir'],
             ['label' => 'Salario', 'value' => $oferta->remuneracion_min !== null ? 'Gs. '.number_format($oferta->remuneracion_min, 0, ',', '.').' - '.($oferta->remuneracion_max ? number_format($oferta->remuneracion_max, 0, ',', '.') : 'a convenir') : 'A convenir'],
             ['label' => 'Ubicación', 'value' => $oferta->ubicacion?->direccion.', '.$oferta->ubicacion->ciudad ?? 'Sin ubicación'],
-            ['label' => 'Publicada', 'value' => $oferta->fecha_publicacion ? (string) $oferta->fecha_publicacion->locale('es')->diffForHumans() : 'Hace poco'],
-            ['label' => 'Última actualización', 'value' => $oferta->fecha_publicacion ? (string) $oferta->fecha_publicacion->locale('es')->diffForHumans() : 'Hace poco'],
+            ['label' => 'Publicada', 'value' => $oferta->fecha_publicacion ? (string) \Carbon\Carbon::parse($oferta->fecha_publicacion)->locale('es')->diffForHumans() : 'Hace poco'],
+            ['label' => 'Última actualización', 'value' => $oferta->fecha_publicacion ? (string) \Carbon\Carbon::parse($oferta->fecha_publicacion)->locale('es')->diffForHumans() : 'Hace poco'],
         ];
 
         // Empleador

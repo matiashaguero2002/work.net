@@ -11,7 +11,9 @@
          data-save-url="{{ route('candidate.saved.store', [':idOferta']) }}"
          data-view-url="{{ auth()->check() && auth()->user()->candidato ? route('map.vista', [':idOferta']) : '' }}"
          data-post-url="{{ auth()->check() && auth()->user()->candidato ? route('candidate.applications.store', [':idOferta']) : '' }}"
-         data-withdraw-url="{{ auth()->check() && auth()->user()->candidato ? route('candidate.applications.destroyByOffer', [':idOferta']) : '' }}"></div>
+         data-withdraw-url="{{ auth()->check() && auth()->user()->candidato ? route('candidate.applications.destroyByOffer', [':idOferta']) : '' }}"
+     data-report-url="{{ route('reportes.store') }}"
+     data-user-id="{{ auth()->check() && auth()->user()->id_usuario ?? 0 }}"></div>
 
     @include('partials.wn-navbar')
     @include('partials.wn-filters')

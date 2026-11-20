@@ -463,7 +463,10 @@ function submitReport(event) {
         return;
     }
 
-    fetch('{{ route('reportes.store') }}', {
+    const reportUrl = mapEl.dataset.reportUrl || '';
+    const userId = mapEl.dataset.userId || '';
+
+    fetch(reportUrl, {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': csrfToken(),
@@ -475,7 +478,7 @@ function submitReport(event) {
             oferta_id: offerId,
             tipo: tipo,
             motivo: motivo,
-            id_usuario: {{ auth()->check() && auth()->user()->id_usuario ?? 0 }}
+            id_usuario: userId
         })
     })
         .then((res) => res.json().then((body) => ({ ok: res.ok, body })))

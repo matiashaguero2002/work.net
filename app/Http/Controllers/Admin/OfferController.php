@@ -3,112 +3,229 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Oferta;
+use App\Models\Usuario;
+use App\Models\Postulacion;
+use App\Models\Reporte;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Supervisión de ofertas (admin).
- *
- * SOLO FRONTEND: los datos son mock hardcodeados,
- * copiados del prototipo resources/views/prototypes/Administrador - Ofertas.html (listado)
- * y resources/views/prototypes/Administrador - Detalle de ofertas.html (detalle).
+ * Conectado a la BD PostgreSQL Work_net.
  */
 class OfferController extends Controller
 {
-    public function index()
+    public function index(Request $request): \Illuminate\View\View
     {
-        // Stats del listado
+        // Filtros
+        $estadoFiltro = $request->query('estado');
+        $categoriaFiltro = $request->query('categoria');
+        $reportadoFiltro = $request->query('reportado');
+
+        // Consulta base: ofertas con ubicación (para aparecer en mapa)
+        $query = Oferta::query()->whereHas('ubicacion', fn ($q) => $q->whereNotNull('latitud')->whereNotNull('longitud'));
+
+        // Aplicar filtros
+        if ($estadoFiltro) {
+            $query->where('id_estado_oferta', $estadoFiltro);
+        }
+        if ($categoriaFiltro) {
+            $query->where('id_area', $categoriaFiltro);
+        }
+        if ($reportadoFiltro === 'sí') {
+            $query->whereNotNull('reportes');
+        } elseif ($reportadoFiltro === 'no') {
+            $query->whereNull('reportes');
+        }
+
+        // Estadísticas reales de la BD
+        $totalOfertas = $query->count();
+        $ofertasActivas = Oferta::where('id_estado_oferta', 1)->count();
+        $ofertasReportadas = Oferta::whereHas('reportes', function ($q) {
+            $q->where('estado', 'pendiente');
+        })->count();
+        $ofertasPausadas = Oferta::where('id_estado_oferta', 2)->count();
+        $ofertasCerradas = Oferta::where('id_estado_oferta', 3)->count();
+
+        // Cargar relaciones necesarias para las tarjetas
+        $ofertas = $query
+            ->with(['empleador.usuario', 'areaLaboral', 'modalidad', 'tipoContrato'])
+            ->orderBy('fecha_publicacion', 'desc')
+            ->paginate(15)
+            ->withQueryString();
+
         $stats = [
-            ['icon' => 'briefcase-fill', 'modifier' => '', 'value' => '87', 'label' => 'Ofertas activas'],
-            ['icon' => 'flag-fill', 'modifier' => 'danger', 'value' => '2', 'label' => 'Reportadas'],
-            ['icon' => 'pause-circle-fill', 'modifier' => 'warning', 'value' => '5', 'label' => 'Pausadas'],
-            ['icon' => 'archive-fill', 'modifier' => 'purple', 'value' => '134', 'label' => 'Cerradas'],
+            ['icon' => 'briefcase-fill', 'modifier' => '', 'value' => (string) $totalOfertas, 'label' => 'Ofertas totales'],
+            ['icon' => 'briefcase-fill', 'modifier' => 'success', 'value' => (string) $ofertasActivas, 'label' => 'Activas'],
+            ['icon' => 'flag-fill', 'modifier' => 'danger', 'value' => (string) $ofertasReportadas, 'label' => 'Reportadas'],
+            ['icon' => 'pause-circle-fill', 'modifier' => 'warning', 'value' => (string) $ofertasPausadas, 'label' => 'Pausadas'],
+            ['icon' => 'archive-fill', 'modifier' => 'purple', 'value' => (string) $ofertasCerradas, 'label' => 'Cerradas'],
         ];
 
-        // Ofertas del listado (mock)
-        $offers = [
-            ['id' => 1, 'initials' => 'DL', 'title' => 'Desarrollador Laravel Senior', 'company' => 'Tech Solutions S.A.', 'status' => 'active', 'statusLabel' => 'Activa', 'category' => 'desarrollo', 'date' => '2026-10-16', 'badges' => [['icon' => 'geo-alt-fill', 'text' => 'Encarnación'], ['icon' => 'laptop', 'text' => 'Híbrido'], ['icon' => 'clock', 'text' => 'Tiempo completo']], 'reported' => null, 'description' => 'Buscamos desarrollador con experiencia en PHP 8.3 y Laravel 12 para unirse a nuestro equipo de desarrollo.', 'applicants' => 12, 'views' => 245, 'actions' => ['pause', 'delete']],
-            ['id' => 2, 'initials' => 'AN', 'title' => 'Analista de Sistemas', 'company' => 'DataCorp S.A.', 'status' => 'reported', 'statusLabel' => 'Reportada', 'category' => 'analisis', 'date' => '2026-10-15', 'badges' => [['icon' => 'geo-alt-fill', 'text' => 'Encarnación'], ['icon' => 'building', 'text' => 'Presencial']], 'reported' => ['text' => '3 reportes'], 'description' => 'Analista funcional para proyectos de transformación digital con metodologías ágiles.', 'applicants' => 8, 'views' => 182, 'actions' => ['pause', 'delete']],
-            ['id' => 3, 'initials' => 'ST', 'title' => 'Soporte Técnico IT', 'company' => 'Tech Help Paraguay', 'status' => 'reported', 'statusLabel' => 'Reportada', 'category' => 'soporte', 'date' => '2026-10-14', 'badges' => [['icon' => 'geo-alt-fill', 'text' => 'Encarnación'], ['icon' => 'building', 'text' => 'Presencial']], 'reported' => ['text' => '1 reporte'], 'description' => 'Soporte técnico nivel 1 y 2 para clientes corporativos. Requiere disponibilidad para viajar.', 'applicants' => 3, 'views' => 67, 'actions' => ['pause', 'delete']],
-            ['id' => 4, 'initials' => 'UX', 'title' => 'Diseñador UX/UI', 'company' => 'Creative Studio', 'status' => 'paused', 'statusLabel' => 'Pausada', 'category' => 'diseno', 'date' => '2026-10-10', 'badges' => [['icon' => 'geo-alt-fill', 'text' => 'Encarnación'], ['icon' => 'house', 'text' => 'Remoto'], ['icon' => 'clock', 'text' => 'Freelance']], 'reported' => null, 'description' => 'Diseñador UX/UI para proyectos de aplicaciones móviles y web. Portfolio requerido.', 'applicants' => 5, 'views' => 98, 'actions' => ['reactivate', 'delete']],
-            ['id' => 5, 'initials' => 'DB', 'title' => 'Administrador de Base de Datos', 'company' => 'Banco Regional', 'status' => 'active', 'statusLabel' => 'Activa', 'category' => 'datos', 'date' => '2026-10-12', 'badges' => [['icon' => 'geo-alt-fill', 'text' => 'Encarnación'], ['icon' => 'building', 'text' => 'Presencial'], ['icon' => 'clock', 'text' => 'Tiempo completo']], 'reported' => null, 'description' => 'DBA con experiencia en PostgreSQL, replicación y alta disponibilidad para entorno bancario.', 'applicants' => 7, 'views' => 156, 'actions' => ['pause', 'delete']],
-            ['id' => 6, 'initials' => 'AF', 'title' => 'Desarrollador Mobile Flutter', 'company' => 'App Factory', 'status' => 'closed', 'statusLabel' => 'Cerrada', 'category' => 'desarrollo', 'date' => '2026-10-01', 'badges' => [['icon' => 'geo-alt-fill', 'text' => 'Encarnación'], ['icon' => 'house', 'text' => 'Remoto'], ['icon' => 'clock', 'text' => 'Tiempo completo']], 'reported' => null, 'description' => 'Desarrollo de apps móviles multiplataforma con Flutter y Firebase. Proyecto finalizado.', 'applicants' => 22, 'views' => 412, 'actions' => ['delete']],
-            ['id' => 7, 'initials' => 'SM', 'title' => 'Desarrollador Full Stack Laravel', 'company' => 'Concesionaria San Miguel', 'status' => 'active', 'statusLabel' => 'Activa', 'category' => 'desarrollo', 'date' => '2026-10-15', 'badges' => [['icon' => 'geo-alt-fill', 'text' => 'Encarnación'], ['icon' => 'building', 'text' => 'Presencial'], ['icon' => 'clock', 'text' => 'Tiempo completo']], 'reported' => null, 'description' => 'Buscamos desarrollador con experiencia en PHP 8.3 y Laravel 12 para unirse a nuestro equipo.', 'applicants' => 15, 'views' => 287, 'actions' => ['pause', 'delete']],
-            ['id' => 8, 'initials' => 'SF', 'title' => 'Analista Funcional', 'company' => 'SoftSolutions', 'status' => 'paused', 'statusLabel' => 'Pausada', 'category' => 'analisis', 'date' => '2026-10-08', 'badges' => [['icon' => 'geo-alt-fill', 'text' => 'Encarnación'], ['icon' => 'laptop', 'text' => 'Híbrido'], ['icon' => 'clock', 'text' => 'Tiempo completo']], 'reported' => null, 'description' => 'Analista funcional para proyectos de transformación digital con metodologías ágiles.', 'applicants' => 4, 'views' => 89, 'actions' => ['reactivate', 'delete']],
-        ];
+        // Distribución por categoría (áreas laborales)
+        $areas = DB::table('area_laboral')
+            ->select('id_area', 'nombre')
+            ->get()
+            ->mapWithKeys(fn ($a) => [$a->id_area => $a->nombre])
+            ->toArray();
 
-        return view('admin.offers.index', compact('stats', 'offers'));
+        $categoriaDistribution = [];
+        foreach ($areas as $id => $nombre) {
+            $count = Oferta::where('id_area', $id)->where('id_estado_oferta', 1)->count();
+            if ($count > 0) {
+                $categoriaDistribution[$nombre] = (string) $count;
+            }
+        }
+
+        // Roles disponibles para filtro
+        $estadosDisponibles = [1 => 'Activa', 2 => 'Pausada', 3 => 'Cerrada'];
+        $categoriasDisponibles = $areas;
+
+        return view('admin.offers.index', compact('ofertas', 'stats', 'categoriaDistribution', 'estadosDisponibles', 'categoriasDisponibles'));
     }
 
-    public function show($id)
+    public function show($id): \Illuminate\View\View
     {
-        // Oferta mock (Analista de Sistemas, DataCorp; con reportes)
-        $offer = [
-            'id' => 2,
-            'initials' => 'AN',
-            'title' => 'Analista de Sistemas',
-            'company' => 'DataCorp S.A.',
-            'published' => 'Publicada hace 4 días',
-            'reported' => true,
-            'heroBadges' => [
-                ['class' => 'reported', 'icon' => 'flag-fill', 'text' => 'Reportada'],
-                ['class' => 'info', 'icon' => 'geo-alt-fill', 'text' => 'Encarnación'],
-                ['class' => 'info', 'icon' => 'building', 'text' => 'Presencial'],
-                ['class' => 'info', 'icon' => 'clock', 'text' => 'Tiempo completo'],
-            ],
-            'metrics' => [
-                ['value' => '8', 'label' => 'Postulantes'],
-                ['value' => '182', 'label' => 'Vistas'],
-                ['value' => '3', 'label' => 'Reportes'],
-                ['value' => '4', 'label' => 'Días publicada'],
-            ],
-        ];
+        // Traer oferta real de la BD con relaciones
+        $oferta = Oferta::with(['empleador.usuario', 'areaLaboral', 'modalidad', 'tipoContrato', 'requisitos', 'beneficios', 'ubicacion'])
+            ->findOrFail($id);
 
-        // Descripción (HTML seguro, borde sin escapar en la vista con {!! !!})
-        $description = <<<'HTML'
-            <p><strong>DataCorp S.A.</strong> busca un <strong>Analista de Sistemas</strong> para unirse a su equipo de transformación digital en Encarnación.</p>
-            <p><strong>Responsabilidades:</strong></p>
-            <ul>
-                <li>Relevamiento y análisis de requerimientos funcionales.</li>
-                <li>Documentación de procesos y casos de uso.</li>
-                <li>Coordinación con equipos de desarrollo y QA.</li>
-                <li>Participación en ceremonias ágiles (Scrum).</li>
-            </ul>
-            <p><strong>Requisitos:</strong></p>
-            <ul>
-                <li>Estudios en Análisis de Sistemas, Ingeniería Informática o afines.</li>
-                <li>Experiencia mínima de 2 años en roles similares.</li>
-                <li>Conocimientos en metodologías ágiles.</li>
-                <li>Manejo de herramientas de documentación (Jira, Confluence).</li>
-            </ul>
-        HTML;
+        // Métricas reales: postulantes, vistas, reportes
+        $postulantes = Postulacion::where('id_oferta', $oferta->id_oferta)
+            ->where('id_estado_post', '!=', 5) // excluir retiradas
+            ->count();
 
-        // Reportes recibidos
-        $reports = [
-            ['reason' => 'Información engañosa', 'by' => 'Juan Pérez', 'when' => 'Hace 1 hora', 'text' => 'El salario publicado no coincide con el que se menciona en la entrevista.'],
-            ['reason' => 'Posible estafa', 'by' => 'María González', 'when' => 'Hace 3 horas', 'text' => 'Me pidieron pagar por un curso de capacitación antes de la entrevista.'],
-            ['reason' => 'Contenido inapropiado', 'by' => 'Carlos Ramírez', 'when' => 'Hace 6 horas', 'text' => 'El lenguaje utilizado en la descripción es ofensivo.'],
-        ];
+        $vistas = $oferta->visualizaciones ?? 0;
+
+        $reportes = Reporte::where('id_oferta', $oferta->id_oferta)
+            ->where('estado', 'pendiente')
+            ->get();
 
         // Información de la oferta
         $offerInfo = [
-            ['label' => 'ID de oferta', 'value' => '#OFF-000234'],
-            ['label' => 'Categoría', 'value' => 'Análisis'],
-            ['label' => 'Modalidad', 'value' => 'Presencial'],
-            ['label' => 'Tipo de contrato', 'value' => 'Tiempo completo'],
-            ['label' => 'Salario', 'value' => 'Gs. 6 - 8M'],
-            ['label' => 'Ubicación', 'value' => 'Encarnación, Paraguay'],
-            ['label' => 'Publicada', 'value' => '15/10/2026'],
-            ['label' => 'Última actualización', 'value' => '15/10/2026'],
+            ['label' => 'ID de oferta', 'value' => '#O-'.$oferta->id_oferta],
+            ['label' => 'Categoría', 'value' => $oferta->areaLaboral?->nombre ?? 'Sin categoría'],
+            ['label' => 'Modalidad', 'value' => $oferta->modalidad?->nombre ?? 'Sin definir'],
+            ['label' => 'Tipo de contrato', 'value' => $oferta->tipoContrato?->nombre ?? 'Sin definir'],
+            ['label' => 'Salario', 'value' => $oferta->remuneracion_min !== null ? 'Gs. '.number_format($oferta->remuneracion_min, 0, ',', '.').' - '.($oferta->remuneracion_max ? number_format($oferta->remuneracion_max, 0, ',', '.') : 'a convenir') : 'A convenir'],
+            ['label' => 'Ubicación', 'value' => $oferta->ubicacion?->direccion.', '.$oferta->ubicacion->ciudad ?? 'Sin ubicación'],
+            ['label' => 'Publicada', 'value' => $oferta->fecha_publicacion ? (string) $oferta->fecha_publicacion->locale('es')->diffForHumans() : 'Hace poco'],
+            ['label' => 'Última actualización', 'value' => $oferta->fecha_publicacion ? (string) $oferta->fecha_publicacion->locale('es')->diffForHumans() : 'Hace poco'],
         ];
 
         // Empleador
+        $empleador = $oferta->empleador;
         $employerInfo = [
-            ['label' => 'Empresa', 'value' => 'DataCorp S.A.'],
-            ['label' => 'Email', 'value' => 'rrhh@datacorp.com'],
-            ['label' => 'RUC', 'value' => '80012345-6'],
-            ['label' => 'Ofertas publicadas', 'value' => '12'],
-            ['label' => 'Estado', 'value' => 'Activo', 'style' => 'color: var(--wn-success);'],
+            ['label' => 'Empresa', 'value' => $empleador?->nombre_empresa ?? 'Sin empresa'],
+            ['label' => 'Email', 'value' => $empleador?->usuario?->email ?? 'Sin email'],
+            ['label' => 'RUC', 'value' => $empleador?->ruc ?? 'Sin RUC'],
+            ['label' => 'Ofertas publicadas', 'value' => (string) Oferta::where('id_empleador', $empleador?->id_empleador)->count()],
+            ['label' => 'Estado', 'value' => $empleador?->usuario?->estado ?? 'activo', 'style' => in_array($empleador->usuario->estado ?? 'activo', ['activo', null]) ? 'color: var(--wn-success)' : 'color: var(--wn-danger)'],
         ];
 
-        return view('admin.offers.show', compact('offer', 'description', 'reports', 'offerInfo', 'employerInfo', 'id'));
+        // Últimas postulaciones
+        $ultimasPostulaciones = Postulacion::where('id_oferta', $oferta->id_oferta)
+            ->where('id_estado_post', '!=', 5)
+            ->orderBy('fecha_postulacion', 'desc')
+            ->take(3)
+            ->get()->map(function ($p) {
+                $candidato = DB::table('candidato')->where('id_candidato', $p->id_candidato)->first();
+                $nombre = $candidato ? ($candidato->nombre ?: 'Anónimo') : 'Anónimo';
+                $tiempo = $p->fecha_postulacion ? (string) $p->fecha_postulacion->locale('es')->diffForHumans() : 'Hace poco';
+                $estado = match ($p->id_estado_post) {
+                    1 => 'En revisión',
+                    2 => 'Aceptada',
+                    3 => 'Retirada',
+                    4 => 'Rechazada',
+                    default => 'Pending',
+                };
+
+                return [
+                    'logo' => substr($nombre, 0, 2),
+                    'title' => $nombre,
+                    'meta' => $tiempo,
+                    'statusClass' => 'active',
+                    'status' => $estado,
+                ];
+            })
+            ->toArray();
+
+        // Reportes recientes de esta oferta
+        $reportesRecientes = Reporte::where('id_oferta', $oferta->id_oferta)
+            ->orderBy('fecha_creacion', 'desc')
+            ->take(3)
+            ->get()->map(function ($r) {
+                $u = $r->usuario;
+                return [
+                    'by' => $u ? ($u->nombre ?: 'Anónimo') : 'Anónimo',
+                    'when' => $r->fecha_creacion ? (string) $r->fecha_creacion->locale('es')->diffForHumans() : 'Hace poco',
+                    'text' => mb_strlen($r->motivo) > 50 ? substr($r->motivo, 0, 50) . '...' : $r->motivo,
+                ];
+            })
+            ->toArray();
+
+        return view('admin.offers.show', compact('oferta', 'postulantes', 'vistas', 'offerInfo', 'employerInfo', 'reportesRecientes', 'ultimasPostulaciones'));
+    }
+
+    public function pausar($id): \Illuminate\Http\JsonResponse
+    {
+        $oferta = Oferta::findOrFail($id);
+
+        if ($oferta->id_estado_oferta !== 1) {
+            return response()->json(['ok' => false, 'message' => 'Solo ofertas activas se pueden pausar.'], 422);
+        }
+
+        $oferta->id_estado_oferta = 2; // Pausada
+        $oferta->save();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Oferta pausada correctamente.',
+            'nuevoEstado' => 'pausada',
+            'icon' => 'pause-circle-fill',
+            'label' => 'Pausada',
+        ]);
+    }
+
+    public function reactivar($id): \Illuminate\Http\JsonResponse
+    {
+        $oferta = Oferta::findOrFail($id);
+
+        if ($oferta->id_estado_oferta !== 2) {
+            return response()->json(['ok' => false, 'message' => 'Solo ofertas pausadas se pueden reactivar.'], 422);
+        }
+
+        $oferta->id_estado_oferta = 1; // Activa
+        $oferta->save();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Oferta reactivada correctamente.',
+            'nuevoEstado' => 'activa',
+            'icon' => 'check-circle-fill',
+            'label' => 'Activa',
+        ]);
+    }
+
+    public function cerrar($id): \Illuminate\Http\JsonResponse
+    {
+        $oferta = Oferta::findOrFail($id);
+
+        if ($oferta->id_estado_oferta !== 1 && $oferta->id_estado_oferta !== 2) {
+            return response()->json(['ok' => false, 'message' => 'La oferta ya no está activa.'], 422);
+        }
+
+        $oferta->id_estado_oferta = 3; // Cerrada
+        $oferta->fecha_cierre = now();
+        $oferta->save();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Oferta cerrada correctamente.',
+            'nuevoEstado' => 'cerrada',
+            'icon' => 'x-circle-fill',
+            'label' => 'Cerrada',
+        ]);
     }
 }

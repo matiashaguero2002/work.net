@@ -42,9 +42,7 @@ class OfferController extends Controller
         // Estadísticas reales de la BD
         $totalOfertas = $query->count();
         $ofertasActivas = Oferta::where('id_estado_oferta', 1)->count();
-        $ofertasReportadas = Oferta::whereHas('reportes', function ($q) {
-            $q->where('estado', 'pendiente');
-        })->count();
+        $reportesPendientes = Reporte::where('estado', 'pendiente')->count();
         $ofertasPausadas = Oferta::where('id_estado_oferta', 2)->count();
         $ofertasCerradas = Oferta::where('id_estado_oferta', 3)->count();
 
@@ -58,7 +56,7 @@ class OfferController extends Controller
         $stats = [
             ['icon' => 'briefcase-fill', 'modifier' => '', 'value' => (string) $totalOfertas, 'label' => 'Ofertas totales'],
             ['icon' => 'briefcase-fill', 'modifier' => 'success', 'value' => (string) $ofertasActivas, 'label' => 'Activas'],
-            ['icon' => 'flag-fill', 'modifier' => 'danger', 'value' => (string) $ofertasReportadas, 'label' => 'Reportadas'],
+            ['icon' => 'flag-fill', 'modifier' => 'danger', 'value' => (string) $reportesPendientes, 'label' => 'Reportes pendientes'],
             ['icon' => 'pause-circle-fill', 'modifier' => 'warning', 'value' => (string) $ofertasPausadas, 'label' => 'Pausadas'],
             ['icon' => 'archive-fill', 'modifier' => 'purple', 'value' => (string) $ofertasCerradas, 'label' => 'Cerradas'],
         ];

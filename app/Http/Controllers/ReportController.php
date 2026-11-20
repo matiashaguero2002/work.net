@@ -34,19 +34,17 @@ class ReportController extends Controller
             'motivo.min' => 'El motivo debe tener al menos :min caracteres.',
         ]);
 
-        // Evitar reportes duplicados del mismo usuario sobre la misma oferta
+        // Evitar reportes duplicados del mismo usuario
         if (Auth::check()) {
             $yaReporto = Reporte::where('id_usuario', Auth::id())
-                ->where('id_oferta', $request->oferta_id)
                 ->exists();
             if ($yaReporto) {
-                return response()->json(['ok' => false, 'message' => 'Ya realizaste un reporte sobre esta oferta.'], 422);
+                return response()->json(['ok' => false, 'message' => 'Ya realizaste un reporte.'], 422);
             }
         }
 
         $data = [
             'id_usuario' => Auth::check() ? Auth::id() : null,
-            'id_oferta' => $request->oferta_id,
             'tipo' => $request->tipo,
             'motivo' => $request->motivo,
             'estado' => 'pendiente',

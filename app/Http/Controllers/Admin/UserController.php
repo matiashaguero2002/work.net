@@ -64,8 +64,8 @@ class UserController extends Controller
                 'status' => $user->estado ?? 'activo',
                 'statusIcon' => $statusIcons[$user->estado] ?? 'hourglass-split',
                 'statusLabel' => $statusLabels[$user->estado] ?? ucfirst($user->estado),
-                'registered' => $user->fecha_registro ? (string) $user->fecha_registro->locale('es')->diffForHumans() : 'Hace poco',
-                'registeredDate' => $user->fecha_registro ? (string) $user->fecha_registro->format('Y-m-d') : '',
+                'registered' => $user->fecha_registro ? (string) \Carbon\Carbon::parse($user->fecha_registro)->locale('es')->diffForHumans() : 'Hace poco',
+                'registeredDate' => $user->fecha_registro ? (string) \Carbon\Carbon::parse($user->fecha_registro)->format('Y-m-d') : '',
                 'actions' => $actions,
             ];
         })->all();

@@ -87,9 +87,4 @@ class Oferta extends Model
     {
         return $this->belongsToMany(Candidato::class, 'oferta_guardada', 'id_oferta', 'id_candidato');
     }
-
-    public function reportes()
-    {
-        return $this->hasMany(Reporte::class, 'id_oferta', 'id_oferta');
-    }
 }

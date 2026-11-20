@@ -124,8 +124,8 @@ class UserController extends Controller
             ['label' => 'Teléfono', 'value' => $user->telefono ?? 'No registrado'],
             ['label' => 'Ciudad', 'value' => $user->ciudad ?? 'No registrada'],
             ['label' => 'Fecha de nacimiento', 'value' => $user->fecha_nacimiento ?? 'No registrada'],
-            ['label' => 'Fecha de registro', 'value' => $user->fecha_registro ? (string) $user->fecha_registro->locale('es')->diffForHumans() : 'No registrada'],
-            ['label' => 'Último acceso', 'value' => $user->ultimo_acceso ? (string) $user->ultimo_acceso->locale('es')->diffForHumans() : 'Nunca'],
+            ['label' => 'Fecha de registro', 'value' => $user->fecha_registro ? (string) \Carbon\Carbon::parse($user->fecha_registro)->locale('es')->diffForHumans() : 'No registrada'],
+            ['label' => 'Último acceso', 'value' => $user->ultimo_acceso ? (string) \Carbon\Carbon::parse($user->ultimo_acceso)->locale('es')->diffForHumans() : 'Nunca'],
         ];
 
         // Información de cuenta
@@ -172,7 +172,7 @@ class UserController extends Controller
             ->get()->map(function ($p) {
                 $oferta = DB::table('oferta')->where('id_oferta', $p->id_oferta)->first();
                 $empresa = $oferta ? ($oferta->empleador ? $oferta->empleador->nombre_empresa : 'Empresa') : 'Empresa';
-                $tiempo = $p->fecha_postulacion ? (string) $p->fecha_postulacion->locale('es')->diffForHumans() : 'Hace poco';
+                $tiempo = $p->fecha_postulacion ? (string) \Carbon\Carbon::parse($p->fecha_postulacion)->locale('es')->diffForHumans() : 'Hace poco';
 
                 return [
                     'icon' => 'file-earmark-text-fill',
@@ -199,7 +199,7 @@ class UserController extends Controller
                 return [
                     'logo' => $empresa ? substr($empresa, 0, 2) : 'US',
                     'title' => $oferta ? $oferta->titulo : 'Oferta',
-                    'meta' => $empresa . ' · ' . ($p->fecha_postulacion ? (string) $p->fecha_postulacion->locale('es')->diffForHumans() : 'Hace poco'),
+                    'meta' => $empresa . ' · ' . ($p->fecha_postulacion ? (string) \Carbon\Carbon::parse($p->fecha_postulacion)->locale('es')->diffForHumans() : 'Hace poco'),
                     'statusClass' => 'active',
                     'status' => $p->id_estado_post === 1 ? 'En revisión' : ($p->id_estado_post === 2 ? 'Aceptada' : ($p->id_estado_post === 3 ? 'Retirada' : 'Rechazada')),
                 ];

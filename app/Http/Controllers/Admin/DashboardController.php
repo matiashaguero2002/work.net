@@ -87,7 +87,7 @@ class DashboardController extends Controller
                 $oferta = $reporte->oferta;
                 $actor = $usuario ? ($usuario->nombre ?? 'Anónimo') : 'Anónimo';
                 $accion = 'reportó';
-                $tiempo = $reporte->fecha_creacion ? (string) $reporte->fecha_creacion->locale('es')->diffForHumans() : 'Hace poco';
+                $tiempo = $reporte->fecha_creacion ? (string) \Carbon\Carbon::parse($reporte->fecha_creacion)->locale('es')->diffForHumans() : 'Hace poco';
                 $ofertaTitulo = $oferta ? $oferta->titulo : 'Oferta';
 
                 return [

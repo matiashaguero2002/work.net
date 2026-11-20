@@ -33,11 +33,9 @@ class OfferController extends Controller
         if ($categoriaFiltro) {
             $query->where('id_area', $categoriaFiltro);
         }
-        if ($reportadoFiltro === 'sí') {
-            $query->whereNotNull('reportes');
-        } elseif ($reportadoFiltro === 'no') {
-            $query->whereNull('reportes');
-        }
+        // El filtro "reportado" no se aplica porque la tabla 'reporte' del esquema
+        // original no tiene columna 'id_oferta' para vincular reportes con ofertas.
+        // (Se omite intencionalmente para evitar error SQL.)
 
         // Estadísticas reales de la BD
         $totalOfertas = $query->count();
@@ -172,16 +170,57 @@ class OfferController extends Controller
         $oferta = Oferta::with(['empleador.usuario', 'areaLaboral', 'modalidad', 'tipoContrato', 'requisitos', 'beneficios', 'ubicacion'])
             ->findOrFail($id);
 
-        // Métricas reales: postulantes, vistas, reportes
+        $empleador = $oferta->empleador;
+        $ubicacion = $oferta->ubicacion;
+
+        // Métricas reales
         $postulantes = Postulacion::where('id_oferta', $oferta->id_oferta)
-            ->where('id_estado_post', '!=', 5) // excluir retiradas
+            ->where('id_estado_post', '!=', 5)
             ->count();
-
         $vistas = $oferta->visualizaciones ?? 0;
+        $diasPublicada = $oferta->fecha_publicacion
+            ? (int) now()->diffInDays(\Carbon\Carbon::parse($oferta->fecha_publicacion))
+            : 0;
 
-        // Reportes pendientes de esta oferta
-        // Nota: la tabla 'reporte' no tiene columna 'id_oferta' en el esquema original
+        // Reportes reales (tabla 'reporte' no vincula con oferta en esquema original)
         $reportes = [];
+
+        // Objeto $offer que espera la vista show.blade.php
+        $estadoKey = $oferta->id_estado_oferta ?? 1;
+        $statusLabelMap = [1 => 'Activa', 2 => 'Pausada', 3 => 'Cerrada'];
+        $statusSlugMap = [1 => 'active', 2 => 'paused', 3 => 'closed'];
+        $badgesHero = [
+            ['class' => $statusSlugMap[$estadoKey] ?? 'active', 'icon' => 'geo-alt-fill', 'text' => $ubicacion?->ciudad ?? 'Encarnación'],
+            ['class' => 'info', 'icon' => 'laptop', 'text' => $oferta->modalidad?->nombre ?? 'Presencial'],
+            ['class' => 'info', 'icon' => 'clock', 'text' => $oferta->tipoContrato?->nombre ?? 'Tiempo completo'],
+        ];
+
+        $offer = [
+            'id' => $oferta->id_oferta,
+            'initials' => strtoupper($empleador ? substr($empleador->nombre_empresa ?? 'US', 0, 2) : 'US'),
+            'title' => $oferta->titulo ?? 'Sin título',
+            'company' => $empleador?->nombre_empresa ?? 'Empresa',
+            'published' => $oferta->fecha_publicacion
+                ? (string) \Carbon\Carbon::parse($oferta->fecha_publicacion)->locale('es')->diffForHumans()
+                : 'Hace poco',
+            'reported' => false,
+            'heroBadges' => $badgesHero,
+            'metrics' => [
+                ['value' => (string) $postulantes, 'label' => 'Postulantes'],
+                ['value' => (string) $vistas, 'label' => 'Vistas'],
+                ['value' => (string) count($reportes), 'label' => 'Reportes'],
+                ['value' => (string) $diasPublicada, 'label' => 'Días publicada'],
+            ],
+        ];
+
+        // Descripción en HTML seguro (escapamos y convertimos saltos de línea)
+        $descripcionTexto = trim($oferta->descripcion ?? '');
+        $requisitosTexto = $oferta->requisitos ?? '';
+        $html = '<p>' . nl2br(e($descripcionTexto)) . '</p>';
+        if (trim($requisitosTexto) !== '') {
+            $html .= '<p><strong>Requisitos:</strong></p><p>' . nl2br(e($requisitosTexto)) . '</p>';
+        }
+        $description = $html;
 
         // Información de la oferta
         $offerInfo = [
@@ -189,56 +228,30 @@ class OfferController extends Controller
             ['label' => 'Categoría', 'value' => $oferta->areaLaboral?->nombre ?? 'Sin categoría'],
             ['label' => 'Modalidad', 'value' => $oferta->modalidad?->nombre ?? 'Sin definir'],
             ['label' => 'Tipo de contrato', 'value' => $oferta->tipoContrato?->nombre ?? 'Sin definir'],
-            ['label' => 'Salario', 'value' => $oferta->remuneracion_min !== null ? 'Gs. '.number_format($oferta->remuneracion_min, 0, ',', '.').' - '.($oferta->remuneracion_max ? number_format($oferta->remuneracion_max, 0, ',', '.') : 'a convenir') : 'A convenir'],
-            ['label' => 'Ubicación', 'value' => $oferta->ubicacion
-                ? trim(($oferta->ubicacion->direccion ?? '') . ', ' . ($oferta->ubicacion->ciudad ?? ''), ', ')
+            ['label' => 'Salario', 'value' => $oferta->remuneracion_min !== null
+                ? 'Gs. '.number_format($oferta->remuneracion_min, 0, ',', '.').' - '.($oferta->remuneracion_max ? number_format($oferta->remuneracion_max, 0, ',', '.') : 'a convenir')
+                : 'A convenir'],
+            ['label' => 'Ubicación', 'value' => $ubicacion
+                ? trim(($ubicacion->direccion ?? '') . ', ' . ($ubicacion->ciudad ?? ''), ', ')
                 : 'Sin ubicación'],
-            ['label' => 'Publicada', 'value' => $oferta->fecha_publicacion ? (string) \Carbon\Carbon::parse($oferta->fecha_publicacion)->locale('es')->diffForHumans() : 'Hace poco'],
-            ['label' => 'Última actualización', 'value' => $oferta->fecha_publicacion ? (string) \Carbon\Carbon::parse($oferta->fecha_publicacion)->locale('es')->diffForHumans() : 'Hace poco'],
+            ['label' => 'Publicada', 'value' => $oferta->fecha_publicacion
+                ? (string) \Carbon\Carbon::parse($oferta->fecha_publicacion)->locale('es')->diffForHumans()
+                : 'Hace poco'],
+            ['label' => 'Última actualización', 'value' => $oferta->fecha_publicacion
+                ? (string) \Carbon\Carbon::parse($oferta->fecha_publicacion)->locale('es')->diffForHumans()
+                : 'Hace poco'],
         ];
 
         // Empleador
-        $empleador = $oferta->empleador;
         $employerInfo = [
             ['label' => 'Empresa', 'value' => $empleador?->nombre_empresa ?? 'Sin empresa'],
             ['label' => 'Email', 'value' => $empleador?->usuario?->email ?? 'Sin email'],
             ['label' => 'RUC', 'value' => $empleador?->ruc ?? 'Sin RUC'],
             ['label' => 'Ofertas publicadas', 'value' => (string) Oferta::where('id_empleador', $empleador?->id_empleador)->count()],
-            ['label' => 'Estado', 'value' => $empleador?->usuario?->estado ?? 'activo', 'style' => in_array($empleador->usuario->estado ?? 'activo', ['activo', null]) ? 'color: var(--wn-success)' : 'color: var(--wn-danger)'],
+            ['label' => 'Estado', 'value' => $empleador?->usuario?->estado ?? 'activo', 'style' => in_array($empleador?->usuario?->estado ?? 'activo', ['activo', null]) ? 'color: var(--wn-success)' : 'color: var(--wn-danger)'],
         ];
 
-        // Últimas postulaciones
-        $ultimasPostulaciones = Postulacion::where('id_oferta', $oferta->id_oferta)
-            ->where('id_estado_post', '!=', 5)
-            ->orderBy('fecha_postulacion', 'desc')
-            ->take(3)
-            ->get()->map(function ($p) {
-                $candidato = DB::table('candidato')->where('id_candidato', $p->id_candidato)->first();
-                $nombre = $candidato ? ($candidato->nombre ?: 'Anónimo') : 'Anónimo';
-                $tiempo = $p->fecha_postulacion ? (string) \Carbon\Carbon::parse($p->fecha_postulacion)->locale('es')->diffForHumans() : 'Hace poco';
-                $estado = match ($p->id_estado_post) {
-                    1 => 'En revisión',
-                    2 => 'Aceptada',
-                    3 => 'Retirada',
-                    4 => 'Rechazada',
-                    default => 'Pending',
-                };
-
-                return [
-                    'logo' => substr($nombre, 0, 2),
-                    'title' => $nombre,
-                    'meta' => $tiempo,
-                    'statusClass' => 'active',
-                    'status' => $estado,
-                ];
-            })
-            ->toArray();
-
-        // Reportes recientes de esta oferta
-        // Nota: la tabla 'reporte' no tiene columna 'id_oferta' en el esquema original
-        $reportesRecientes = [];
-
-        return view('admin.offers.show', compact('oferta', 'postulantes', 'vistas', 'offerInfo', 'employerInfo', 'reportesRecientes', 'ultimasPostulaciones'));
+        return view('admin.offers.show', compact('offer', 'description', 'reports', 'offerInfo', 'employerInfo', 'id'));
     }
 
     public function pausar($id): \Illuminate\Http\JsonResponse

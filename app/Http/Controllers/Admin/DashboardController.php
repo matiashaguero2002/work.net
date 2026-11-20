@@ -75,7 +75,7 @@ class DashboardController extends Controller
                     'modifier' => '',
                     'actor' => $empleador ? $empleador->nombre_empresa : 'Empresa',
                     'action' => 'publicó una nueva oferta',
-                    'time' => $oferta->fecha_publicacion ? (string) $oferta->fecha_publicacion->locale('es')->diffForHumans() : 'Hace poco',
+                    'time' => $oferta->fecha_publicacion ? (string) (is_object($oferta->fecha_publicacion) ? $oferta->fecha_publicacion->locale('es')->diffForHumans() : \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $oferta->fecha_publicacion)->locale('es')->diffForHumans()) : 'Hace poco',
                 ];
             });
 

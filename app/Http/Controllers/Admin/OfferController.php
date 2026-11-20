@@ -183,7 +183,7 @@ class OfferController extends Controller
             : 0;
 
         // Reportes reales (tabla 'reporte' no vincula con oferta en esquema original)
-        $reportes = [];
+        $reports = [];
 
         // Objeto $offer que espera la vista show.blade.php
         $estadoKey = $oferta->id_estado_oferta ?? 1;
@@ -208,7 +208,7 @@ class OfferController extends Controller
             'metrics' => [
                 ['value' => (string) $postulantes, 'label' => 'Postulantes'],
                 ['value' => (string) $vistas, 'label' => 'Vistas'],
-                ['value' => (string) count($reportes), 'label' => 'Reportes'],
+                ['value' => (string) count($reports), 'label' => 'Reportes'],
                 ['value' => (string) $diasPublicada, 'label' => 'Días publicada'],
             ],
         ];

@@ -181,162 +181,16 @@
         </div>
     </div>
 
-    {{-- DATA PARA JS --}}
+    {{-- CONFIG PARA admin.js (acciones de ofertas) --}}
     <script>
     window.WN_ADMIN_OFFERS = {
         urls: {
-            pausar: "{{ route('admin.offers.pausar', [':id']) }}",
-            reactivar: "{{ route('admin.offers.reactivar', [':id']) }}",
+            pause: "{{ route('admin.offers.pausar', [':id']) }}",
+            reactivate: "{{ route('admin.offers.reactivar', [':id']) }}",
             cerrar: "{{ route('admin.offers.cerrar', [':id']) }}",
-            destroy: "{{ route('admin.offers.destroy', [':id']) }}"
+            delete: "{{ route('admin.offers.destroy', [':id']) }}"
         },
         csrf: "{{ csrf_token() }}"
     };
-    </script>
-    <script>
-    (function () {
-        const cfg = window.WN_ADMIN_OFFERS || {};
-        const modal = document.getElementById('actionModal');
-        const yes = document.getElementById('actionModalYes');
-        const no = document.getElementById('actionModalNo');
-        const titleEl = document.getElementById('actionModalTitle');
-        const textEl = document.getElementById('actionModalText');
-        let pendingAction = null;
-        let pendingId = null;
-
-        const actionLabels = {
-            pause: { title: '¿Pausar oferta?', text: 'La oferta dejará de aceptar postulaciones temporalmente.' },
-            reactivate: { title: '¿Reactivar oferta?', text: 'La oferta volverá a estar activa y aceptará postulaciones.' },
-            cerrar: { title: '¿Cerrar oferta?', text: 'La oferta se cerrará permanentemente y no aceptará más postulaciones.' },
-            delete: { title: '¿Eliminar oferta?', text: 'Esta acción es permanente. Se eliminarán la oferta y sus datos asociados.' }
-        };
-
-        function openModal(action, id) {
-            pendingAction = action;
-            pendingId = id;
-            const label = actionLabels[action] || { title: '¿Confirmar acción?', text: 'Esta acción se aplicará a la oferta.' };
-            if (titleEl) titleEl.textContent = label.title;
-            if (textEl) textEl.textContent = label.text;
-            if (modal) modal.classList.add('active');
-        }
-
-        function closeModal() {
-            pendingAction = null;
-            pendingId = null;
-            if (modal) modal.classList.remove('active');
-        }
-
-        document.querySelectorAll('[data-action]').forEach(function (btn) {
-            btn.addEventListener('click', function (e) {
-                e.preventDefault();
-                const action = btn.getAttribute('data-action');
-                const id = btn.getAttribute('data-id');
-                if (!id) return;
-                openModal(action, id);
-            });
-        });
-
-        if (no) no.addEventListener('click', closeModal);
-        if (modal) modal.addEventListener('click', function (e) {
-            if (e.target === modal) closeModal();
-        });
-
-        if (yes) yes.addEventListener('click', function () {
-            if (!pendingAction || !pendingId) return;
-            const map = { pause: 'pausar', reactivate: 'reactivar', cerrar: 'cerrar', delete: 'destroy' };
-            const key = map[pendingAction];
-            const template = cfg.urls && cfg.urls[key];
-            if (!template) { alert('Acción no disponible.'); return; }
-            const url = template.replace(':id', pendingId);
-            const method = pendingAction === 'delete' ? 'DELETE' : 'POST';
-
-            fetch(url, {
-                method: method,
-                headers: {
-                    'X-CSRF-TOKEN': cfg.csrf || '',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                },
-                credentials: 'same-origin'
-            })
-            .then(function (res) { return res.json().then(function (body) { return { ok: res.ok, body: body }; }); })
-            .then(function (r) {
-                if (r.ok && r.body && r.body.ok) {
-                    window.location.reload();
-                } else {
-                    alert((r.body && r.body.message) || 'No se pudo completar la acción.');
-                    closeModal();
-                }
-            })
-            .catch(function () {
-                alert('No se pudo completar la acción. Verificá tu conexión.');
-                closeModal();
-            });
-        });
-
-        // Filtros funcionales
-        const searchInput = document.getElementById('filterSearch');
-        const statusSelect = document.getElementById('filterStatus');
-        const categorySelect = document.getElementById('filterCategory');
-        const dateSelect = document.getElementById('filterDate');
-        const clearBtn = document.getElementById('filterClear');
-        const cardEls = Array.from(document.querySelectorAll('.wn-offer-card'));
-        const countEl = document.getElementById('resultsCount');
-
-        function applyFilters() {
-            const term = (searchInput ? searchInput.value : '').toLowerCase();
-            const status = statusSelect ? statusSelect.value : '';
-            const category = categorySelect ? categorySelect.value : '';
-            const date = dateSelect ? dateSelect.value : '';
-            let visible = 0;
-            cardEls.forEach(function (card) {
-                const t = (card.getAttribute('data-title') || '').toLowerCase();
-                const c = (card.getAttribute('data-company') || '').toLowerCase();
-                const s = card.getAttribute('data-status') || '';
-                const cat = card.getAttribute('data-category') || '';
-                const d = card.getAttribute('data-date') || '';
-                const matchText = !term || t.includes(term) || c.includes(term);
-                const matchStatus = !status || s === status || (status === 'reported' && s === 'reported');
-                const matchCategory = !category || cat === category;
-                let matchDate = true;
-                if (date && d) {
-                    const diff = (Date.now() - new Date(d).getTime()) / 86400000;
-                    matchDate = date === 'today' ? diff <= 1 : date === 'week' ? diff <= 7 : date === 'month' ? diff <= 30 : true;
-                }
-                const show = matchText && matchStatus && matchCategory && matchDate;
-                card.style.display = show ? '' : 'none';
-                if (show) visible++;
-            });
-            if (countEl) countEl.textContent = String(visible);
-            const empty = document.getElementById('emptyState');
-            if (empty) empty.style.display = visible === 0 ? 'block' : 'none';
-        }
-        if (searchInput) searchInput.addEventListener('input', applyFilters);
-        if (statusSelect) statusSelect.addEventListener('change', applyFilters);
-        if (categorySelect) categorySelect.addEventListener('change', applyFilters);
-        if (dateSelect) dateSelect.addEventListener('change', applyFilters);
-        if (clearBtn) clearBtn.addEventListener('click', function () {
-            if (searchInput) searchInput.value = '';
-            if (statusSelect) statusSelect.value = '';
-            if (categorySelect) categorySelect.value = '';
-            if (dateSelect) dateSelect.value = '';
-            document.querySelectorAll('.wn-tab').forEach(function (t) { t.classList.remove('active'); });
-            const first = document.querySelector('.wn-tab');
-            if (first) first.classList.add('active');
-            applyFilters();
-        });
-
-        // Tabs rápidos
-        document.querySelectorAll('.wn-tab').forEach(function (tab) {
-            tab.addEventListener('click', function () {
-                document.querySelectorAll('.wn-tab').forEach(function (t) { t.classList.remove('active'); });
-                tab.classList.add('active');
-                if (statusSelect) {
-                    statusSelect.value = tab.getAttribute('data-tab') || '';
-                    applyFilters();
-                }
-            });
-        });
-    })();
     </script>
 @endsection

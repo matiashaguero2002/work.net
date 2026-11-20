@@ -182,8 +182,18 @@ document.addEventListener('DOMContentLoaded', () => {
         function openActionModal(item, action) {
             pendingItem = item;
             pendingAction = action;
-            const cfg = actionConfig[action];
+            let cfg = actionConfig[action];
             if (!cfg) return;
+            // Si el botón está dentro de una oferta, usar textos de oferta
+            if (item && item.closest && item.closest('.wn-offer-card')) {
+                const offerConfig = {
+                    pause: { title: '¿Pausar oferta?', text: 'La oferta dejará de aceptar postulaciones temporalmente.', icon: 'bi-pause-circle-fill', color: 'danger' },
+                    reactivate: { title: '¿Reactivar oferta?', text: 'La oferta volverá a estar activa y aceptará postulaciones.', icon: 'bi-check-circle-fill', color: 'success' },
+                    cerrar: { title: '¿Cerrar oferta?', text: 'La oferta se cerrará y no aceptará más postulaciones.', icon: 'bi-x-circle-fill', color: 'danger' },
+                    delete: { title: '¿Eliminar oferta?', text: 'Esta acción es permanente. Se eliminarán la oferta y sus datos asociados.', icon: 'bi-trash-fill', color: 'danger' },
+                };
+                if (offerConfig[action]) cfg = offerConfig[action];
+            }
             actionModalTitle.textContent = cfg.title;
             actionModalText.textContent = cfg.text;
             actionModalIcon.innerHTML = `<i class="bi ${cfg.icon}"></i>`;
@@ -223,6 +233,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
         actionModalYes.addEventListener('click', () => {
             if (pendingItem && pendingAction) {
+                // OFERTAS: enviar acción al servidor (persistir en BD) y recargar
+                const offerCardForFetch = pendingItem.closest ? pendingItem.closest('.wn-offer-card') : null;
+                const cfg = window.WN_ADMIN_OFFERS || {};
+                if (offerCardForFetch && cfg.urls && cfg.urls[pendingAction]) {
+                    const id = pendingItem.dataset.id;
+                    const url = (cfg.urls[pendingAction] || '').replace(':id', id || '');
+                    if (url) {
+                        const method = pendingAction === 'delete' ? 'DELETE' : 'POST';
+                        fetch(url, {
+                            method: method,
+                            headers: {
+                                'X-CSRF-TOKEN': cfg.csrf || '',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            },
+                            credentials: 'same-origin'
+                        })
+                        .then((res) => res.json().then((body) => ({ ok: res.ok, body })))
+                        .then(({ ok, body }) => {
+                            if (ok && body && body.ok) {
+                                window.location.reload();
+                            } else {
+                                alert((body && body.message) || 'No se pudo completar la acción.');
+                                closeActionModal();
+                            }
+                        })
+                        .catch(() => {
+                            alert('No se pudo completar la acción. Verificá tu conexión.');
+                            closeActionModal();
+                        });
+                        return;
+                    }
+                }
+
                 // Reportes: actualizar badge sin recargar
                 const reportCard = pendingItem.closest('.wn-report-card');
                 if (reportCard) {

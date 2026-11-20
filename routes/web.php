@@ -18,6 +18,7 @@ use App\Http\Controllers\Employer\OfferController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\OfferController as AdminOfferController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\MapController;
 use Illuminate\Support\Facades\Route;
 

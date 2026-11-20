@@ -179,9 +179,9 @@ class OfferController extends Controller
 
         $vistas = $oferta->visualizaciones ?? 0;
 
-        $reportes = Reporte::where('id_oferta', $oferta->id_oferta)
-            ->where('estado', 'pendiente')
-            ->get();
+        // Reportes pendientes de esta oferta
+        // Nota: la tabla 'reporte' no tiene columna 'id_oferta' en el esquema original
+        $reportes = [];
 
         // Información de la oferta
         $offerInfo = [

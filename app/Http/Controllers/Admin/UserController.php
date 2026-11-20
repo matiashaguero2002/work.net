@@ -31,9 +31,53 @@ class UserController extends Controller
         }
 
         // Usuarios con paginación (10 por página) - datos reales
-        $users = $query->orderBy('fecha_registro', 'desc')
+        $usersQuery = Usuario::query()
+            ->orderBy('fecha_registro', 'desc')
             ->paginate(10)
             ->withQueryString();
+
+        // Mapear objetos Eloquent a arreglos para compatibilidad con la vista
+        $users = $usersQuery->getCollection()->map(function ($user) {
+            $initials = substr($user->nombre ?? 'US', 0, 2);
+            $roleLabels = ['candidato' => 'Candidato', 'empleador' => 'Empleador', 'admin' => 'Administrador'];
+            $statusLabels = ['activo' => 'Activo', 'pendiente' => 'Pendiente', 'suspendido' => 'Suspendido'];
+            $statusIcons = ['activo' => 'check-circle-fill', 'pendiente' => 'hourglass-split', 'suspendido' => 'x-circle-fill'];
+            
+            $actions = [];
+            if ($user->estado === 'activo') {
+                $actions[] = 'suspend';
+            } elseif ($user->estado === 'pendiente') {
+                $actions[] = 'approve';
+                $actions[] = 'reject';
+            } elseif ($user->estado === 'suspendido') {
+                $actions[] = 'reactivate';
+                $actions[] = 'delete';
+            }
+
+            return [
+                'id' => $user->id_usuario,
+                'initials' => strtoupper($initials),
+                'name' => $user->nombre ?? 'Sin nombre',
+                'email' => $user->email,
+                'role' => $user->rol,
+                'roleLabel' => $roleLabels[$user->rol] ?? ucfirst($user->rol),
+                'status' => $user->estado ?? 'activo',
+                'statusIcon' => $statusIcons[$user->estado] ?? 'hourglass-split',
+                'statusLabel' => $statusLabels[$user->estado] ?? ucfirst($user->estado),
+                'registered' => $user->fecha_registro ? (string) $user->fecha_registro->locale('es')->diffForHumans() : 'Hace poco',
+                'registeredDate' => $user->fecha_registro ? (string) $user->fecha_registro->format('Y-m-d') : '',
+                'actions' => $actions,
+            ];
+        })->all();
+
+        // Reconstruir el paginador con los arreglos mapeados
+        $users = new \Illuminate\Pagination\LengthAwarePaginator(
+            $users,
+            $usersQuery->total(),
+            $usersQuery->perPage(),
+            $usersQuery->currentPage(),
+            ['path' => $usersQuery->currentPageUrl(), 'query' => request()->query()]
+        );
 
         // Stats reales de la BD
         $totalUsuarios = Usuario::count();

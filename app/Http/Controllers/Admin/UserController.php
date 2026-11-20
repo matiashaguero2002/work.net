@@ -76,7 +76,7 @@ class UserController extends Controller
             $usersQuery->total(),
             $usersQuery->perPage(),
             $usersQuery->currentPage(),
-            ['path' => $usersQuery->currentPageUrl(), 'query' => request()->query()]
+            ['path' => request()->url(), 'query' => request()->query()]
         );
 
         // Stats reales de la BD

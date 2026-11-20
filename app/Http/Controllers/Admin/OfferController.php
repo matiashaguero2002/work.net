@@ -80,7 +80,7 @@ class OfferController extends Controller
         $estadosDisponibles = [1 => 'Activa', 2 => 'Pausada', 3 => 'Cerrada'];
         $categoriasDisponibles = $areas;
 
-        return view('admin.offers.index', compact('ofertas', 'stats', 'categoriaDistribution', 'estadosDisponibles', 'categoriasDisponibles'));
+        return view('admin.offers.index', compact('offers', 'stats', 'categoriaDistribution', 'estadosDisponibles', 'categoriasDisponibles'));
     }
 
     public function show($id): \Illuminate\View\View

@@ -102,10 +102,10 @@ class OfferController extends Controller
             }
 
             // Reportes pendientes de esta oferta (usando conteo directo, sin relación)
-            $reportesCount = Reporte::where('id_oferta', $oferta->id_oferta)
-                ->where('estado', 'pendiente')
-                ->count();
-            $reported = $reportesCount > 0 ? ['text' => $reportesCount . ' reporte(s)'] : null;
+// Nota: la tabla 'reporte' no tiene columna 'id_oferta' en el esquema original,
+// por lo tanto no se pueden filtrar reportes por oferta.
+            $reportesCount = 0;
+            $reported = null;
 
             return [
                 'id' => $oferta->id_oferta,

@@ -190,7 +190,9 @@ class OfferController extends Controller
             ['label' => 'Modalidad', 'value' => $oferta->modalidad?->nombre ?? 'Sin definir'],
             ['label' => 'Tipo de contrato', 'value' => $oferta->tipoContrato?->nombre ?? 'Sin definir'],
             ['label' => 'Salario', 'value' => $oferta->remuneracion_min !== null ? 'Gs. '.number_format($oferta->remuneracion_min, 0, ',', '.').' - '.($oferta->remuneracion_max ? number_format($oferta->remuneracion_max, 0, ',', '.') : 'a convenir') : 'A convenir'],
-            ['label' => 'Ubicación', 'value' => $oferta->ubicacion?->direccion.', '.$oferta->ubicacion->ciudad ?? 'Sin ubicación'],
+            ['label' => 'Ubicación', 'value' => $oferta->ubicacion
+                ? trim(($oferta->ubicacion->direccion ?? '') . ', ' . ($oferta->ubicacion->ciudad ?? ''), ', ')
+                : 'Sin ubicación'],
             ['label' => 'Publicada', 'value' => $oferta->fecha_publicacion ? (string) \Carbon\Carbon::parse($oferta->fecha_publicacion)->locale('es')->diffForHumans() : 'Hace poco'],
             ['label' => 'Última actualización', 'value' => $oferta->fecha_publicacion ? (string) \Carbon\Carbon::parse($oferta->fecha_publicacion)->locale('es')->diffForHumans() : 'Hace poco'],
         ];
@@ -213,7 +215,7 @@ class OfferController extends Controller
             ->get()->map(function ($p) {
                 $candidato = DB::table('candidato')->where('id_candidato', $p->id_candidato)->first();
                 $nombre = $candidato ? ($candidato->nombre ?: 'Anónimo') : 'Anónimo';
-                $tiempo = $p->fecha_postulacion ? (string) $p->fecha_postulacion->locale('es')->diffForHumans() : 'Hace poco';
+                $tiempo = $p->fecha_postulacion ? (string) \Carbon\Carbon::parse($p->fecha_postulacion)->locale('es')->diffForHumans() : 'Hace poco';
                 $estado = match ($p->id_estado_post) {
                     1 => 'En revisión',
                     2 => 'Aceptada',

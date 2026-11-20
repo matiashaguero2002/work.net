@@ -195,7 +195,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('/usuarios', [UserController::class, 'index'])->name('users.index');
     Route::get('/usuarios/{id}', [UserController::class, 'show'])->name('users.show');
-    Route::get('/ofertas', [OfferController::class, 'index'])->name('offers.index');
-    Route::get('/ofertas/{id}', [OfferController::class, 'show'])->name('offers.show');
+    Route::get('/ofertas', [AdminOfferController::class, 'index'])->name('offers.index');
+    Route::get('/ofertas/{id}', [AdminOfferController::class, 'show'])->name('offers.show');
     Route::get('/reportes', [AdminReportController::class, 'index'])->name('reports.index');
 });

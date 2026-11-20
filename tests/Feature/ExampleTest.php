@@ -14,6 +14,7 @@ class ExampleTest extends TestCase
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        // La ruta raíz redirige (302) al panel según rol o a la selección de rol
+        $response->assertStatus(302);
     }
 }

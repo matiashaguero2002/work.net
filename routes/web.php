@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthViewController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Candidate\ApplicationController;
 use App\Http\Controllers\Candidate\CompanyController as CandidateCompanyController;
 use App\Http\Controllers\Candidate\DashboardController;
@@ -44,6 +45,12 @@ Route::get('/login', [AuthViewController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthViewController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthViewController::class, 'logout'])->name('logout');
 
+// Recuperación de contraseña (código enviado por correo)
+Route::get('/password/forgot', [PasswordResetController::class, 'showForgotForm'])->name('password.forgot');
+Route::post('/password/forgot', [PasswordResetController::class, 'sendResetCode'])->name('password.forgot.post');
+Route::get('/password/reset/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+Route::post('/password/reset', [PasswordResetController::class, 'reset'])->name('password.reset.post');
+
 Route::get('/', function () {
     // Con sesión activa → panel según rol (RN-01)
     if (auth()->check()) {
@@ -61,7 +68,7 @@ Route::get('/', function () {
 // Mapa de ofertas (público: la exploración no requiere cuenta)
 Route::get('/mapa', [MapController::class, 'index'])->name('map.index');
 
-// Contador de visualizaciones (RF-05): cada vez que un candidato
+// Contador de visualizaciones (RF-07): cada vez que un candidato
 // autenticado abre el detalle de una oferta en el mapa.
 Route::post('/mapa/ofertas/{idOferta}/vista', [MapController::class, 'vista'])
     ->middleware(['auth', 'role:candidato'])->name('map.vista');
@@ -100,7 +107,7 @@ Route::prefix('candidato')->name('candidate.')->middleware(['auth', 'role:candid
     Route::get('/postulaciones', [ApplicationController::class, 'index'])->name('applications.index');
     Route::get('/guardadas', [SavedOfferController::class, 'index'])->name('saved.index');
 
-    // Guardar / quitar ofertas (RF-08; el modal del mapa usa AJAX)
+    // Guardar / quitar ofertas (RF-15; el modal del mapa usa AJAX)
     Route::post('/ofertas/{idOferta}/guardar', [SavedOfferController::class, 'store'])->name('saved.store');
     Route::delete('/guardadas/{idOferta}', [SavedOfferController::class, 'destroy'])->name('saved.destroy');
 

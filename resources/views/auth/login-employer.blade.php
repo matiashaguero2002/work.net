@@ -68,7 +68,7 @@
                     </div>
 
                     <div style="text-align: right; margin-bottom: 18px;">
-                        <a href="#" class="wn-link" style="font-size: 0.78rem;">¿Olvidaste tu contraseña?</a>
+                        <a href="{{ route('password.forgot') }}" class="wn-link" style="font-size: 0.78rem;">¿Te olvidaste de la contraseña?</a>
                     </div>
 
                     <button type="submit" class="btn-wn-primary">

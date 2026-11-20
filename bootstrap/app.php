@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Console\Scheduling\Schedule;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -10,6 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withSchedule(function (Schedule $schedule) {
+        // RF-13: cierra automáticamente ofertas activas cuya fecha_limite venció.
+        $schedule->command('ofertas:cerrar-vencidas')->daily();
+    })
     ->withMiddleware(function (Middleware $middleware): void {
         // Control de acceso por rol (candidato / empleador / admin)
         $middleware->alias([

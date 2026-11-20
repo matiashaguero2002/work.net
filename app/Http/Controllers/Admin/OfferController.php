@@ -91,9 +91,11 @@ class OfferController extends Controller
             $actions = [];
             if ($estadoKey === 1) {
                 $actions[] = 'pause';
+                $actions[] = 'cerrar';
                 $actions[] = 'delete';
             } elseif ($estadoKey === 2) {
                 $actions[] = 'reactivate';
+                $actions[] = 'cerrar';
                 $actions[] = 'delete';
             } elseif ($estadoKey === 3) {
                 $actions[] = 'delete';
@@ -291,6 +293,24 @@ class OfferController extends Controller
             'nuevoEstado' => 'activa',
             'icon' => 'check-circle-fill',
             'label' => 'Activa',
+        ]);
+    }
+
+    public function destroy($id): \Illuminate\Http\JsonResponse
+    {
+        $oferta = Oferta::findOrFail($id);
+
+        // Eliminar registros dependientes para no romper la integridad referencial
+        DB::table('requisito_oferta')->where('id_oferta', $id)->delete();
+        DB::table('beneficio_oferta')->where('id_oferta', $id)->delete();
+        DB::table('postulacion')->where('id_oferta', $id)->delete();
+        DB::table('oferta_guardada')->where('id_oferta', $id)->delete();
+
+        $oferta->delete();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Oferta eliminada correctamente.',
         ]);
     }
 

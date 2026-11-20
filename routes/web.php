@@ -197,5 +197,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::get('/usuarios/{id}', [UserController::class, 'show'])->name('users.show');
     Route::get('/ofertas', [AdminOfferController::class, 'index'])->name('offers.index');
     Route::get('/ofertas/{id}', [AdminOfferController::class, 'show'])->name('offers.show');
+    Route::post('/ofertas/{id}/pausar', [AdminOfferController::class, 'pausar'])->name('offers.pausar');
+    Route::post('/ofertas/{id}/reactivar', [AdminOfferController::class, 'reactivar'])->name('offers.reactivar');
+    Route::post('/ofertas/{id}/cerrar', [AdminOfferController::class, 'cerrar'])->name('offers.cerrar');
+    Route::delete('/ofertas/{id}', [AdminOfferController::class, 'destroy'])->name('offers.destroy');
     Route::get('/reportes', [AdminReportController::class, 'index'])->name('reports.index');
 });

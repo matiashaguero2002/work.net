@@ -27,6 +27,10 @@ class OfferController extends Controller
     {
         $empleador = Auth::user()->empleador;
 
+        if (!$empleador) {
+            abort(403, 'Tu usuario no tiene un perfil de empleador asociado.');
+        }
+
         $ofertas = Oferta::query()
             ->where('id_empleador', $empleador->id_empleador)
             ->with(['ubicacion', 'modalidad', 'tipoContrato'])
